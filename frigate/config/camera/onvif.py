@@ -7,7 +7,7 @@ from ..base import FrigateBaseModel
 from ..env import EnvString
 from .objects import DEFAULT_TRACKED_OBJECTS
 
-__all__ = ["OnvifConfig", "PtzAutotrackConfig", "ZoomingModeEnum"]
+__all__ = ["OnvifConfig", "OnvifDetectionConfig", "PtzAutotrackConfig", "ZoomingModeEnum"]
 
 
 class ZoomingModeEnum(str, Enum):
@@ -91,6 +91,35 @@ class PtzAutotrackConfig(FrigateBaseModel):
         return weights
 
 
+class OnvifDetectionConfig(FrigateBaseModel):
+    enabled: bool = Field(
+        default=False,
+        title="Enable ONVIF detection",
+        description="Enable detection via ONVIF camera events (motion) and camera smart detection (person, vehicle).",
+    )
+    motion: bool = Field(
+        default=True,
+        title="Motion detection",
+        description="Detect motion events from ONVIF camera event subscriptions.",
+    )
+    person: bool = Field(
+        default=True,
+        title="Person detection",
+        description="Detect persons using ONVIF Reolink smart detection API.",
+    )
+    vehicle: bool = Field(
+        default=True,
+        title="Vehicle detection",
+        description="Detect vehicles using ONVIF Reolink smart detection API.",
+    )
+    poll_interval: int = Field(
+        default=5,
+        title="Poll interval",
+        description="Seconds between polling the camera for smart detection results (person/vehicle). Set to 0 to disable polling and only use event-driven detection.",
+        ge=0,
+    )
+
+
 class OnvifConfig(FrigateBaseModel):
     host: EnvString = Field(
         default="",
@@ -131,4 +160,9 @@ class OnvifConfig(FrigateBaseModel):
         default=False,
         title="Ignore time mismatch",
         description="Ignore time synchronization differences between camera and Frigate server for ONVIF communication.",
+    )
+    detection: OnvifDetectionConfig = Field(
+        default_factory=OnvifDetectionConfig,
+        title="ONVIF detection",
+        description="Enable and configure motion and smart detection via ONVIF camera events and APIs (Reolink person/vehicle detection).",
     )

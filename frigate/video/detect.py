@@ -1,5 +1,6 @@
 """Manages camera object detection processes."""
 
+import asyncio
 import logging
 import queue
 import time
@@ -22,6 +23,7 @@ from frigate.const import (
     PROCESS_PRIORITY_HIGH,
     REQUEST_REGION_GRID,
 )
+from frigate.detectors.onvif_detector import OnvifDetection, OnvifDetector
 from frigate.motion import MotionDetector
 from frigate.motion.improved_motion import ImprovedMotionDetector
 from frigate.object_detection.base import RemoteObjectDetector
@@ -103,6 +105,24 @@ class CameraTracker(FrigateProcess):
             self.stop_event,
         )
 
+        # Check if ONVIF detection is enabled for this camera
+        onvif_detector: OnvifDetector | None = None
+        has_onvif_role = any(
+            "onvif" in input.roles for input in self.config.ffmpeg.inputs
+        )
+        if has_onvif_role and self.config.onvif.detection.enabled:
+            onvif_det_queue: queue.Queue[OnvifDetection] = queue.Queue(maxsize=100)
+            onvif_detector = OnvifDetector(
+                self.config,
+                onvif_det_queue,
+                self.stop_event,
+            )
+            onvif_detector.start()
+            logger.info(
+                "%s: motion detection bypassed (ONVIF source active)",
+                self.config.name,
+            )
+
         object_tracker = NorfairTracker(self.config, self.ptz_metrics)
 
         frame_manager = SharedMemoryFrameManager()
@@ -125,6 +145,7 @@ class CameraTracker(FrigateProcess):
             self.stop_event,
             self.ptz_metrics,
             self.region_grid,
+            onvif_detector,
         )
 
         # empty the frame queue
@@ -188,6 +209,7 @@ def process_frames(
     stop_event: MpEvent,
     ptz_metrics: PTZMetrics,
     region_grid: list[list[dict[str, Any]]],
+    onvif_detector: OnvifDetector | None = None,
     exit_on_empty: bool = False,
 ):
     next_region_update = get_tomorrow_at_time(2)
@@ -299,8 +321,11 @@ def process_frames(
             )
             continue
 
-        # look for motion if enabled
-        motion_boxes = motion_detector.detect(frame)
+        # bypass motion detection when ONVIF source provides its own motion events
+        if onvif_detector is not None:
+            motion_boxes: list[tuple[int, int, int, int]] = []
+        else:
+            motion_boxes = motion_detector.detect(frame)
 
         regions = []
         consolidated_detections = []
@@ -424,6 +449,31 @@ def process_frames(
                 )
 
             consolidated_detections = reduce_detections(frame_shape, detections)
+
+            # merge ONVIF detections (motion, person, vehicle from camera)
+            if onvif_detector is not None:
+                onvif_detections = onvif_detector.get_detections()
+                if onvif_detections:
+                    onvif_det_list: list[tuple[Any, ...]] = []
+                    for od in onvif_detections:
+                        frame_w = od.frame_width or frame_shape[1]
+                        frame_h = od.frame_height or frame_shape[0]
+                        ymin, xmin, ymax, xmax = od.box
+                        # Convert normalized box to pixel coordinates
+                        x_min = int(max(0, xmin * detect_config.width))
+                        y_min = int(max(0, ymin * detect_config.height))
+                        x_max = int(min(detect_config.width - 1, xmax * detect_config.width))
+                        y_max = int(min(detect_config.height - 1, ymax * detect_config.height))
+                        width = x_max - x_min
+                        height = y_max - y_min
+                        area = width * height
+                        ratio = width / max(1, height)
+                        region = (0, 0, detect_config.width, detect_config.height)
+                        onvif_det_list.append((od.label, od.score, (x_min, y_min, x_max, y_max), area, ratio, region))
+                    consolidated_detections = reduce_detections(
+                        frame_shape,
+                        list(consolidated_detections) + onvif_det_list,
+                    )
 
             # if detection was run on this frame, consolidate
             if len(regions) > 0:
@@ -559,3 +609,5 @@ def process_frames(
     motion_detector.stop()
     requestor.stop()
     config_subscriber.stop()
+    if onvif_detector is not None:
+        asyncio.run(onvif_detector.stop())

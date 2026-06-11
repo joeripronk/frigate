@@ -979,7 +979,7 @@ async def get_video_properties(
                 *cmd, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE
             )
             try:
-                stdout, _ = await asyncio.wait_for(proc.communicate(), timeout=6)
+                stdout, _ = await asyncio.wait_for(proc.communicate(), timeout=15)
             except asyncio.TimeoutError:
                 logger.info(
                     "ffprobe timed out while probing %s (transport=%s)",
