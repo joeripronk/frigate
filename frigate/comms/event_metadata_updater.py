@@ -13,6 +13,8 @@ class EventMetadataTypeEnum(str, Enum):
     all = ""
     manual_event_create = "manual_event_create"
     manual_event_end = "manual_event_end"
+    doorbell_event_create = "doorbell_event_create"
+    doorbell_event_end = "doorbell_event_end"
     regenerate_description = "regenerate_description"
     sub_label = "sub_label"
     attribute = "attribute"

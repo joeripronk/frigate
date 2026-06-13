@@ -329,8 +329,6 @@ def process_frames(
             onvif_detections = onvif_detector.get_detections()
             for od in onvif_detections:
                 if od.type == DetectionType.MOTION:
-                    frame_w = od.frame_width or frame_shape[1]
-                    frame_h = od.frame_height or frame_shape[0]
                     ymin, xmin, ymax, xmax = od.box
                     detect_w = camera_config.detect.width or frame_shape[1]
                     detect_h = camera_config.detect.height or frame_shape[0]
@@ -349,10 +347,7 @@ def process_frames(
             and onvif_motion_boxes
         ):
             motion_boxes = onvif_motion_boxes
-        elif (
-            onvif_detector is not None
-            and camera_config.onvif.detect.motion
-        ):
+        elif onvif_detector is not None and camera_config.onvif.detect.motion:
             motion_boxes = []
         else:
             motion_boxes = motion_detector.detect(frame)
@@ -484,8 +479,6 @@ def process_frames(
             if onvif_non_motion_detections:
                 onvif_det_list: list[tuple[Any, ...]] = []
                 for od in onvif_non_motion_detections:
-                    frame_w = od.frame_width or frame_shape[1]
-                    frame_h = od.frame_height or frame_shape[0]
                     ymin, xmin, ymax, xmax = od.box
                     # Convert normalized box to pixel coordinates
                     detect_w = camera_config.detect.width or frame_shape[1]
@@ -499,7 +492,16 @@ def process_frames(
                     area = width * height
                     ratio = width / max(1, height)
                     region = (0, 0, detect_w, detect_h)
-                    onvif_det_list.append((od.label, od.score, (x_min, y_min, x_max, y_max), area, ratio, region))
+                    onvif_det_list.append(
+                        (
+                            od.label,
+                            od.score,
+                            (x_min, y_min, x_max, y_max),
+                            area,
+                            ratio,
+                            region,
+                        )
+                    )
                 consolidated_detections = reduce_detections(
                     frame_shape,
                     list(consolidated_detections) + onvif_det_list,

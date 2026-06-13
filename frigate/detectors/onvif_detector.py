@@ -34,6 +34,10 @@ from reolink_aio.api import Host as ReolinkHost
 from reolink_aio.const import AI_DETECT_CONVERSION
 from zeep.exceptions import Fault, TransportError
 
+from frigate.comms.event_metadata_updater import (
+    EventMetadataPublisher,
+    EventMetadataTypeEnum,
+)
 from frigate.config import CameraConfig
 from frigate.config.camera.onvif import OnvifVendorEnum
 
@@ -699,6 +703,12 @@ class ReolinkTcpPushClient:
         self._connect_task: Optional[asyncio.Task] = None
         self._last_detection_times: dict[str, float] = {}
 
+        # Doorbell event tracking
+        self._doorbell_metadata_publisher = EventMetadataPublisher()
+        self._doorbell_active_event: Optional[str] = None
+        self._doorbell_active_event_time: float = 0.0
+        self._doorbell_debounce_seconds: float = 5.0
+
     def start(self) -> None:
         """Start the TCP push connection in a background thread with its own event loop."""
         if not self._should_run():
@@ -837,6 +847,23 @@ class ReolinkTcpPushClient:
                 "Error during TCP push event processing for %s", self.camera_name
             )
         finally:
+            # End any active doorbell event when connection drops
+            if self._doorbell_active_event is not None:
+                try:
+                    self._doorbell_metadata_publisher.publish(
+                        (
+                            "end",
+                            self.camera_name,
+                            self._doorbell_active_event,
+                            time.time(),
+                        ),
+                        sub_topic=EventMetadataTypeEnum.doorbell_event_end.value,
+                    )
+                except Exception:
+                    pass
+                self._doorbell_active_event = None
+                self._doorbell_active_event_time = 0.0
+
             try:
                 await self._reolink.baichuan.unsubscribe_events()
                 await self._reolink.logout()
@@ -898,19 +925,23 @@ class ReolinkTcpPushClient:
 
         # Doorbell (visitor) detection
         if self.detect_doorbell:
-            key = "visitor"
-            last_time = self._last_detection_times.get(key, 0)
-
             try:
                 visitor_state = self._reolink.visitor_detected(channel)
             except Exception:
                 visitor_state = False
 
-            if visitor_state and (frame_time - last_time) > self._COOLDOWN_SECONDS:
-                self._last_detection_times[key] = frame_time
-                self._queue_detection(
-                    DetectionType.DOORBELL, "visitor", 0.9, channel, frame_time
-                )
+            if not hasattr(self, "_previous_visitor_state"):
+                self._previous_visitor_state = False
+
+            # Detect transition from not-pressed to pressed
+            if visitor_state and not self._previous_visitor_state:
+                self._handle_doorbell_press(frame_time)
+
+            # Detect transition from pressed to not-pressed - end the event
+            if not visitor_state and self._previous_visitor_state:
+                self._publish_doorbell_end(frame_time)
+
+            self._previous_visitor_state = visitor_state
 
     def _queue_detection(
         self,
@@ -947,6 +978,128 @@ class ReolinkTcpPushClient:
             )
         except queue.Full:
             pass
+
+    def _handle_doorbell_press(self, frame_time: float) -> None:
+        """Handle a doorbell press with debouncing.
+
+        When a doorbell press is detected:
+        - If an event is already active and within the debounce window, do nothing
+          (the existing event's auto-end timer will be extended by the camera state)
+        - If a debounce gap has elapsed (5+ seconds since last press), create a new event
+        - If no event is active, create a new event
+        """
+        if not self._reolink:
+            return
+
+        channel = 0
+        if self._reolink.num_channels > 0:
+            channel = self._reolink.channels[0] if self._reolink.channels else 0
+
+        # Check if we're within the debounce window of an existing event
+        if self._doorbell_active_event is not None:
+            time_since_last = frame_time - self._doorbell_active_event_time
+            if time_since_last < self._doorbell_debounce_seconds:
+                # Within debounce window - extend the existing event
+                # by sending an IPC update (the camera state handles the timer reset)
+                logger.debug(
+                    "%s: doorbell debounce - extending active event %s (%.1fs since last press)",
+                    self.camera_name,
+                    self._doorbell_active_event,
+                    time_since_last,
+                )
+                try:
+                    self._doorbell_metadata_publisher.publish(
+                        (
+                            "start",
+                            self.camera_name,
+                            self._doorbell_active_event,
+                            frame_time,
+                        ),
+                        sub_topic=EventMetadataTypeEnum.doorbell_event_create.value,
+                    )
+                except Exception:
+                    logger.debug(
+                        "Failed to publish doorbell debounce update for %s",
+                        self.camera_name,
+                    )
+                self._doorbell_active_event_time = frame_time
+                return
+
+        # Either no active event or debounce gap has elapsed - create new event
+        event_id = f"doorbell_{self.camera_name}_{int(frame_time * 1000)}"
+        logger.info(
+            "%s: doorbell press detected (event=%s, channel=%s)",
+            self.camera_name,
+            event_id,
+            channel,
+        )
+
+        # End any previous event that may have been missed
+        if self._doorbell_active_event is not None:
+            try:
+                self._doorbell_metadata_publisher.publish(
+                    (
+                        "end",
+                        self.camera_name,
+                        self._doorbell_active_event,
+                        frame_time,
+                    ),
+                    sub_topic=EventMetadataTypeEnum.doorbell_event_end.value,
+                )
+            except Exception:
+                pass
+
+        # Create new event
+        try:
+            self._doorbell_metadata_publisher.publish(
+                (
+                    "start",
+                    self.camera_name,
+                    event_id,
+                    frame_time,
+                ),
+                sub_topic=EventMetadataTypeEnum.doorbell_event_create.value,
+            )
+        except Exception:
+            logger.debug(
+                "Failed to publish doorbell event start for %s",
+                self.camera_name,
+            )
+            return
+
+        self._doorbell_active_event = event_id
+        self._doorbell_active_event_time = frame_time
+
+    def _publish_doorbell_end(self, frame_time: float) -> None:
+        """End the currently active doorbell event."""
+        if self._doorbell_active_event is None:
+            return
+
+        event_id = self._doorbell_active_event
+        logger.info(
+            "%s: ending doorbell event %s",
+            self.camera_name,
+            event_id,
+        )
+
+        try:
+            self._doorbell_metadata_publisher.publish(
+                (
+                    "end",
+                    self.camera_name,
+                    event_id,
+                    frame_time,
+                ),
+                sub_topic=EventMetadataTypeEnum.doorbell_event_end.value,
+            )
+        except Exception:
+            logger.debug(
+                "Failed to publish doorbell event end for %s",
+                self.camera_name,
+            )
+
+        self._doorbell_active_event = None
+        self._doorbell_active_event_time = 0.0
 
     def get_ai_detected_sync(self, object_type: str, channel: int = 0) -> bool:
         """Synchronously check if an AI object type is currently detected.
@@ -1068,10 +1221,10 @@ class OnvifDetector:
                 self.tcp_push_client.start()
         else:
             # Default: use polling for person/vehicle detection
-            #if (
+            # if (
             #    self.camera_config.onvif.detect.person
             #    or self.camera_config.onvif.detect.vehicle
-            #):
+            # ):
             #    self.reolink_detector = ReolinkSmartDetector(
             #        self.camera_config, self.detection_queue, self.stop_event
             #    )

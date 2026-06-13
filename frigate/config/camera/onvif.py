@@ -142,6 +142,12 @@ class OnvifDetectionConfig(FrigateBaseModel):
         title="Doorbell detection",
         description="Detect doorbell button presses using Reolink TCP push events.",
     )
+    doorbell_timeout: int = Field(
+        default=30,
+        title="Doorbell event timeout",
+        description="Seconds after the last doorbell press before the event ends automatically. Set to 0 to disable auto-end.",
+        ge=0,
+    )
     poll_interval: int = Field(
         default=5,
         title="Poll interval",

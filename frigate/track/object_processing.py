@@ -94,6 +94,8 @@ class TrackedObjectProcessor(threading.Thread):
 
         self.camera_activity: dict[str, dict[str, Any]] = {}
         self.ongoing_manual_events: dict[str, str] = {}
+        self._doorbell_timers: dict[str, threading.Timer] = {}
+        self._doorbell_events: dict[str, dict[str, Any]] = {}
 
         # {
         #   'zone_name': {
@@ -661,6 +663,126 @@ class TrackedObjectProcessor(threading.Thread):
             )
             self.ongoing_manual_events.pop(event_id)
 
+    def handle_doorbell_event(self, payload: tuple) -> None:
+        """Handle doorbell event creation or end request."""
+        event_type, camera, event_id, frame_time = payload
+
+        if event_type == "start":
+            self._start_doorbell_event(camera, event_id, frame_time)
+        elif event_type == "end":
+            self._end_doorbell_event(camera, event_id, frame_time)
+
+    def _start_doorbell_event(
+        self, camera: str, event_id: str, frame_time: float
+    ) -> None:
+        """Start a doorbell event with auto-end timer."""
+        self._cancel_doorbell_timer(camera)
+
+        camera_config = self.config.cameras.get(camera)
+        if camera_config is None:
+            return
+
+        timeout = getattr(camera_config.onvif.detect, "doorbell_timeout", 30)
+        if timeout <= 0:
+            timeout = 30
+
+        end_time = frame_time + timeout
+
+        event_data = {
+            "id": event_id,
+            "camera": camera,
+            "start_time": frame_time,
+            "end_time": end_time,
+            "last_press_time": frame_time,
+        }
+        self._doorbell_events[event_id] = event_data
+
+        self.event_sender.publish(
+            (
+                EventTypeEnum.api,
+                EventStateEnum.start,
+                camera,
+                "",
+                {
+                    "id": event_id,
+                    "label": "doorbell",
+                    "sub_label": None,
+                    "score": 0.9,
+                    "camera": camera,
+                    "start_time": frame_time,
+                    "end_time": end_time,
+                    "has_clip": camera_config.record.enabled,
+                    "has_snapshot": False,
+                    "snapshot_clean": True,
+                    "type": "doorbell",
+                },
+            )
+        )
+
+        self.detection_publisher.publish(
+            (
+                camera,
+                frame_time,
+                {
+                    "state": ManualEventState.start,
+                    "label": "doorbell",
+                    "event_id": event_id,
+                    "end_time": end_time,
+                },
+            ),
+            DetectionTypeEnum.api.value,
+        )
+
+        self._doorbell_timers[camera] = threading.Timer(
+            timeout, self._auto_end_doorbell, args=[camera, event_id, end_time]
+        )
+        self._doorbell_timers[camera].daemon = True
+        self._doorbell_timers[camera].start()
+
+    def _auto_end_doorbell(self, camera: str, event_id: str, end_time: float) -> None:
+        """Auto-end a doorbell event when the timeout expires."""
+        self._end_doorbell_event(camera, event_id, end_time)
+
+    def _end_doorbell_event(
+        self, camera: str, event_id: str, frame_time: float
+    ) -> None:
+        """End a doorbell event."""
+        self._cancel_doorbell_timer(camera)
+
+        if event_id not in self._doorbell_events:
+            return
+
+        del self._doorbell_events[event_id]
+
+        self.event_sender.publish(
+            (
+                EventTypeEnum.api,
+                EventStateEnum.end,
+                None,
+                "",
+                {"id": event_id, "end_time": frame_time},
+            )
+        )
+
+        self.detection_publisher.publish(
+            (
+                camera,
+                frame_time,
+                {
+                    "state": ManualEventState.end,
+                    "event_id": event_id,
+                    "end_time": frame_time,
+                },
+            ),
+            DetectionTypeEnum.api.value,
+        )
+
+    def _cancel_doorbell_timer(self, camera: str) -> None:
+        """Cancel the auto-end timer for a camera."""
+        timer = self._doorbell_timers.pop(camera, None)
+        if timer is not None:
+            timer.cancel()
+
     def force_end_all_events(self, camera: str, camera_state: CameraState) -> None:
         """Ends all active events on camera when disabling."""
         last_frame_name = camera_state.previous_frame_id
@@ -755,6 +877,10 @@ class TrackedObjectProcessor(threading.Thread):
                     self.create_manual_event(payload)
                 elif topic.endswith(EventMetadataTypeEnum.manual_event_end.value):
                     self.end_manual_event(payload)
+                elif topic.endswith(EventMetadataTypeEnum.doorbell_event_create.value):
+                    self.handle_doorbell_event(payload)
+                elif topic.endswith(EventMetadataTypeEnum.doorbell_event_end.value):
+                    self.handle_doorbell_event(payload)
 
             try:
                 (

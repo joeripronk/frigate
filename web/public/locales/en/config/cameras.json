@@ -859,7 +859,7 @@
       "label": "ONVIF vendor",
       "description": "Vendor-specific ONVIF implementation. Set to 'reolink' to use the Reolink Baichuan TCP push protocol for real-time motion, person, vehicle, pet, and doorbell detection. Other values fall back to standard ONVIF event subscription and polling."
     },
-    "detection": {
+    "detect": {
       "label": "ONVIF detection",
       "description": "Enable and configure motion and smart detection via ONVIF camera events and APIs (Reolink person/vehicle detection).",
       "enabled": {
@@ -885,6 +885,10 @@
       "doorbell": {
         "label": "Doorbell detection",
         "description": "Detect doorbell button presses using Reolink TCP push events."
+      },
+      "doorbell_timeout": {
+        "label": "Doorbell event timeout",
+        "description": "Seconds after the last doorbell press before the event ends automatically. Set to 0 to disable auto-end."
       },
       "poll_interval": {
         "label": "Poll interval",
