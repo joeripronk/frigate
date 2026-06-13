@@ -105,12 +105,9 @@ class CameraTracker(FrigateProcess):
             self.stop_event,
         )
 
-        # Check if ONVIF detection is enabled for this camera
+        # Check if ONVIF detect is enabled for this camera
         onvif_detector: OnvifDetector | None = None
-        has_onvif_role = any(
-            "onvif" in input.roles for input in self.config.ffmpeg.inputs
-        )
-        if has_onvif_role and self.config.onvif.detection.enabled:
+        if self.config.onvif.detect and self.config.onvif.detect.enabled:
             onvif_det_queue: queue.Queue[OnvifDetection] = queue.Queue(maxsize=100)
             onvif_detector = OnvifDetector(
                 self.config,
@@ -119,7 +116,7 @@ class CameraTracker(FrigateProcess):
             )
             onvif_detector.start()
             logger.info(
-                "%s: motion detection bypassed (ONVIF source active)",
+                "%s: motion detect bypassed (ONVIF source active)",
                 self.config.name,
             )
 

@@ -123,10 +123,10 @@ class ReolinkSmartDetector:
 
         self.username = user if user else ""
         self.password = password if password else ""
-        self.poll_interval = camera_config.onvif.detection.poll_interval
-        self.enabled = camera_config.onvif.detection.enabled
-        self.detect_person = camera_config.onvif.detection.person
-        self.detect_vehicle = camera_config.onvif.detection.vehicle
+        self.poll_interval = camera_config.onvif.detect.poll_interval
+        self.enabled = camera_config.onvif.detect.enabled
+        self.detect_person = camera_config.onvif.detect.person
+        self.detect_vehicle = camera_config.onvif.detect.vehicle
 
     def start(self) -> None:
         """Start polling for smart detection in a background thread."""
@@ -687,11 +687,11 @@ class ReolinkTcpPushClient:
         self.password = password if password else ""
 
         # Enabled detection types from config
-        self.detect_motion = camera_config.onvif.detection.motion
-        self.detect_person = camera_config.onvif.detection.person
-        self.detect_vehicle = camera_config.onvif.detection.vehicle
-        self.detect_pet = getattr(camera_config.onvif.detection, "pet", False)
-        self.detect_doorbell = getattr(camera_config.onvif.detection, "doorbell", False)
+        self.detect_motion = camera_config.onvif.detect.motion
+        self.detect_person = camera_config.onvif.detect.person
+        self.detect_vehicle = camera_config.onvif.detect.vehicle
+        self.detect_pet = getattr(camera_config.onvif.detect, "pet", False)
+        self.detect_doorbell = getattr(camera_config.onvif.detect, "doorbell", False)
 
         self._reolink: Optional[ReolinkHost] = None
         self._running = False
@@ -1012,7 +1012,7 @@ class OnvifDetector:
 
     def start(self) -> None:
         """Start the ONVIF detector and connect to the camera."""
-        if not self.camera_config.onvif.detection.enabled:
+        if not self.camera_config.onvif.detect.enabled:
             return
 
         if not self.camera_config.onvif.host:
@@ -1031,10 +1031,10 @@ class OnvifDetector:
         if vendor == OnvifVendorEnum.reolink:
             # Use Reolink TCP push for real-time detection
             has_ai_detection = (
-                self.camera_config.onvif.detection.person
-                or self.camera_config.onvif.detection.vehicle
-                or getattr(self.camera_config.onvif.detection, "pet", False)
-                or getattr(self.camera_config.onvif.detection, "doorbell", False)
+                self.camera_config.onvif.detect.person
+                or self.camera_config.onvif.detect.vehicle
+                or getattr(self.camera_config.onvif.detect, "pet", False)
+                or getattr(self.camera_config.onvif.detect, "doorbell", False)
             )
 
             if has_ai_detection:
@@ -1045,15 +1045,15 @@ class OnvifDetector:
         else:
             # Default: use polling for person/vehicle detection
             if (
-                self.camera_config.onvif.detection.person
-                or self.camera_config.onvif.detection.vehicle
+                self.camera_config.onvif.detect.person
+                or self.camera_config.onvif.detect.vehicle
             ):
                 self.reolink_detector = ReolinkSmartDetector(
                     self.camera_config, self.detection_queue, self.stop_event
                 )
                 self.reolink_detector.start()
 
-        if self.camera_config.onvif.detection.motion:
+        if self.camera_config.onvif.detect.motion:
             try:
                 wsdl_base: str | None = None
                 try:
@@ -1112,8 +1112,8 @@ class OnvifDetector:
                     e,
                 )
 
-        has_pet = getattr(self.camera_config.onvif.detection, "pet", False)
-        has_doorbell = getattr(self.camera_config.onvif.detection, "doorbell", False)
+        has_pet = getattr(self.camera_config.onvif.detect, "pet", False)
+        has_doorbell = getattr(self.camera_config.onvif.detect, "doorbell", False)
         has_tcp_push = (
             self.tcp_push_client is not None and self.tcp_push_client._running
         )
@@ -1126,9 +1126,9 @@ class OnvifDetector:
             "ONVIF detector started for %s (vendor=%s, motion=%s, person=%s, vehicle=%s, pet=%s, doorbell=%s, tcp_push=%s, polling=%s, streaming=%s)",
             self.camera_name,
             vendor.value,
-            self.camera_config.onvif.detection.motion,
-            self.camera_config.onvif.detection.person,
-            self.camera_config.onvif.detection.vehicle,
+            self.camera_config.onvif.detect.motion,
+            self.camera_config.onvif.detect.person,
+            self.camera_config.onvif.detect.vehicle,
             has_pet,
             has_doorbell,
             has_tcp_push,

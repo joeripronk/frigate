@@ -201,7 +201,7 @@ class OnvifConfig(FrigateBaseModel):
         title="ONVIF vendor",
         description="Vendor-specific ONVIF implementation. Set to 'reolink' to use the Reolink Baichuan TCP push protocol for real-time motion, person, vehicle, pet, and doorbell detection. Other values fall back to standard ONVIF event subscription and polling.",
     )
-    detection: OnvifDetectionConfig = Field(
+    detect: OnvifDetectionConfig = Field(
         default_factory=OnvifDetectionConfig,
         title="ONVIF detection",
         description="Enable and configure motion and smart detection via ONVIF camera events and APIs (Reolink person/vehicle detection).",
