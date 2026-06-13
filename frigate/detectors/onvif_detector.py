@@ -1,13 +1,18 @@
-"""ONVIF and Reolink camera detection for motion, person, and vehicle.
+"""ONVIF and Reolink camera detection for motion, person, vehicle, pet, and doorbell.
 
-This module provides detection via ONVIF camera event streaming/subscription
-(motion) and Reolink smart detection API (person, vehicle), allowing cameras
-with built-in AI detection to be used without TensorFlow inference on the
-Frigate server.
+This module provides detection via three complementary methods:
 
-The ONVIF event subsystem uses Subscribe/Notify for push-based event delivery,
-eliminating the need for constant polling. Events arrive in real-time via HTTP
-POST notifications from the camera to a local Frigate endpoint.
+1. ONVIF event subscription (Subscribe/Notify) for motion events - push-based
+   event delivery via HTTP POST notifications from the camera.
+
+2. Reolink Baichuan TCP push (port 9000) for real-time AI detection of
+   persons, vehicles, pets, and doorbell presses via the reolink_aio library.
+
+3. Reolink smart detection API polling as a fallback for person/vehicle
+   detection when TCP push is unavailable.
+
+This allows cameras with built-in AI detection to be used without TensorFlow
+inference on the Frigate server.
 """
 
 import asyncio
@@ -24,12 +29,13 @@ from multiprocessing.synchronize import Event as MpEvent
 from typing import Any, Optional, Union
 
 import httpx
-from onvif import ONVIFError
 from onvif.client import ONVIFCamera
+from reolink_aio.api import Host as ReolinkHost
+from reolink_aio.const import AI_DETECT_CONVERSION
 from zeep.exceptions import Fault, TransportError
 
 from frigate.config import CameraConfig
-from frigate.ptz.onvif import OnvifController
+from frigate.config.camera.onvif import OnvifVendorEnum
 
 logger = logging.getLogger(__name__)
 
@@ -61,6 +67,8 @@ class DetectionType(str, Enum):
     MOTION = "motion"
     PERSON = "person"
     VEHICLE = "vehicle"
+    PET = "pet"
+    DOORBELL = "doorbell"
 
 
 @dataclass
@@ -125,7 +133,9 @@ class ReolinkSmartDetector:
         if not self.enabled:
             return
         self.thread = threading.Thread(
-            target=self._poll_loop, name=f"onvif_reolink_{self.camera_name}", daemon=True
+            target=self._poll_loop,
+            name=f"onvif_reolink_{self.camera_name}",
+            daemon=True,
         )
         self.thread.start()
         logger.info(
@@ -186,9 +196,7 @@ class ReolinkSmartDetector:
         finally:
             session.close()
 
-    def _get_smart_detections(
-        self, session: httpx.Client
-    ) -> list[OnvifDetection]:
+    def _get_smart_detections(self, session: httpx.Client) -> list[OnvifDetection]:
         """Query Reolink API for smart detection (person, vehicle)."""
         api_url = (
             f"http://{self.host}:{self.port}/api.cgi?cmd=GetSmartInfo"
@@ -206,7 +214,8 @@ class ReolinkSmartDetector:
 
             if response.status_code >= 400:
                 logger.debug(
-                    "Reolink API returned status %d for %s", response.status_code,
+                    "Reolink API returned status %d for %s",
+                    response.status_code,
                     self.camera_name,
                 )
                 return detections
@@ -237,14 +246,16 @@ class ReolinkSmartDetector:
                         frame_width = box.get("width", 1920)
                         frame_height = box.get("height", 1080)
 
-                        detections.append(OnvifDetection(
-                            type=DetectionType.PERSON,
-                            label="person",
-                            score=0.9,
-                            box=(y_min, x_min, y_max, x_max),
-                            frame_width=frame_width,
-                            frame_height=frame_height,
-                        ))
+                        detections.append(
+                            OnvifDetection(
+                                type=DetectionType.PERSON,
+                                label="person",
+                                score=0.9,
+                                box=(y_min, x_min, y_max, x_max),
+                                frame_width=frame_width,
+                                frame_height=frame_height,
+                            )
+                        )
 
             # Vehicle detection
             if self.detect_vehicle:
@@ -263,14 +274,16 @@ class ReolinkSmartDetector:
                         frame_width = box.get("width", 1920)
                         frame_height = box.get("height", 1080)
 
-                        detections.append(OnvifDetection(
-                            type=DetectionType.VEHICLE,
-                            label="vehicle",
-                            score=0.9,
-                            box=(y_min, x_min, y_max, x_max),
-                            frame_width=frame_width,
-                            frame_height=frame_height,
-                        ))
+                        detections.append(
+                            OnvifDetection(
+                                type=DetectionType.VEHICLE,
+                                label="vehicle",
+                                score=0.9,
+                                box=(y_min, x_min, y_max, x_max),
+                                frame_width=frame_width,
+                                frame_height=frame_height,
+                            )
+                        )
 
         except Exception:
             logger.exception("Error parsing Reolink smart detection response")
@@ -334,7 +347,9 @@ class OnvifEventSubscriber:
 
     def _start_notification_server(self) -> None:
         """Start a local HTTP server to receive ONVIF event notifications."""
-        for attempt_port in range(self._notification_port, self._notification_port + 20):
+        for attempt_port in range(
+            self._notification_port, self._notification_port + 20
+        ):
             try:
                 self._notification_server = HTTPServer(
                     ("0.0.0.0", attempt_port),
@@ -427,29 +442,33 @@ class OnvifEventSubscriber:
         # Process motion events with cooldown
         if is_motion and (frame_time - self._last_motion_time) > self._motion_cooldown:
             self._last_motion_time = frame_time
-            self.detection_queue.put_nowait(OnvifDetection(
-                type=DetectionType.MOTION,
-                label="motion",
-                score=0.8,
-                box=(0.0, 0.0, 1.0, 1.0),
-                frame_width=1920,
-                frame_height=1080,
-                frame_time=frame_time,
-                metadata={"topic": topic_str},
-            ))
+            self.detection_queue.put_nowait(
+                OnvifDetection(
+                    type=DetectionType.MOTION,
+                    label="motion",
+                    score=0.8,
+                    box=(0.0, 0.0, 1.0, 1.0),
+                    frame_width=1920,
+                    frame_height=1080,
+                    frame_time=frame_time,
+                    metadata={"topic": topic_str},
+                )
+            )
 
         # Process smart detection events
         if is_smart and detection_type:
-            self.detection_queue.put_nowait(OnvifDetection(
-                type=detection_type,
-                label=detection_type.value,
-                score=0.9,
-                box=(0.0, 0.0, 1.0, 1.0),
-                frame_width=1920,
-                frame_height=1080,
-                frame_time=frame_time,
-                metadata={"topic": topic_str},
-            ))
+            self.detection_queue.put_nowait(
+                OnvifDetection(
+                    type=detection_type,
+                    label=detection_type.value,
+                    score=0.9,
+                    box=(0.0, 0.0, 1.0, 1.0),
+                    frame_width=1920,
+                    frame_height=1080,
+                    frame_time=frame_time,
+                    metadata={"topic": topic_str},
+                )
+            )
 
     def _stop_notification_server(self) -> None:
         """Stop the notification HTTP server."""
@@ -467,7 +486,8 @@ class OnvifEventSubscriber:
                 capabilities = await event_service.GetServiceCapabilities()
                 if capabilities:
                     self._supports_renew = (
-                        getattr(capabilities, "SubscriptionManagerSupport", None) is True
+                        getattr(capabilities, "SubscriptionManagerSupport", None)
+                        is True
                     )
             except Exception:
                 self._supports_renew = False
@@ -604,6 +624,346 @@ class OnvifEventSubscriber:
             self._recreation_timer.start()
 
 
+class ReolinkTcpPushClient:
+    """Reolink Baichuan TCP push client for real-time event detection.
+
+    Uses the reolink_aio library to connect to Reolink cameras via the
+    Baichuan protocol (TCP port 9000) and subscribe to real-time push
+    events for motion, person, vehicle, pet, and doorbell detection.
+
+    Events are pushed as OnvifDetection objects into the shared detection
+    queue for processing by the main object tracking pipeline.
+    """
+
+    # Internal mapping: Frigate detection type -> Reolink AI type
+    _FRIGATE_TO_REOLINK: dict[str, str] = {
+        "person": "people",
+        "pet": "dog_cat",
+        "vehicle": "vehicle",
+        "motion": "motion",
+        "doorbell": "visitor",
+    }
+
+    # Reverse mapping for AI detections (Reolink -> Frigate)
+    _REOLINK_TO_FRIGATE: dict[str, DetectionType] = {
+        "people": DetectionType.PERSON,
+        "vehicle": DetectionType.VEHICLE,
+        "dog_cat": DetectionType.PET,
+        "visitor": DetectionType.DOORBELL,
+    }
+
+    # Frigate detection types that map to Reolink AI detection
+    AI_DETECTION_TYPES = frozenset({"person", "vehicle", "pet"})
+
+    # Detection cooldown per type to prevent duplicate events
+    _COOLDOWN_SECONDS: float = 2.0
+
+    def __init__(
+        self,
+        camera_config: CameraConfig,
+        detection_queue: queue.Queue,
+        stop_event: Union[threading.Event, MpEvent],
+    ) -> None:
+        self.camera_config = camera_config
+        self.camera_name = camera_config.name
+        self.detection_queue = detection_queue
+        self.stop_event = stop_event
+
+        self.host = camera_config.onvif.host
+        if self.host.startswith("http://") or self.host.startswith("https://"):
+            self.host = self.host.split("://")[-1]
+        self.port = 80
+        user = camera_config.onvif.user
+        password = camera_config.onvif.password
+
+        # Extract host and port if format is host:port
+        if ":" in self.host:
+            host_part, port_str = self.host.rsplit(":", 1)
+            if port_str.isdigit():
+                self.host = host_part
+                self.port = int(port_str)
+
+        self.username = user if user else ""
+        self.password = password if password else ""
+
+        # Enabled detection types from config
+        self.detect_motion = camera_config.onvif.detection.motion
+        self.detect_person = camera_config.onvif.detection.person
+        self.detect_vehicle = camera_config.onvif.detection.vehicle
+        self.detect_pet = getattr(camera_config.onvif.detection, "pet", False)
+        self.detect_doorbell = getattr(camera_config.onvif.detection, "doorbell", False)
+
+        self._reolink: Optional[ReolinkHost] = None
+        self._running = False
+        self._loop: Optional[asyncio.AbstractEventLoop] = None
+        self._connect_task: Optional[asyncio.Task] = None
+        self._last_detection_times: dict[str, float] = {}
+
+    def start(self) -> None:
+        """Start the TCP push connection in a background thread with its own event loop."""
+        if not self._should_run():
+            return
+
+        self._running = True
+        self._loop = asyncio.new_event_loop()
+        self._connect_task = self._loop.create_task(self._run_loop())
+        self.thread = threading.Thread(
+            target=self._run_event_loop,
+            name=f"onvif_reolink_push_{self.camera_name}",
+            daemon=True,
+        )
+        self.thread.start()
+        logger.info(
+            "Reolink TCP push started for %s (motion=%s, person=%s, vehicle=%s, pet=%s, doorbell=%s)",
+            self.camera_name,
+            self.detect_motion,
+            self.detect_person,
+            self.detect_vehicle,
+            self.detect_pet,
+            self.detect_doorbell,
+        )
+
+    def stop(self) -> None:
+        """Signal the TCP push client to stop and cleanup."""
+        self._running = False
+        if self._connect_task and not self._connect_task.done():
+            self._connect_task.cancel()
+        if self._loop and self._loop.is_running():
+            self._loop.call_soon_threadsafe(self._loop.stop)
+        thread = getattr(self, "thread", None)
+        if thread and thread.is_alive():
+            thread.join(timeout=5)
+        if self._loop and not self._loop.is_closed():
+            self._loop.close()
+
+    def _run_event_loop(self) -> None:
+        """Run the asyncio event loop in a background thread."""
+        if self._loop:
+            asyncio.set_event_loop(self._loop)
+            try:
+                self._loop.run_forever()
+            finally:
+                self._loop.stop()
+
+    def _should_run(self) -> bool:
+        """Check if any detection types are enabled for TCP push."""
+        return (
+            self.detect_motion
+            or self.detect_person
+            or self.detect_vehicle
+            or self.detect_pet
+            or self.detect_doorbell
+        )
+
+    async def _run_loop(self) -> None:
+        """Main async loop: connect, subscribe, and handle events."""
+        while self._running and not self.stop_event.is_set():
+            try:
+                await self._connect_and_subscribe()
+            except Exception:
+                logger.exception(
+                    "Error in Reolink TCP push for %s, retrying in 5s",
+                    self.camera_name,
+                )
+
+            if not self._running:
+                break
+
+            # Wait before retrying connection
+            for _ in range(50):
+                if self._running and not self.stop_event.is_set():
+                    await asyncio.sleep(0.1)
+                else:
+                    break
+
+    async def _connect_and_subscribe(self) -> None:
+        """Connect to camera and subscribe to events."""
+        self._reolink = ReolinkHost(
+            host=self.host,
+            username=self.username,
+            password=self.password,
+            port=self.port,
+            bc_port=9000,
+        )
+
+        try:
+            await asyncio.wait_for(self._reolink.login(), timeout=15.0)
+        except asyncio.TimeoutError:
+            logger.warning(
+                "Timeout logging into Reolink camera %s via TCP push",
+                self.camera_name,
+            )
+            return
+        except Exception:
+            logger.debug(
+                "Failed to log into Reolink camera %s via TCP push",
+                self.camera_name,
+            )
+            return
+
+        # Subscribe to Baichuan push events (cmd_id=33 for motion/AI/visitor)
+        try:
+            await self._reolink.baichuan.subscribe_events()
+            await asyncio.sleep(2)  # Give time for events to start flowing
+        except Exception:
+            logger.debug(
+                "Failed to subscribe to Baichuan events for %s",
+                self.camera_name,
+            )
+
+        # Keep connection alive while running, processing events
+        try:
+            while self._running and not self.stop_event.is_set():
+                await asyncio.sleep(1)
+                self._process_events()
+        except asyncio.CancelledError:
+            raise
+        except Exception:
+            logger.exception(
+                "Error during TCP push event processing for %s", self.camera_name
+            )
+        finally:
+            try:
+                await self._reolink.baichuan.unsubscribe_events()
+                await self._reolink.logout()
+            except Exception:
+                logger.debug(
+                    "Error cleaning up Reolink TCP push for %s", self.camera_name
+                )
+            finally:
+                self._reolink = None
+
+    def _process_events(self) -> None:
+        """Check current detection states and push new detections to the queue."""
+        if not self._reolink:
+            return
+
+        frame_time = time.time()
+
+        # Motion detection
+        if self.detect_motion:
+            channel = 0
+            if self._reolink.num_channels > 0:
+                channel = self._reolink.channels[0] if self._reolink.channels else 0
+
+            motion_state = self._reolink.motion_detected(channel)
+            key = "motion"
+            last_time = self._last_detection_times.get(key, 0)
+
+            if motion_state and (frame_time - last_time) > self._COOLDOWN_SECONDS:
+                self._last_detection_times[key] = frame_time
+                self._queue_detection(
+                    DetectionType.MOTION, "motion", 0.8, channel, frame_time
+                )
+
+        # AI detections (person, vehicle, pet)
+        ai_types_to_check: list[tuple[DetectionType, str, bool]] = []
+        if self.detect_person:
+            ai_types_to_check.append((DetectionType.PERSON, "people", True))
+        if self.detect_vehicle:
+            ai_types_to_check.append((DetectionType.VEHICLE, "vehicle", True))
+        if self.detect_pet:
+            ai_types_to_check.append((DetectionType.PET, "dog_cat", True))
+
+        channel = 0
+        if self._reolink.num_channels > 0:
+            channel = self._reolink.channels[0] if self._reolink.channels else 0
+
+        for det_type, ai_type, _ in ai_types_to_check:
+            key = ai_type
+            last_time = self._last_detection_times.get(key, 0)
+
+            try:
+                detected = self._reolink.ai_detected(channel, ai_type)
+            except Exception:
+                detected = False
+
+            if detected and (frame_time - last_time) > self._COOLDOWN_SECONDS:
+                self._last_detection_times[key] = frame_time
+                self._queue_detection(det_type, ai_type, 0.9, channel, frame_time)
+
+        # Doorbell (visitor) detection
+        if self.detect_doorbell:
+            key = "visitor"
+            last_time = self._last_detection_times.get(key, 0)
+
+            try:
+                visitor_state = self._reolink.visitor_detected(channel)
+            except Exception:
+                visitor_state = False
+
+            if visitor_state and (frame_time - last_time) > self._COOLDOWN_SECONDS:
+                self._last_detection_times[key] = frame_time
+                self._queue_detection(
+                    DetectionType.DOORBELL, "visitor", 0.9, channel, frame_time
+                )
+
+    def _queue_detection(
+        self,
+        det_type: DetectionType,
+        label: str,
+        score: float,
+        channel: int,
+        frame_time: float,
+    ) -> None:
+        """Queue a detection result for processing by the main pipeline."""
+        try:
+            self.detection_queue.put_nowait(
+                OnvifDetection(
+                    type=det_type,
+                    label=label,
+                    score=score,
+                    box=(0.0, 0.0, 1.0, 1.0),
+                    frame_width=1920,
+                    frame_height=1080,
+                    frame_time=frame_time,
+                    metadata={
+                        "source": "baichuan_tcp",
+                        "channel": channel,
+                    },
+                )
+            )
+        except queue.Full:
+            pass
+
+    def get_ai_detected_sync(self, object_type: str, channel: int = 0) -> bool:
+        """Synchronously check if an AI object type is currently detected.
+
+        This allows the ONVIF event subscriber to cross-reference with TCP push
+        state when processing ONVIF events.
+        """
+        if not self._reolink:
+            return False
+
+        # Convert Frigate type to Reolink internal type
+        reolink_type = AI_DETECT_CONVERSION.get(object_type, object_type)
+
+        try:
+            return self._reolink.ai_detected(channel, reolink_type)
+        except Exception:
+            return False
+
+    def get_doorbell_detected_sync(self, channel: int = 0) -> bool:
+        """Synchronously check if a doorbell (visitor) event is active."""
+        if not self._reolink:
+            return False
+
+        try:
+            return self._reolink.visitor_detected(channel)
+        except Exception:
+            return False
+
+    def get_motion_detected_sync(self, channel: int = 0) -> bool:
+        """Synchronously check if motion is currently detected."""
+        if not self._reolink:
+            return False
+
+        try:
+            return self._reolink.motion_detected(channel)
+        except Exception:
+            return False
+
+
 class OnvifDetector:
     """Main ONVIF/Reolink detector that combines motion events and smart detection.
 
@@ -645,6 +1005,7 @@ class OnvifDetector:
         self.stop_event = stop_event
 
         self.reolink_detector: Optional[ReolinkSmartDetector] = None
+        self.tcp_push_client: Optional[ReolinkTcpPushClient] = None
         self.event_subscriber: Optional[OnvifEventSubscriber] = None
         self.onvif_camera: Optional[ONVIFCamera] = None
         self._running = False
@@ -663,12 +1024,34 @@ class OnvifDetector:
 
         self._running = True
 
-        # Start Reolink smart detection polling as fallback for person/vehicle
-        if self.camera_config.onvif.detection.person or self.camera_config.onvif.detection.vehicle:
-            self.reolink_detector = ReolinkSmartDetector(
-                self.camera_config, self.detection_queue, self.stop_event
+        # Determine which vendor implementation to use
+        vendor = self.camera_config.onvif.vendor
+
+        # Start AI detection based on vendor
+        if vendor == OnvifVendorEnum.reolink:
+            # Use Reolink TCP push for real-time detection
+            has_ai_detection = (
+                self.camera_config.onvif.detection.person
+                or self.camera_config.onvif.detection.vehicle
+                or getattr(self.camera_config.onvif.detection, "pet", False)
+                or getattr(self.camera_config.onvif.detection, "doorbell", False)
             )
-            self.reolink_detector.start()
+
+            if has_ai_detection:
+                self.tcp_push_client = ReolinkTcpPushClient(
+                    self.camera_config, self.detection_queue, self.stop_event
+                )
+                self.tcp_push_client.start()
+        else:
+            # Default: use polling for person/vehicle detection
+            if (
+                self.camera_config.onvif.detection.person
+                or self.camera_config.onvif.detection.vehicle
+            ):
+                self.reolink_detector = ReolinkSmartDetector(
+                    self.camera_config, self.detection_queue, self.stop_event
+                )
+                self.reolink_detector.start()
 
         if self.camera_config.onvif.detection.motion:
             try:
@@ -684,7 +1067,9 @@ class OnvifDetector:
                 except Exception:
                     wsdl_base = None
 
-                onvif_host = self.camera_config.onvif.host.split("://")[-1].split(":")[0]
+                onvif_host = self.camera_config.onvif.host.split("://")[-1].split(":")[
+                    0
+                ]
                 onvif_port = (
                     self.camera_config.onvif.port
                     if self.camera_config.onvif.port
@@ -727,18 +1112,35 @@ class OnvifDetector:
                     e,
                 )
 
+        has_pet = getattr(self.camera_config.onvif.detection, "pet", False)
+        has_doorbell = getattr(self.camera_config.onvif.detection, "doorbell", False)
+        has_tcp_push = (
+            self.tcp_push_client is not None and self.tcp_push_client._running
+        )
+        has_polling = (
+            self.reolink_detector is not None
+            and self.reolink_detector.thread is not None
+        )
+
         logger.info(
-            "ONVIF detector started for %s (motion=%s, person=%s, vehicle=%s, streaming=%s)",
+            "ONVIF detector started for %s (vendor=%s, motion=%s, person=%s, vehicle=%s, pet=%s, doorbell=%s, tcp_push=%s, polling=%s, streaming=%s)",
             self.camera_name,
+            vendor.value,
             self.camera_config.onvif.detection.motion,
             self.camera_config.onvif.detection.person,
             self.camera_config.onvif.detection.vehicle,
+            has_pet,
+            has_doorbell,
+            has_tcp_push,
+            has_polling,
             self.event_subscriber is not None and self.event_subscriber._subscribed,
         )
 
     async def stop(self) -> None:
         """Stop the ONVIF detector."""
         self._running = False
+        if self.tcp_push_client:
+            self.tcp_push_client.stop()
         if self.reolink_detector:
             self.reolink_detector.stop()
         if self.event_subscriber:

@@ -7,7 +7,18 @@ from ..base import FrigateBaseModel
 from ..env import EnvString
 from .objects import DEFAULT_TRACKED_OBJECTS
 
-__all__ = ["OnvifConfig", "OnvifDetectionConfig", "PtzAutotrackConfig", "ZoomingModeEnum"]
+__all__ = [
+    "OnvifConfig",
+    "OnvifDetectionConfig",
+    "OnvifVendorEnum",
+    "PtzAutotrackConfig",
+    "ZoomingModeEnum",
+]
+
+
+class OnvifVendorEnum(str, Enum):
+    reolink = "reolink"
+    default = "default"
 
 
 class ZoomingModeEnum(str, Enum):
@@ -95,22 +106,32 @@ class OnvifDetectionConfig(FrigateBaseModel):
     enabled: bool = Field(
         default=False,
         title="Enable ONVIF detection",
-        description="Enable detection via ONVIF camera events (motion) and camera smart detection (person, vehicle).",
+        description="Enable detection via ONVIF camera events (motion) and camera smart detection (person, vehicle, pet, doorbell).",
     )
     motion: bool = Field(
         default=True,
         title="Motion detection",
-        description="Detect motion events from ONVIF camera event subscriptions.",
+        description="Detect motion events from ONVIF camera event subscriptions or Reolink TCP push.",
     )
     person: bool = Field(
         default=True,
         title="Person detection",
-        description="Detect persons using ONVIF Reolink smart detection API.",
+        description="Detect persons using Reolink TCP push or smart detection API.",
     )
     vehicle: bool = Field(
         default=True,
         title="Vehicle detection",
-        description="Detect vehicles using ONVIF Reolink smart detection API.",
+        description="Detect vehicles using Reolink TCP push or smart detection API.",
+    )
+    pet: bool = Field(
+        default=False,
+        title="Pet detection",
+        description="Detect pets (dogs, cats, etc.) using Reolink TCP push events.",
+    )
+    doorbell: bool = Field(
+        default=False,
+        title="Doorbell detection",
+        description="Detect doorbell button presses using Reolink TCP push events.",
     )
     poll_interval: int = Field(
         default=5,
@@ -160,6 +181,11 @@ class OnvifConfig(FrigateBaseModel):
         default=False,
         title="Ignore time mismatch",
         description="Ignore time synchronization differences between camera and Frigate server for ONVIF communication.",
+    )
+    vendor: OnvifVendorEnum = Field(
+        default=OnvifVendorEnum.default,
+        title="ONVIF vendor",
+        description="Vendor-specific ONVIF implementation. Set to 'reolink' to use the Reolink Baichuan TCP push protocol for real-time motion, person, vehicle, pet, and doorbell detection. Other values fall back to standard ONVIF event subscription and polling.",
     )
     detection: OnvifDetectionConfig = Field(
         default_factory=OnvifDetectionConfig,
