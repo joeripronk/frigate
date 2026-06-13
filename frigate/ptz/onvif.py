@@ -65,7 +65,7 @@ class OnvifController:
         for cam_name, cam in config.cameras.items():
             if not cam.enabled:
                 continue
-            if cam.onvif.host:
+            if cam.onvif.host and cam.onvif.ptz.enabled:
                 self.camera_configs[cam_name] = cam
                 self.status_locks[cam_name] = asyncio.Lock()
 
@@ -121,8 +121,8 @@ class OnvifController:
         await self._close_camera(cam_name)
 
         cam = self.config.cameras.get(cam_name)
-        if not cam or not cam.onvif.host:
-            # ONVIF removed from config, clean up
+        if not cam or not cam.onvif.host or not cam.onvif.ptz.enabled:
+            # ONVIF/PTZ removed from config, clean up
             self.cams.pop(cam_name, None)
             self.camera_configs.pop(cam_name, None)
             self.failed_cams.pop(cam_name, None)

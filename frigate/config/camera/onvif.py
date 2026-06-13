@@ -12,6 +12,7 @@ __all__ = [
     "OnvifDetectionConfig",
     "OnvifVendorEnum",
     "PtzAutotrackConfig",
+    "PtzConfig",
     "ZoomingModeEnum",
 ]
 
@@ -25,6 +26,14 @@ class ZoomingModeEnum(str, Enum):
     disabled = "disabled"
     absolute = "absolute"
     relative = "relative"
+
+
+class PtzConfig(FrigateBaseModel):
+    enabled: bool = Field(
+        default=True,
+        title="Enable PTZ",
+        description="Enable PTZ (Pan-Tilt-Zoom) control for this camera via ONVIF.",
+    )
 
 
 class PtzAutotrackConfig(FrigateBaseModel):
@@ -166,6 +175,11 @@ class OnvifConfig(FrigateBaseModel):
         default=False,
         title="Disable TLS verify",
         description="Skip TLS verification and disable digest auth for ONVIF (unsafe; use in safe networks only).",
+    )
+    ptz: PtzConfig = Field(
+        default_factory=PtzConfig,
+        title="PTZ",
+        description="PTZ (Pan-Tilt-Zoom) control settings for this camera.",
     )
     profile: Optional[str] = Field(
         default=None,
