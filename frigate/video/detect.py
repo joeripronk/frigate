@@ -23,7 +23,11 @@ from frigate.const import (
     PROCESS_PRIORITY_HIGH,
     REQUEST_REGION_GRID,
 )
-from frigate.detectors.onvif_detector import OnvifDetection, OnvifDetector
+from frigate.detectors.onvif_detector import (
+    DetectionType,
+    OnvifDetection,
+    OnvifDetector,
+)
 from frigate.motion import MotionDetector
 from frigate.motion.improved_motion import ImprovedMotionDetector
 from frigate.object_detection.base import RemoteObjectDetector
@@ -318,9 +322,38 @@ def process_frames(
             )
             continue
 
-        # bypass motion detection when ONVIF source provides its own motion events
+        # drain ONVIF detections and extract motion boxes
+        onvif_motion_boxes: list[tuple[int, int, int, int]] = []
+        onvif_non_motion_detections: list[OnvifDetection] = []
         if onvif_detector is not None:
-            motion_boxes: list[tuple[int, int, int, int]] = []
+            onvif_detections = onvif_detector.get_detections()
+            for od in onvif_detections:
+                if od.type == DetectionType.MOTION:
+                    frame_w = od.frame_width or frame_shape[1]
+                    frame_h = od.frame_height or frame_shape[0]
+                    ymin, xmin, ymax, xmax = od.box
+                    detect_w = camera_config.detect.width or frame_shape[1]
+                    detect_h = camera_config.detect.height or frame_shape[0]
+                    x_min = int(max(0, xmin * detect_w))
+                    y_min = int(max(0, ymin * detect_h))
+                    x_max = int(min(detect_w - 1, xmax * detect_w))
+                    y_max = int(min(detect_h - 1, ymax * detect_h))
+                    onvif_motion_boxes.append((x_min, y_min, x_max, y_max))
+                else:
+                    onvif_non_motion_detections.append(od)
+
+        # skip image motion detection when ONVIF motion is enabled and detected
+        if (
+            onvif_detector is not None
+            and camera_config.onvif.detect.motion
+            and onvif_motion_boxes
+        ):
+            motion_boxes = onvif_motion_boxes
+        elif (
+            onvif_detector is not None
+            and camera_config.onvif.detect.motion
+        ):
+            motion_boxes = []
         else:
             motion_boxes = motion_detector.detect(frame)
 
@@ -447,32 +480,30 @@ def process_frames(
 
             consolidated_detections = reduce_detections(frame_shape, detections)
 
-            # merge ONVIF detections (motion, person, vehicle from camera)
-            if onvif_detector is not None:
-                onvif_detections = onvif_detector.get_detections()
-                if onvif_detections:
-                    onvif_det_list: list[tuple[Any, ...]] = []
-                    for od in onvif_detections:
-                        frame_w = od.frame_width or frame_shape[1]
-                        frame_h = od.frame_height or frame_shape[0]
-                        ymin, xmin, ymax, xmax = od.box
-                        # Convert normalized box to pixel coordinates
-                        detect_w = camera_config.detect.width or frame_shape[1]
-                        detect_h = camera_config.detect.height or frame_shape[0]
-                        x_min = int(max(0, xmin * detect_w))
-                        y_min = int(max(0, ymin * detect_h))
-                        x_max = int(min(detect_w - 1, xmax * detect_w))
-                        y_max = int(min(detect_h - 1, ymax * detect_h))
-                        width = x_max - x_min
-                        height = y_max - y_min
-                        area = width * height
-                        ratio = width / max(1, height)
-                        region = (0, 0, detect_w, detect_h)
-                        onvif_det_list.append((od.label, od.score, (x_min, y_min, x_max, y_max), area, ratio, region))
-                    consolidated_detections = reduce_detections(
-                        frame_shape,
-                        list(consolidated_detections) + onvif_det_list,
-                    )
+            # merge ONVIF detections (person, vehicle, pet, doorbell from camera)
+            if onvif_non_motion_detections:
+                onvif_det_list: list[tuple[Any, ...]] = []
+                for od in onvif_non_motion_detections:
+                    frame_w = od.frame_width or frame_shape[1]
+                    frame_h = od.frame_height or frame_shape[0]
+                    ymin, xmin, ymax, xmax = od.box
+                    # Convert normalized box to pixel coordinates
+                    detect_w = camera_config.detect.width or frame_shape[1]
+                    detect_h = camera_config.detect.height or frame_shape[0]
+                    x_min = int(max(0, xmin * detect_w))
+                    y_min = int(max(0, ymin * detect_h))
+                    x_max = int(min(detect_w - 1, xmax * detect_w))
+                    y_max = int(min(detect_h - 1, ymax * detect_h))
+                    width = x_max - x_min
+                    height = y_max - y_min
+                    area = width * height
+                    ratio = width / max(1, height)
+                    region = (0, 0, detect_w, detect_h)
+                    onvif_det_list.append((od.label, od.score, (x_min, y_min, x_max, y_max), area, ratio, region))
+                consolidated_detections = reduce_detections(
+                    frame_shape,
+                    list(consolidated_detections) + onvif_det_list,
+                )
 
             # if detection was run on this frame, consolidate
             if len(regions) > 0:
