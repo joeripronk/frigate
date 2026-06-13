@@ -907,6 +907,14 @@ class ReolinkTcpPushClient:
         frame_time: float,
     ) -> None:
         """Queue a detection result for processing by the main pipeline."""
+        type_name = det_type.value
+        logger.info(
+            "%s: Reolink TCP push detection: %s (score=%.2f, channel=%s)",
+            self.camera_name,
+            type_name,
+            score,
+            channel,
+        )
         try:
             self.detection_queue.put_nowait(
                 OnvifDetection(
