@@ -457,15 +457,17 @@ def process_frames(
                         frame_h = od.frame_height or frame_shape[0]
                         ymin, xmin, ymax, xmax = od.box
                         # Convert normalized box to pixel coordinates
-                        x_min = int(max(0, xmin * detect_config.width))
-                        y_min = int(max(0, ymin * detect_config.height))
-                        x_max = int(min(detect_config.width - 1, xmax * detect_config.width))
-                        y_max = int(min(detect_config.height - 1, ymax * detect_config.height))
+                        detect_w = camera_config.detect.width or frame_shape[1]
+                        detect_h = camera_config.detect.height or frame_shape[0]
+                        x_min = int(max(0, xmin * detect_w))
+                        y_min = int(max(0, ymin * detect_h))
+                        x_max = int(min(detect_w - 1, xmax * detect_w))
+                        y_max = int(min(detect_h - 1, ymax * detect_h))
                         width = x_max - x_min
                         height = y_max - y_min
                         area = width * height
                         ratio = width / max(1, height)
-                        region = (0, 0, detect_config.width, detect_config.height)
+                        region = (0, 0, detect_w, detect_h)
                         onvif_det_list.append((od.label, od.score, (x_min, y_min, x_max, y_max), area, ratio, region))
                     consolidated_detections = reduce_detections(
                         frame_shape,

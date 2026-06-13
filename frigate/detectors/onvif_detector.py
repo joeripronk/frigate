@@ -1014,6 +1014,8 @@ class OnvifDetector:
         """Start the ONVIF detector and connect to the camera."""
         if not self.camera_config.onvif.detect.enabled:
             return
+        if not self.camera_config.onvif.detect.motion:
+            return
 
         if not self.camera_config.onvif.host:
             logger.warning(
@@ -1044,16 +1046,15 @@ class OnvifDetector:
                 self.tcp_push_client.start()
         else:
             # Default: use polling for person/vehicle detection
-            if (
-                self.camera_config.onvif.detect.person
-                or self.camera_config.onvif.detect.vehicle
-            ):
-                self.reolink_detector = ReolinkSmartDetector(
-                    self.camera_config, self.detection_queue, self.stop_event
-                )
-                self.reolink_detector.start()
+            #if (
+            #    self.camera_config.onvif.detect.person
+            #    or self.camera_config.onvif.detect.vehicle
+            #):
+            #    self.reolink_detector = ReolinkSmartDetector(
+            #        self.camera_config, self.detection_queue, self.stop_event
+            #    )
+            #    self.reolink_detector.start()
 
-        if self.camera_config.onvif.detect.motion:
             try:
                 wsdl_base: str | None = None
                 try:
