@@ -8,7 +8,7 @@ import random
 import string
 import threading
 import time
-from collections import defaultdict
+from collections import defaultdict, deque
 from multiprocessing.synchronize import Event as MpEvent
 from pathlib import Path
 from typing import Any, Optional, Tuple
@@ -97,8 +97,12 @@ class RecordingMaintainer(threading.Thread):
 
         self.stop_event = stop_event
         self.loop: asyncio.AbstractEventLoop | None = None
-        self.object_recordings_info: dict[str, list] = defaultdict(list)
-        self.audio_recordings_info: dict[str, list] = defaultdict(list)
+        self.object_recordings_info: dict[str, deque] = defaultdict(
+            lambda: deque(maxlen=10000)
+        )
+        self.audio_recordings_info: dict[str, deque] = defaultdict(
+            lambda: deque(maxlen=10000)
+        )
         self.end_time_cache: dict[str, Tuple[datetime.datetime, float]] = {}
         self.unexpected_cache_files_logged: bool = False
 
@@ -266,7 +270,7 @@ class RecordingMaintainer(threading.Thread):
                 and self.object_recordings_info[camera][0][0]
                 < recordings[0]["start_time"].timestamp()
             ):
-                self.object_recordings_info[camera].pop(0)
+                self.object_recordings_info[camera].popleft()
 
             # clear out all the audio recording info for old frames
             while (
@@ -274,7 +278,7 @@ class RecordingMaintainer(threading.Thread):
                 and self.audio_recordings_info[camera][0][0]
                 < recordings[0]["start_time"].timestamp()
             ):
-                self.audio_recordings_info[camera].pop(0)
+                self.audio_recordings_info[camera].popleft()
 
             # get all reviews with the end time after the start of the oldest cache file
             # or with end_time None
