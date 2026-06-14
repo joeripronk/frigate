@@ -1642,6 +1642,10 @@
         "label": "Doorbell event timeout",
         "description": "Seconds after the last doorbell press before the event ends automatically. Set to 0 to disable auto-end."
       },
+      "motion_correlation": {
+        "label": "Motion correlation",
+        "description": "Use ONVIF motion events to boost or reduce Frigate image motion detection sensitivity. When ONVIF motion is detected within the correlation window, lower the motion detection threshold to catch more real motion. When no ONVIF motion is detected, raise the threshold to filter out false positives."
+      },
       "poll_interval": {
         "label": "Poll interval",
         "description": "Seconds between polling the camera for smart detection results (person/vehicle). Set to 0 to disable polling and only use event-driven detection."

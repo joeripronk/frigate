@@ -234,6 +234,9 @@ def process_frames(
 
     region_min_size = get_min_region_size(model_config)
 
+    # ONVIF motion correlation state
+    onvif_motion_timestamps: list[float] = []
+
     attributes_map = model_config.attributes_map
     all_attributes = model_config.all_attributes
 
@@ -337,20 +340,63 @@ def process_frames(
                     x_max = int(min(detect_w - 1, xmax * detect_w))
                     y_max = int(min(detect_h - 1, ymax * detect_h))
                     onvif_motion_boxes.append((x_min, y_min, x_max, y_max))
+                    onvif_motion_timestamps.append(frame_time)
                 else:
                     onvif_non_motion_detections.append(od)
 
-        # skip image motion detection when ONVIF motion is enabled and detected
-        if (
-            onvif_detector is not None
-            and camera_config.onvif.detect.motion
-            and onvif_motion_boxes
-        ):
-            motion_boxes = onvif_motion_boxes
-        elif onvif_detector is not None and camera_config.onvif.detect.motion:
-            motion_boxes = []
-        else:
-            motion_boxes = motion_detector.detect(frame)
+        # Clean old ONVIF motion timestamps (keep last 30 seconds)
+        onvif_motion_timestamps = [
+            t for t in onvif_motion_timestamps if frame_time - t <= 30
+        ]
+
+        # Determine if ONVIF motion correlation is enabled
+        motion_correlation = getattr(
+            camera_config.onvif.detect, "motion_correlation", False
+        )
+        onvif_correlated = len(onvif_motion_timestamps) > 0
+
+        # Save original contour_area for restoration
+        original_contour_area = (
+            motion_detector.config.contour_area if motion_detector.config else None
+        )
+        contour_area_changed = False
+
+        try:
+            if motion_correlation:
+                # Modulate motion detection threshold based on ONVIF correlation
+                if original_contour_area is not None and original_contour_area > 0:
+                    if onvif_correlated:
+                        # ONVIF motion detected - lower threshold to catch more
+                        motion_detector.config.contour_area = max(
+                            5, int(original_contour_area * 0.5)
+                        )
+                    else:
+                        # No ONVIF motion - raise threshold to reduce false positives
+                        motion_detector.config.contour_area = int(
+                            original_contour_area * 2.0
+                        )
+                    contour_area_changed = True
+
+                # Always run image motion detection when motion_correlation is enabled
+                motion_boxes = motion_detector.detect(frame)
+
+                # Combine with ONVIF motion boxes if detected
+                if onvif_motion_boxes:
+                    motion_boxes.extend(onvif_motion_boxes)
+            elif (
+                onvif_detector is not None
+                and camera_config.onvif.detect.motion
+                and onvif_motion_boxes
+            ):
+                motion_boxes = onvif_motion_boxes
+            elif onvif_detector is not None and camera_config.onvif.detect.motion:
+                motion_boxes = []
+            else:
+                motion_boxes = motion_detector.detect(frame)
+        finally:
+            # Restore original contour_area
+            if contour_area_changed and original_contour_area is not None:
+                motion_detector.config.contour_area = original_contour_area
 
         regions = []
         consolidated_detections = []

@@ -148,6 +148,11 @@ class OnvifDetectionConfig(FrigateBaseModel):
         description="Seconds after the last doorbell press before the event ends automatically. Set to 0 to disable auto-end.",
         ge=0,
     )
+    motion_correlation: bool = Field(
+        default=False,
+        title="Motion correlation",
+        description="Use ONVIF motion events to boost or reduce Frigate image motion detection sensitivity. When ONVIF motion is detected within the correlation window, lower the motion detection threshold to catch more real motion. When no ONVIF motion is detected, raise the threshold to filter out false positives.",
+    )
     poll_interval: int = Field(
         default=5,
         title="Poll interval",
