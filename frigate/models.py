@@ -80,6 +80,12 @@ class Recordings(Model):
     regions = IntegerField(null=True)
     motion_heatmap = JSONField(null=True)  # 16x16 grid, 256 values (0-255)
 
+    class Meta:
+        indexes = (
+            (("camera", "end_time"), False),
+            (("camera", "start_time", "end_time"), False),
+        )
+
 
 class ExportCase(Model):
     id = CharField(null=False, primary_key=True, max_length=30)

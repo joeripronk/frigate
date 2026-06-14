@@ -82,8 +82,6 @@ AUDIO_MIN_CONFIDENCE = 0.5
 
 # DB constants
 
-MAX_WAL_SIZE = 10  # MB
-
 # Ffmpeg constants
 
 DEFAULT_FFMPEG_VERSION = os.environ.get("DEFAULT_FFMPEG_VERSION", "")

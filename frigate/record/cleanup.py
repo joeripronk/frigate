@@ -9,10 +9,8 @@ from multiprocessing.synchronize import Event as MpEvent
 from pathlib import Path
 from typing import Any
 
-from playhouse.sqlite_ext import SqliteExtDatabase
-
 from frigate.config import CameraConfig, FrigateConfig, RetainModeEnum
-from frigate.const import CACHE_DIR, CLIPS_DIR, MAX_WAL_SIZE, RECORD_DIR
+from frigate.const import CACHE_DIR, CLIPS_DIR, RECORD_DIR
 from frigate.models import Previews, Recordings, ReviewSegment, UserReviewStatus
 from frigate.util.builtin import clear_and_unlink
 from frigate.util.media import remove_empty_directories
@@ -45,21 +43,10 @@ class RecordingCleanup(threading.Thread):
                 clear_and_unlink(p)
 
     def truncate_wal(self) -> None:
-        """check if the WAL needs to be manually truncated."""
-
-        # by default the WAL should be check-pointed automatically
-        # however, high levels of activity can prevent an opportunity
-        # for the checkpoint to be finished which means the WAL will grow
-        # without bound
-
-        # with auto checkpoint most users should never hit this
-
-        if (
-            os.stat(f"{self.config.database.path}-wal").st_size / (1024 * 1024)
-        ) > MAX_WAL_SIZE:
-            db = SqliteExtDatabase(self.config.database.path)
-            db.execute_sql("PRAGMA wal_checkpoint(TRUNCATE);")
-            db.close()
+        """WAL truncation is now handled by wal_autocheckpoint pragma on all
+        database connections.  Keep this as a no-op stub so existing call sites
+        don't break.
+        """
 
     def expire_review_segments(
         self, config: CameraConfig, now: datetime.datetime

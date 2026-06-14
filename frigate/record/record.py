@@ -32,6 +32,7 @@ class RecordProcess(FrigateProcess):
                 "auto_vacuum": "FULL",  # Does not defragment database
                 "cache_size": -512 * 1000,  # 512MB of cache
                 "synchronous": "NORMAL",  # Safe when using WAL https://www.sqlite.org/pragma.html#pragma_synchronous
+                "wal_autocheckpoint": 500,  # Auto-checkpoint after 500 pages (~2.5MB)
             },
             timeout=max(
                 60, 10 * len([c for c in self.config.cameras.values() if c.enabled])
