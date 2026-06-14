@@ -4,6 +4,7 @@ import io
 import logging
 import math
 import sys
+import threading
 import time
 from functools import lru_cache
 
@@ -115,6 +116,21 @@ class FasterWhisperASR(ASRBase):
 
     sep = ""
 
+    def __init__(
+        self,
+        lan,
+        modelsize=None,
+        cache_dir=None,
+        model_dir=None,
+        logfile=sys.stderr,
+        device="cpu",
+        model=None,
+    ):
+        self._lock = threading.Lock()
+        super().__init__(lan, modelsize, cache_dir, model_dir, logfile, device)
+        if model is not None:
+            self.model = model
+
     def load_model(self, modelsize=None, cache_dir=None, model_dir=None, device="cpu"):
         from faster_whisper import WhisperModel
 
@@ -139,24 +155,25 @@ class FasterWhisperASR(ASRBase):
         return model
 
     def transcribe(self, audio, init_prompt=""):
-        from faster_whisper import BatchedInferencePipeline
+        with self._lock:
+            from faster_whisper import BatchedInferencePipeline
 
-        logging.getLogger("faster_whisper").setLevel(logging.WARNING)
+            logging.getLogger("faster_whisper").setLevel(logging.WARNING)
 
-        # tested: beam_size=5 is faster and better than 1 (on one 200 second document from En ESIC, min chunk 0.01)
-        batched_model = BatchedInferencePipeline(model=self.model)
-        segments, info = batched_model.transcribe(
-            audio,
-            language=self.original_language,
-            initial_prompt=init_prompt,
-            beam_size=5,
-            word_timestamps=True,
-            condition_on_previous_text=True,
-            **self.transcribe_kargs,
-        )
-        # print(info)  # info contains language detection result
+            # tested: beam_size=5 is faster and better than 1 (on one 200 second document from En ESIC, min chunk 0.01)
+            batched_model = BatchedInferencePipeline(model=self.model)
+            segments, info = batched_model.transcribe(
+                audio,
+                language=self.original_language,
+                initial_prompt=init_prompt,
+                beam_size=5,
+                word_timestamps=True,
+                condition_on_previous_text=True,
+                **self.transcribe_kargs,
+            )
+            # print(info)  # info contains language detection result
 
-        return list(segments)
+            return list(segments)
 
     def ts_words(self, segments):
         o = []

@@ -1,7 +1,6 @@
 """Handle processing audio for speech transcription using sherpa-onnx with FFmpeg pipe."""
 
 import logging
-import os
 import queue
 import threading
 from typing import Any, Optional
@@ -10,12 +9,10 @@ import numpy as np
 
 from frigate.comms.inter_process import InterProcessRequestor
 from frigate.config import CameraConfig, FrigateConfig
-from frigate.const import MODEL_CACHE_DIR
 from frigate.data_processing.common.audio_transcription.model import (
     AudioTranscriptionModelRunner,
 )
 from frigate.data_processing.real_time.whisper_online import (
-    FasterWhisperASR,
     OnlineASRProcessor,
 )
 
@@ -40,7 +37,6 @@ class AudioTranscriptionRealTimeProcessor(RealTimeProcessorApi):
         self.camera_config = camera_config
         self.requestor = requestor
         self.stream: Any = None
-        self.whisper_model: FasterWhisperASR | None = None
         self.model_runner = model_runner
         self.transcription_segments: list[str] = []
         self.audio_queue: queue.Queue[tuple[dict[str, Any], np.ndarray]] = queue.Queue()
@@ -49,21 +45,15 @@ class AudioTranscriptionRealTimeProcessor(RealTimeProcessorApi):
     def __build_recognizer(self) -> None:
         try:
             if self.config.audio_transcription.model_size == "large":
-                # Whisper models need to be per-process and can only run one stream at a time
-                # TODO: try parallel: https://github.com/SYSTRAN/faster-whisper/issues/100
-                logger.debug(f"Loading Whisper model for {self.camera_config.name}")
-                self.whisper_model = FasterWhisperASR(
-                    modelsize="tiny",
-                    device="cuda"
-                    if self.config.audio_transcription.device == "GPU"
-                    else "cpu",
-                    lan=self.config.audio_transcription.language,
-                    model_dir=os.path.join(MODEL_CACHE_DIR, "whisper"),
+                # use the shared WhisperASR — only one WhisperModel is loaded
+                # regardless of how many cameras have transcription enabled.
+                # Transcription calls are serialized by a threading lock.
+                logger.debug(
+                    f"Using shared Whisper model for {self.camera_config.name}"
                 )
-                self.whisper_model.use_vad()
-                self.stream = OnlineASRProcessor(
-                    asr=self.whisper_model,
-                )
+                asr = self.model_runner.shared_whisper_asr
+                asr.use_vad()
+                self.stream = OnlineASRProcessor(asr=asr)
             else:
                 logger.debug(f"Loading sherpa stream for {self.camera_config.name}")
                 self.stream = self.model_runner.model.create_stream()
@@ -228,15 +218,13 @@ class AudioTranscriptionRealTimeProcessor(RealTimeProcessorApi):
 
     def check_unload_model(self) -> None:
         # regularly called in the loop in audio maintainer
-        if (
-            self.config.audio_transcription.model_size == "large"
-            and self.whisper_model is not None
-        ):
-            logger.debug(f"Unloading Whisper model for {self.camera_config.name}")
+        # the shared WhisperModel is only unloaded when the AudioProcessor
+        # process shuts down
+        if self.config.audio_transcription.model_size == "large":
+            logger.debug(f"Clearing local state for {self.camera_config.name}")
             self.clear_audio_queue()
             self.transcription_segments = []
             self.stream = None
-            self.whisper_model = None
 
             self.requestor.send_data(
                 f"{self.camera_config.name}/audio/transcription",

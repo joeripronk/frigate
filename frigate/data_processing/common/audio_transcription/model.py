@@ -21,6 +21,9 @@ class AudioTranscriptionModelRunner:
     ):
         self.model: AudioTranscriptionModel = None
         self.requestor = InterProcessRequestor()
+        self._shared_whisper_asr = None
+        self._device = device
+        self._model_dir = os.path.join(MODEL_CACHE_DIR, "whisper")
 
         if model_size == "large":
             # use the Whisper download function instead of our own
@@ -74,6 +77,29 @@ class AudioTranscriptionModelRunner:
                 decoding_method="greedy_search",
                 provider="cpu",
             )
+
+    @property
+    def shared_whisper_asr(self):
+        """Return a shared FasterWhisperASR instance used by all cameras.
+
+        Only one WhisperModel (~1GB) is loaded regardless of the number of
+        cameras with transcription enabled.  Transcription calls are serialized
+        via a threading lock inside FasterWhisperASR.
+        """
+        if self._shared_whisper_asr is not None:
+            return self._shared_whisper_asr
+
+        from frigate.data_processing.real_time.whisper_online import (
+            FasterWhisperASR,
+        )
+
+        is_gpu = self._device == "GPU"
+        self._shared_whisper_asr = FasterWhisperASR(
+            lan="auto",
+            device="cuda" if is_gpu else "cpu",
+            model_dir=self._model_dir,
+        )
+        return self._shared_whisper_asr
 
     def __download_models(self, path: str) -> None:
         try:
