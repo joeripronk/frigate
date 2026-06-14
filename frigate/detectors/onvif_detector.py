@@ -813,14 +813,17 @@ class ReolinkTcpPushClient:
 
         # Pre-seed AI detection states that some Reolink cameras send via
         # Baichuan push (cmd_id=33) but do not advertise in GetEvents/GetAiState.
-        # Without this, ai_detected("people") returns False and the library logs
-        # "received unknown event people" warnings.
+        # Without this, ai_detected("people") and ai_detected("pet") return False
+        # and the library logs "received unknown event people/dog_cat" warnings.
         channel = 0
         if self._reolink.num_channels > 0:
             channel = self._reolink.channels[0] if self._reolink.channels else 0
         self._reolink._ai_detection_states.setdefault(channel, {})["people"] = False
+        self._reolink._ai_detection_states.setdefault(channel, {})["dog_cat"] = False
         self._reolink.baichuan._ai_yolo_600.setdefault(channel, {})["people"] = False
+        self._reolink.baichuan._ai_yolo_600.setdefault(channel, {})["dog_cat"] = False
         self._reolink.baichuan._ai_yolo_696.setdefault(channel, {})["people"] = False
+        self._reolink.baichuan._ai_yolo_696.setdefault(channel, {})["dog_cat"] = False
 
         # Pre-seed visitor state for doorbell detection on some firmware.
         self._reolink._visitor_states.setdefault(channel, False)
