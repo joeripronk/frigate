@@ -1,6 +1,7 @@
 """Maintain recording segments in cache."""
 
 import asyncio
+import bisect
 import datetime
 import logging
 import os
@@ -555,48 +556,48 @@ class RecordingMaintainer(threading.Thread):
     def segment_stats(
         self, camera: str, start_time: datetime.datetime, end_time: datetime.datetime
     ) -> SegmentInfo:
+        start_ts = start_time.timestamp()
+        end_ts = end_time.timestamp()
         video_frame_count = 0
         active_count = 0
         region_count = 0
         motion_count = 0
         all_motion_boxes: list[tuple[int, int, int, int]] = []
 
-        for frame in self.object_recordings_info[camera]:
-            # frame is after end time of segment
-            if frame[0] > end_time.timestamp():
-                break
-            # frame is before start time of segment
-            if frame[0] < start_time.timestamp():
-                continue
+        # Use binary search to find the window of entries within [start_ts, end_ts]
+        recording_info = self.object_recordings_info[camera]
+        if recording_info:
+            lo = bisect.bisect_left(recording_info, start_ts, key=lambda x: x[0])
+            hi = bisect.bisect_right(recording_info, end_ts, key=lambda x: x[0])
 
-            video_frame_count += 1
-            active_count += len(
-                [
-                    o
-                    for o in frame[1]
-                    if not o["false_positive"] and o["motionless_count"] == 0
-                ]
-            )
-            motion_count += len(frame[2])
-            region_count += len(frame[3])
-            # Collect motion boxes for heatmap computation
-            all_motion_boxes.extend(frame[2])
+            for i in range(lo, hi):
+                frame = recording_info[i]
+
+                video_frame_count += 1
+                active_count += len(
+                    [
+                        o
+                        for o in frame[1]
+                        if not o["false_positive"] and o["motionless_count"] == 0
+                    ]
+                )
+                motion_count += len(frame[2])
+                region_count += len(frame[3])
+                # Collect motion boxes for heatmap computation
+                all_motion_boxes.extend(frame[2])
 
         audio_values = []
-        for frame in self.audio_recordings_info[camera]:
-            # frame is after end time of segment
-            if frame[0] > end_time.timestamp():
-                break
+        audio_info = self.audio_recordings_info[camera]
+        if audio_info:
+            lo = bisect.bisect_left(audio_info, start_ts, key=lambda x: x[0])
+            hi = bisect.bisect_right(audio_info, end_ts, key=lambda x: x[0])
 
-            # frame is before start time of segment
-            if frame[0] < start_time.timestamp():
-                continue
-
-            # add active audio label count to count of active objects
-            active_count += len(frame[2])
-
-            # add sound level to audio values
-            audio_values.append(frame[1])
+            for i in range(lo, hi):
+                frame = audio_info[i]
+                # add active audio label count to count of active objects
+                active_count += len(frame[2])
+                # add sound level to audio values
+                audio_values.append(frame[1])
 
         average_dBFS = 0 if not audio_values else np.average(audio_values)
 

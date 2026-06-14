@@ -1,10 +1,14 @@
 """Recordings Utilities."""
 
+import bisect
 import datetime
 import errno
 import logging
 import os
 import subprocess as sp
+import threading
+import time
+from collections import OrderedDict
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Iterable
@@ -32,6 +36,47 @@ logger = logging.getLogger(__name__)
 
 # Safety threshold - abort if more than 50% of files would be deleted
 SAFETY_THRESHOLD = 0.5
+
+
+class KeyframeCache:
+    """TTL + LRU cache for keyframe positions (in milliseconds)."""
+
+    _instance: "KeyframeCache | None" = None
+    _lock = threading.Lock()
+
+    def __new__(cls) -> "KeyframeCache":
+        if cls._instance is None:
+            with cls._lock:
+                if cls._instance is None:
+                    cls._instance = super().__new__(cls)
+                    cls._instance._init()
+        return cls._instance
+
+    def _init(self) -> None:
+        self._cache: OrderedDict[str, tuple[float, list[int]]] = OrderedDict()
+        self._max_size = 10_000
+        self._ttl = 86_400.0  # 24 hours
+
+    def get(self, path: str) -> list[int] | None:
+        """Return cached keyframe timestamps (ms) or None if missing/expired."""
+        entry = self._cache.get(path)
+        if entry is None:
+            return None
+        cached_at, keyframes = entry
+        if time.monotonic() - cached_at > self._ttl:
+            self._cache.pop(path, None)
+            return None
+        # Move to end for LRU
+        self._cache.move_to_end(path)
+        return keyframes
+
+    def set(self, path: str, keyframes: list[int]) -> None:
+        """Store keyframe timestamps (ms) for a path."""
+        self._cache[path] = (time.monotonic(), keyframes)
+        self._cache.move_to_end(path)
+        while len(self._cache) > self._max_size:
+            self._cache.popitem(last=False)
+
 
 FFPROBE_PATH = (
     f"/usr/lib/ffmpeg/{DEFAULT_FFMPEG_VERSION}/bin/ffprobe"
@@ -879,39 +924,14 @@ def sync_all_media(
     return results
 
 
-def get_keyframe_before(path: str, offset_ms: int) -> int | None:
-    """Get the timestamp (ms) of the last keyframe at or before offset_ms.
-
-    Uses ffprobe packet index to read keyframe positions from the mp4 file.
-    Returns None if ffprobe fails or no keyframe is found before the offset.
-    """
-    try:
-        result = sp.run(
-            [
-                FFPROBE_PATH,
-                "-select_streams",
-                "v:0",
-                "-show_entries",
-                "packet=pts_time,flags",
-                "-of",
-                "csv=p=0",
-                "-loglevel",
-                "error",
-                path,
-            ],
-            capture_output=True,
-            timeout=5,
-        )
-    except (sp.TimeoutExpired, FileNotFoundError):
-        return None
-
-    if result.returncode != 0:
-        return None
-
-    offset_s = offset_ms / 1000.0
-    best_ms = None
-    for line in result.stdout.decode().strip().splitlines():
-        parts = line.strip().split(",")
+def _parse_keyframe_packets(stdout: bytes) -> list[int]:
+    """Parse ffprobe CSV output and return keyframe positions in milliseconds."""
+    keyframes_ms: list[int] = []
+    for line in stdout.decode().strip().splitlines():
+        line = line.strip()
+        if not line:
+            continue
+        parts = line.split(",")
         if len(parts) != 2:
             continue
         ts_str, flags = parts
@@ -921,9 +941,51 @@ def get_keyframe_before(path: str, offset_ms: int) -> int | None:
             ts = float(ts_str)
         except ValueError:
             continue
-        if ts <= offset_s:
-            best_ms = int(ts * 1000)
-        else:
-            break
+        keyframes_ms.append(int(ts * 1000))
+    return keyframes_ms
 
-    return best_ms
+
+def get_keyframe_before(path: str, offset_ms: int) -> int | None:
+    """Get the timestamp (ms) of the last keyframe at or before offset_ms.
+
+    Uses ffprobe packet index to read keyframe positions from the mp4 file.
+    Results are cached to avoid repeated ffprobe calls on the same file.
+    Returns None if ffprobe fails or no keyframe is found before the offset.
+    """
+    cache = KeyframeCache()
+    keyframes = cache.get(path)
+    if keyframes is None:
+        try:
+            result = sp.run(
+                [
+                    FFPROBE_PATH,
+                    "-select_streams",
+                    "v:0",
+                    "-show_entries",
+                    "packet=pts_time,flags",
+                    "-of",
+                    "csv=p=0",
+                    "-loglevel",
+                    "error",
+                    path,
+                ],
+                capture_output=True,
+                timeout=5,
+            )
+        except (sp.TimeoutExpired, FileNotFoundError):
+            return None
+
+        if result.returncode != 0:
+            return None
+
+        keyframes = _parse_keyframe_packets(result.stdout)
+        cache.set(path, keyframes)
+
+    if not keyframes:
+        return None
+
+    # Binary search for the last keyframe at or before offset_ms
+    idx = bisect.bisect_right(keyframes, offset_ms) - 1
+    if idx < 0:
+        return None
+    return keyframes[idx]
