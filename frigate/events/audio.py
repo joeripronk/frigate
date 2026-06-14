@@ -227,6 +227,10 @@ class AudioEventMaintainer(threading.Thread):
         self._last_dbfs_send: float = 0.0
         self._last_rms_send: float = 0.0
 
+        # cooldown tracking per label to skip redundant inference while active
+        self._last_inference_time: float = 0.0
+        self._active_labels: set[str] = set()
+
         # preallocate waveform buffer for in-place normalization (avoids allocation per inference)
         self._waveform: np.ndarray = np.empty(
             int(round(AUDIO_DURATION * AUDIO_SAMPLE_RATE)), dtype=np.float32
@@ -282,26 +286,33 @@ class AudioEventMaintainer(threading.Thread):
 
         audio_detections: list[Tuple[str, float]] = []
 
+        # cooldown (seconds) — skip inference while active labels persist
+        # audio events last seconds, not milliseconds; re-inference is redundant
+        cooldown = 1.0
+        now = time.time()
+
         # only run audio detection when volume is above min_volume
         if rms >= self.camera_config.audio.min_volume:
-            # normalize in-place into preallocated buffer
-            np.divide(audio, AUDIO_MAX_BIT_RANGE, out=self._waveform)
-            model_detections = self.detector.detect(self._waveform)
+            # skip TFLite inference while active labels are still within cooldown
+            if self._active_labels or now - self._last_inference_time > cooldown:
+                # normalize in-place into preallocated buffer
+                np.divide(audio, AUDIO_MAX_BIT_RANGE, out=self._waveform)
+                model_detections = self.detector.detect(self._waveform)
+                self._last_inference_time = now
 
-            for label, score, _ in model_detections:
-                self.logger.debug(
-                    f"{self.camera_config.name} heard {label} with a score of {score}"
-                )
+                for label, score, _ in model_detections:
+                    self.logger.debug(
+                        f"{self.camera_config.name} heard {label} with a score of {score}"
+                    )
 
-                if label not in self.camera_config.audio.listen:
-                    continue
+                    if label not in self.camera_config.audio.listen:
+                        continue
 
-                if score > dict(
-                    (self.camera_config.audio.filters or {}).get(label, {})
-                ).get("threshold", 0.8):
-                    audio_detections.append((label, score))
-
-            # send audio detection data
+                    if score > dict(
+                        (self.camera_config.audio.filters or {}).get(label, {})
+                    ).get("threshold", 0.8):
+                        self._active_labels.add(label)
+                        audio_detections.append((label, score))
             self.detection_publisher.publish(
                 (
                     self.camera_config.name,
