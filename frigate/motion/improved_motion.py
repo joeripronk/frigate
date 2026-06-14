@@ -48,6 +48,15 @@ class ImprovedMotionDetector(MotionDetector):
         self.ptz_metrics = ptz_metrics
         self.last_stop_time: float | None = None
 
+        # Pre-allocated working buffers reused every frame to eliminate allocations
+        self._resize_buf = np.zeros(self.motion_frame_size, np.float32)
+        self._blur_buf = np.zeros(self.motion_frame_size, np.float32)
+        self._blur_uint8_buf = np.zeros(self.motion_frame_size, np.uint8)
+        self._avg_convert_buf = np.zeros(self.motion_frame_size, np.uint8)
+        self._diff_buf = np.zeros(self.motion_frame_size, np.uint8)
+        self._thresh_buf = np.zeros(self.motion_frame_size, np.uint8)
+        self._dilate_buf = np.zeros(self.motion_frame_size, np.uint8)
+
     def is_calibrating(self) -> bool:
         return self.calibrating
 
@@ -74,11 +83,12 @@ class ImprovedMotionDetector(MotionDetector):
 
         gray = frame[0 : self.frame_shape[0], 0 : self.frame_shape[1]]
 
-        # resize frame
+        # resize frame into pre-allocated buffer (float32 for percentile calc)
         resized_frame = cv2.resize(
             gray,
             dsize=(self.motion_frame_size[1], self.motion_frame_size[0]),
             interpolation=self.interpolation,
+            dst=self._resize_buf,  # type: ignore[arg-type]
         )
 
         if self.save_images:
@@ -86,9 +96,10 @@ class ImprovedMotionDetector(MotionDetector):
 
         # Improve contrast
         if self.config.improve_contrast:
-            # TODO tracking moving average of min/max to avoid sudden contrast changes
-            min_value = np.percentile(resized_frame, 4).astype(np.uint8)
-            max_value = np.percentile(resized_frame, 96).astype(np.uint8)
+            # Combined percentile call: single sort pass for both percentiles
+            percentiles = np.percentile(resized_frame, [4, 96])
+            min_value = percentiles[0].astype(np.uint8)
+            max_value = percentiles[1].astype(np.uint8)
             # skip contrast calcs if the image is a single color
             if min_value < max_value:
                 # keep track of the last 50 contrast values
@@ -102,7 +113,13 @@ class ImprovedMotionDetector(MotionDetector):
 
                 avg_min, avg_max = np.mean(self.contrast_values, axis=0)
 
-                resized_frame = np.clip(resized_frame, avg_min, avg_max)
+                # clip contrast into pre-allocated float32 buffer, then normalize
+                resized_frame = np.clip(
+                    resized_frame,
+                    avg_min,
+                    avg_max,
+                    out=self._resize_buf,  # type: ignore[arg-type]
+                )
                 resized_frame = (
                     ((resized_frame - avg_min) / (avg_max - avg_min)) * 255
                 ).astype(np.uint8)
@@ -115,24 +132,52 @@ class ImprovedMotionDetector(MotionDetector):
         # Setting masked pixels to zero, to match the average frame at startup
         resized_frame[self.mask] = [0]
 
-        resized_frame = gaussian_filter(resized_frame, sigma=1, radius=self.blur_radius)
+        # Gaussian blur - keep resized_frame as float32 for accumulateWeighted
+        resized_frame = gaussian_filter(
+            resized_frame,
+            sigma=1,
+            radius=self.blur_radius,
+            output=self._blur_buf,  # type: ignore[arg-type]
+        )
+        # Create uint8 version for the absdiff/threshold/dilate pipeline
+        cv2.convertScaleAbs(
+            resized_frame,
+            dst=self._blur_uint8_buf,  # type: ignore[arg-type]
+        )
+        resized_uint8 = self._blur_uint8_buf
 
         if self.save_images:
-            blurred_saved = resized_frame.copy()
+            blurred_saved = self._blur_uint8_buf.copy()
 
         if self.save_images or self.calibrating:
             self.frame_counter += 1
-        # compare to average
-        frameDelta = cv2.absdiff(resized_frame, cv2.convertScaleAbs(self.avg_frame))
+        # compare to average - convert avg_frame to uint8 then compute absdiff
+        cv2.convertScaleAbs(
+            self.avg_frame,
+            dst=self._avg_convert_buf,  # type: ignore[arg-type]
+        )
+        frameDelta = cv2.absdiff(
+            resized_uint8,
+            self._avg_convert_buf,
+            dst=self._diff_buf,  # type: ignore[arg-type]
+        )
 
-        # compute the threshold image for the current frame
-        thresh = cv2.threshold(
-            frameDelta, self.config.threshold, 255, cv2.THRESH_BINARY
-        )[1]
+        # compute the threshold image into pre-allocated buffer
+        _, thresh = cv2.threshold(
+            frameDelta,
+            self.config.threshold,
+            255,
+            cv2.THRESH_BINARY,
+            dst=self._thresh_buf,  # type: ignore[arg-type]
+        )
 
-        # dilate the thresholded image to fill in holes, then find contours
-        # on thresholded image
-        thresh_dilated = cv2.dilate(thresh, None, iterations=1)  # type: ignore[call-overload]
+        # dilate the thresholded image into pre-allocated buffer
+        thresh_dilated = cv2.dilate(
+            thresh,
+            None,
+            iterations=1,
+            dst=self._dilate_buf,  # type: ignore[arg-type]
+        )
         contours = cv2.findContours(
             thresh_dilated, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE
         )
@@ -174,7 +219,7 @@ class ImprovedMotionDetector(MotionDetector):
         ):
             self.last_stop_time = self.ptz_metrics.stop_time.value
 
-            self.avg_frame = resized_frame.astype(np.float32)
+            self.avg_frame[:] = resized_frame
             motion_boxes = []
             pct_motion = 0
 
