@@ -231,6 +231,10 @@ class AudioEventMaintainer(threading.Thread):
         self._last_inference_time: float = 0.0
         self._active_labels: set[str] = set()
 
+        # VAD gating — skip inference during sustained sound, only run at onset + response window
+        self._response_window_end: float = 0.0
+        self._silence_until: float = 0.0
+
         # preallocate waveform buffer for in-place normalization (avoids allocation per inference)
         self._waveform: np.ndarray = np.empty(
             int(round(AUDIO_DURATION * AUDIO_SAMPLE_RATE)), dtype=np.float32
@@ -291,10 +295,32 @@ class AudioEventMaintainer(threading.Thread):
         cooldown = 1.0
         now = time.time()
 
+        # VAD gating: only infer at sound onset and during the response window after
+        # During sustained sound, skip inference entirely (audio events are slow-changing)
+        in_sound = rms >= self.camera_config.audio.min_volume
+
+        if in_sound and now < self._silence_until:
+            # just exited silence, this is an onset — allow inference
+            self._response_window_end = now + 2.0
+            in_onset = True
+        elif in_sound and now >= self._response_window_end:
+            # response window expired while sound continues — skip to next silence
+            in_onset = False
+        elif in_sound:
+            # within response window after onset — allow inference
+            in_onset = True
+        else:
+            # silence — schedule a grace period before allowing onset detection again
+            self._silence_until = now + 0.5
+            in_onset = False
+
         # only run audio detection when volume is above min_volume
-        if rms >= self.camera_config.audio.min_volume:
-            # skip TFLite inference while active labels are still within cooldown
-            if self._active_labels or now - self._last_inference_time > cooldown:
+        if in_sound:
+            if (
+                in_onset
+                or self._active_labels
+                or now - self._last_inference_time > cooldown
+            ):
                 # normalize in-place into preallocated buffer
                 np.divide(audio, AUDIO_MAX_BIT_RANGE, out=self._waveform)
                 model_detections = self.detector.detect(self._waveform)
@@ -313,6 +339,7 @@ class AudioEventMaintainer(threading.Thread):
                     ).get("threshold", 0.8):
                         self._active_labels.add(label)
                         audio_detections.append((label, score))
+
             self.detection_publisher.publish(
                 (
                     self.camera_config.name,
