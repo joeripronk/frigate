@@ -221,6 +221,12 @@ class AudioEventMaintainer(threading.Thread):
         self.transcription_processor = None
         self.transcription_thread = None
 
+        # throttle for RMS/dBFS IPC broadcasts (~1000Hz → ~10Hz)
+        self._last_rms: float = 0.0
+        self._last_dbfs: float = 0.0
+        self._last_dbfs_send: float = 0.0
+        self._last_rms_send: float = 0.0
+
         # create communication for audio detections
         self.requestor = InterProcessRequestor()
         self.config_subscriber = CameraConfigUpdateSubscriber(
@@ -268,9 +274,6 @@ class AudioEventMaintainer(threading.Thread):
 
         audio_as_float: np.ndarray = audio.astype(np.float32)
         rms, dBFS = self.calculate_audio_levels(audio_as_float)
-
-        self.camera_metrics[self.camera_config.name].audio_rms.value = rms
-        self.camera_metrics[self.camera_config.name].audio_dBFS.value = dBFS
 
         audio_detections: list[Tuple[str, float]] = []
 
@@ -326,18 +329,35 @@ class AudioEventMaintainer(threading.Thread):
     def calculate_audio_levels(self, audio_as_float: np.ndarray) -> Tuple[float, float]:
         # Calculate RMS (Root-Mean-Square) which represents the average signal amplitude
         # Note: np.float32 isn't serializable, we must use np.float64 to publish the message
-        rms = np.sqrt(np.mean(np.absolute(np.square(audio_as_float))))
+        rms = float(np.sqrt(np.mean(np.absolute(np.square(audio_as_float)))))
 
         # Transform RMS to dBFS (decibels relative to full scale)
         if rms > 0:
-            dBFS = 20 * np.log10(np.abs(rms) / AUDIO_MAX_BIT_RANGE)
+            dBFS = float(20 * np.log10(rms / AUDIO_MAX_BIT_RANGE))
         else:
-            dBFS = 0
+            dBFS = 0.0
 
-        self.requestor.send_data(f"{self.camera_config.name}/audio/dBFS", float(dBFS))
-        self.requestor.send_data(f"{self.camera_config.name}/audio/rms", float(rms))
+        self.camera_metrics[self.camera_config.name].audio_rms.value = rms
+        self.camera_metrics[self.camera_config.name].audio_dBFS.value = dBFS
 
-        return float(rms), float(dBFS)
+        # throttle IPC broadcasts to ~10Hz max; skip if value hasn't changed meaningfully
+        now = time.time()
+        min_interval = 0.1  # 10Hz max
+
+        if now - self._last_rms_send > min_interval and abs(rms - self._last_rms) > 50:
+            self._last_rms_send = now
+            self._last_rms = rms
+            self.requestor.send_data(f"{self.camera_config.name}/audio/rms", rms)
+
+        if (
+            now - self._last_dbfs_send > min_interval
+            and abs(dBFS - self._last_dbfs) > 1.0
+        ):
+            self._last_dbfs_send = now
+            self._last_dbfs = dBFS
+            self.requestor.send_data(f"{self.camera_config.name}/audio/dBFS", dBFS)
+
+        return rms, dBFS
 
     def start_or_restart_ffmpeg(self) -> None:
         self.audio_listener = start_or_restart_ffmpeg(
