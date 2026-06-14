@@ -37,7 +37,6 @@ class ImprovedMotionDetector(MotionDetector):
         self.avg_frame = np.zeros(self.motion_frame_size, np.float32)
         self.motion_frame_count = 0
         self.frame_counter = 0
-        self.update_mask()
         self.save_images = False
         self.calibrating = True
         self.blur_radius = blur_radius
@@ -45,6 +44,11 @@ class ImprovedMotionDetector(MotionDetector):
         self.contrast_values = np.zeros((contrast_frame_history, 2), np.uint8)
         self.contrast_values[:, 1:2] = 255
         self.contrast_values_index = 0
+        # Rolling sum for O(1) mean computation instead of O(N) np.mean each frame
+        # Pre-seed with sum of initial buffer state (all rows are [0, 255])
+        self._contrast_sum = np.zeros(2, np.float64)
+        self._contrast_sum[1] = contrast_frame_history * 255
+        self._contrast_initialized = False
         self.ptz_metrics = ptz_metrics
         self.last_stop_time: float | None = None
 
@@ -56,6 +60,8 @@ class ImprovedMotionDetector(MotionDetector):
         self._diff_buf = np.zeros(self.motion_frame_size, np.uint8)
         self._thresh_buf = np.zeros(self.motion_frame_size, np.uint8)
         self._dilate_buf = np.zeros(self.motion_frame_size, np.uint8)
+
+        self.update_mask()
 
     def is_calibrating(self) -> bool:
         return self.calibrating
@@ -102,7 +108,10 @@ class ImprovedMotionDetector(MotionDetector):
             max_value = percentiles[1].astype(np.uint8)
             # skip contrast calcs if the image is a single color
             if min_value < max_value:
-                # keep track of the last 50 contrast values
+                old_row = self.contrast_values[self.contrast_values_index]
+                # O(1) rolling sum update: subtract old row, add new row
+                self._contrast_sum -= old_row.astype(np.float64)
+                self._contrast_sum += np.array([min_value, max_value], np.float64)
                 self.contrast_values[self.contrast_values_index] = [
                     min_value,
                     max_value,
@@ -110,8 +119,10 @@ class ImprovedMotionDetector(MotionDetector):
                 self.contrast_values_index += 1
                 if self.contrast_values_index == len(self.contrast_values):
                     self.contrast_values_index = 0
+                self._contrast_initialized = True
 
-                avg_min, avg_max = np.mean(self.contrast_values, axis=0)
+                # Running average from rolling sum
+                avg_min, avg_max = self._contrast_sum / self.contrast_values.shape[0]
 
                 # clip contrast into pre-allocated float32 buffer, then normalize
                 resized_frame = np.clip(
@@ -312,6 +323,10 @@ class ImprovedMotionDetector(MotionDetector):
         self.avg_frame = np.zeros(self.motion_frame_size, np.float32)
         self.calibrating = True
         self.motion_frame_count = 0
+        self._contrast_initialized = False
+        # Reset rolling sum to initial state (all rows are [0, 255])
+        self._contrast_sum.fill(0)
+        self._contrast_sum[1] = self.contrast_values.shape[0] * 255
 
     def stop(self) -> None:
         """stop the motion detector."""
