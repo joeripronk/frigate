@@ -4,6 +4,7 @@ import asyncio
 import logging
 import queue
 import time
+from collections import deque
 from datetime import datetime, timezone
 from multiprocessing import Queue
 from multiprocessing.synchronize import Event as MpEvent
@@ -234,10 +235,10 @@ def process_frames(
 
     region_min_size = get_min_region_size(model_config)
 
-    # ONVIF motion correlation state
-    onvif_motion_timestamps: list[float] = []
+    # ONVIF motion correlation state - deques with O(1) amortized popleft
+    onvif_motion_timestamps: deque[float] = deque(maxlen=10000)
     # ONVIF motion timestamps for suppression (longer window)
-    onvif_motion_suppression_timestamps: list[float] = []
+    onvif_motion_suppression_timestamps: deque[float] = deque(maxlen=10000)
 
     attributes_map = model_config.attributes_map
     all_attributes = model_config.all_attributes
@@ -348,9 +349,8 @@ def process_frames(
                     onvif_non_motion_detections.append(od)
 
         # Clean old ONVIF motion timestamps (keep last 30 seconds)
-        onvif_motion_timestamps = [
-            t for t in onvif_motion_timestamps if frame_time - t <= 30
-        ]
+        while onvif_motion_timestamps and frame_time - onvif_motion_timestamps[0] > 30:
+            onvif_motion_timestamps.popleft()
 
         # Clean old suppression timestamps (keep last suppression_window seconds)
         suppression_window = getattr(
@@ -358,11 +358,11 @@ def process_frames(
             "suppression_window",
             60,
         )
-        onvif_motion_suppression_timestamps = [
-            t
-            for t in onvif_motion_suppression_timestamps
-            if frame_time - t <= suppression_window
-        ]
+        while (
+            onvif_motion_suppression_timestamps
+            and frame_time - onvif_motion_suppression_timestamps[0] > suppression_window
+        ):
+            onvif_motion_suppression_timestamps.popleft()
 
         # Determine if ONVIF motion correlation is enabled
         motion_correlation = getattr(
