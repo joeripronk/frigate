@@ -227,6 +227,11 @@ class AudioEventMaintainer(threading.Thread):
         self._last_dbfs_send: float = 0.0
         self._last_rms_send: float = 0.0
 
+        # preallocate waveform buffer for in-place normalization (avoids allocation per inference)
+        self._waveform: np.ndarray = np.empty(
+            int(round(AUDIO_DURATION * AUDIO_SAMPLE_RATE)), dtype=np.float32
+        )
+
         # create communication for audio detections
         self.requestor = InterProcessRequestor()
         self.config_subscriber = CameraConfigUpdateSubscriber(
@@ -279,9 +284,9 @@ class AudioEventMaintainer(threading.Thread):
 
         # only run audio detection when volume is above min_volume
         if rms >= self.camera_config.audio.min_volume:
-            # create waveform relative to max range and look for detections
-            waveform = (audio / AUDIO_MAX_BIT_RANGE).astype(np.float32)
-            model_detections = self.detector.detect(waveform)
+            # normalize in-place into preallocated buffer
+            np.divide(audio, AUDIO_MAX_BIT_RANGE, out=self._waveform)
+            model_detections = self.detector.detect(self._waveform)
 
             for label, score, _ in model_detections:
                 self.logger.debug(
