@@ -15,7 +15,6 @@ from pathlib import Path
 from typing import Any, Optional, Tuple
 
 import numpy as np
-import psutil
 
 from frigate.comms.detections_updater import DetectionSubscriber, DetectionTypeEnum
 from frigate.comms.inter_process import InterProcessRequestor
@@ -42,6 +41,55 @@ from frigate.review.types import SeverityEnum
 from frigate.util.services import get_video_properties
 
 logger = logging.getLogger(__name__)
+
+
+def _get_files_in_use(cache_dir: str) -> set[str]:
+    """Find files in *cache_dir* currently open by ffmpeg processes.
+
+    Scans ``/proc`` directly so we never iterate non-ffmpeg system processes,
+    which made the old ``psutil.process_iter()`` approach expensive on hosts
+    with many running processes.
+
+    Returns
+    -------
+    set[str]
+        Basenames of cache files that are open by at least one ``ffmpeg``
+        process.
+    """
+    files_in_use: set[str] = set()
+    proc_path = Path("/proc")
+
+    if not proc_path.exists():
+        return files_in_use
+
+    try:
+        for pid_dir in proc_path.iterdir():
+            if not pid_dir.is_dir() or not pid_dir.name.isdigit():
+                continue
+
+            # Quick check: is this an ffmpeg process?
+            try:
+                comm = (pid_dir / "comm").read_text().strip()
+                if comm != "ffmpeg":
+                    continue
+            except (OSError, PermissionError):
+                continue
+
+            # Check open file descriptors
+            try:
+                for fd in (pid_dir / "fd").iterdir():
+                    try:
+                        link = os.readlink(fd)
+                        if link.startswith(cache_dir):
+                            files_in_use.add(os.path.basename(link))
+                    except (OSError, PermissionError):
+                        continue
+            except (OSError, PermissionError):
+                continue
+    except (OSError, PermissionError):
+        pass
+
+    return files_in_use
 
 
 class SegmentInfo:
@@ -169,18 +217,7 @@ class RecordingMaintainer(threading.Thread):
                     RecordingsDataTypeEnum.latest.value,
                 )
 
-        files_in_use = []
-        for process in psutil.process_iter():
-            try:
-                if process.name() != "ffmpeg":
-                    continue
-                file_list = process.open_files()
-                if file_list:
-                    for nt in file_list:
-                        if nt.path.startswith(CACHE_DIR):
-                            files_in_use.append(nt.path.split("/")[-1])
-            except psutil.Error:
-                continue
+        files_in_use = _get_files_in_use(CACHE_DIR)
 
         # group recordings by camera (skip in-use for validation/moving)
         grouped_recordings: defaultdict[str, list[dict[str, Any]]] = defaultdict(list)

@@ -45,7 +45,7 @@ class TestMaintainer(unittest.IsolatedAsyncioTestCase):
         with patch("os.listdir", return_value=files):
             with patch("os.path.isfile", return_value=True):
                 with patch(
-                    "frigate.record.maintainer.psutil.process_iter", return_value=[]
+                    "frigate.record.maintainer._get_files_in_use", return_value=set()
                 ):
                     with patch("frigate.record.maintainer.logger.warning") as warn:
                         # Mock validate_and_move_segment to avoid further logic
