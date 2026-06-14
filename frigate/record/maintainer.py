@@ -96,10 +96,22 @@ class RecordingMaintainer(threading.Thread):
         self.recordings_publisher = RecordingsDataPublisher()
 
         self.stop_event = stop_event
+        self.loop: asyncio.AbstractEventLoop | None = None
         self.object_recordings_info: dict[str, list] = defaultdict(list)
         self.audio_recordings_info: dict[str, list] = defaultdict(list)
         self.end_time_cache: dict[str, Tuple[datetime.datetime, float]] = {}
         self.unexpected_cache_files_logged: bool = False
+
+    def _ensure_loop(self) -> None:
+        """Create a persistent event loop on first use."""
+        if self.loop is None or self.loop.is_closed():
+            self.loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(self.loop)
+
+    def close(self) -> None:
+        """Close the persistent event loop."""
+        if self.loop is not None and not self.loop.is_closed():
+            self.loop.close()
 
     async def move_files(self) -> None:
         cache_files = [
@@ -695,6 +707,7 @@ class RecordingMaintainer(threading.Thread):
             if self.stop_event.is_set():
                 break
 
+            self._ensure_loop()
             run_start = datetime.datetime.now().timestamp()
 
             # check if there is an updated config
@@ -702,6 +715,7 @@ class RecordingMaintainer(threading.Thread):
 
             stale_frame_count = 0
             stale_frame_count_threshold = 10
+            latest_frame_time: float = 0
             # empty the object recordings info queue
             while True:
                 result = self.detection_subscriber.check_for_update(
@@ -720,7 +734,7 @@ class RecordingMaintainer(threading.Thread):
                     (
                         camera,
                         _,
-                        frame_time,
+                        latest_frame_time,
                         current_tracked_objects,
                         motion_boxes,
                         regions,
@@ -729,7 +743,7 @@ class RecordingMaintainer(threading.Thread):
                     if self.config.cameras[camera].record.enabled:
                         self.object_recordings_info[camera].append(
                             (
-                                frame_time,
+                                latest_frame_time,
                                 current_tracked_objects,
                                 motion_boxes,
                                 regions,
@@ -738,7 +752,7 @@ class RecordingMaintainer(threading.Thread):
                 elif topic == DetectionTypeEnum.audio.value:
                     (
                         camera,
-                        frame_time,
+                        latest_frame_time,
                         dBFS,
                         audio_detections,
                     ) = data
@@ -746,7 +760,7 @@ class RecordingMaintainer(threading.Thread):
                     if self.config.cameras[camera].record.enabled:
                         self.audio_recordings_info[camera].append(
                             (
-                                frame_time,
+                                latest_frame_time,
                                 dBFS,
                                 audio_detections,
                             )
@@ -757,14 +771,15 @@ class RecordingMaintainer(threading.Thread):
                 ):
                     continue
 
-                if frame_time < run_start - stale_frame_count_threshold:
+                if latest_frame_time < run_start - stale_frame_count_threshold:
                     stale_frame_count += 1
 
             if stale_frame_count > 0:
                 logger.debug(f"Found {stale_frame_count} old frames.")
 
             try:
-                asyncio.run(self.move_files())
+                assert self.loop is not None
+                self.loop.run_until_complete(self.move_files())
             except Exception as e:
                 logger.error(
                     "Error occurred when attempting to maintain recording cache"
@@ -773,6 +788,8 @@ class RecordingMaintainer(threading.Thread):
             duration = datetime.datetime.now().timestamp() - run_start
             wait_time = max(0, 5 - duration)
 
+        if self.loop is not None:
+            self.loop.close()
         self.requestor.stop()
         self.config_subscriber.stop()
         self.detection_subscriber.stop()
