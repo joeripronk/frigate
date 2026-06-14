@@ -120,10 +120,6 @@ class CameraTracker(FrigateProcess):
                 self.stop_event,
             )
             onvif_detector.start()
-            logger.info(
-                "%s: motion detect bypassed (ONVIF source active)",
-                self.config.name,
-            )
 
         object_tracker = NorfairTracker(self.config, self.ptz_metrics)
 
