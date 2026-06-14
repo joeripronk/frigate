@@ -73,11 +73,11 @@ FRIGATE_HOST="${FRIGATE_HOST:-localhost}"
 FRIGATE_API_PORT="${FRIGATE_API_PORT:-5001}"
 FRIGATE_BASE_PATH="${FRIGATE_BASE_PATH:-}"
 
-API_URL="http://${FRIGATE_HOST}:${FRIGATE_API_PORT}${FRIGATE_BASE_PATH}/api"
+API_URL="http://${FRIGATE_HOST}:${FRIGATE_API_PORT}${FRIGATE_BASE_PATH}"
 
 echo "[INFO] Waiting for Frigate FastAPI to be ready at ${API_URL}..."
 
-while ! curl -sf "${API_URL}/info" > /dev/null 2>&1; do
+while ! curl -s "${API_URL}/info" > /dev/null 2>&1; do
     RETRIES=$((RETRIES + 1))
     if [ "${RETRIES}" -ge "${MAX_RETRIES}" ]; then
         echo "[ERROR] Frigate FastAPI did not become ready after ${MAX_RETRIES} attempts (${RETRY_INTERVAL}s each). Starting nginx anyway." >&2

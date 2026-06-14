@@ -894,6 +894,18 @@
         "label": "Motion correlation",
         "description": "Use ONVIF motion events to boost or reduce Frigate image motion detection sensitivity. When ONVIF motion is detected within the correlation window, lower the motion detection threshold to catch more real motion. When no ONVIF motion is detected, raise the threshold to filter out false positives."
       },
+      "motion_suppression": {
+        "label": "Motion suppression",
+        "description": "Suppress image motion detection when no ONVIF motion events are detected within the suppression window. This prevents false positive recordings when the camera's built-in motion detection has not triggered.",
+        "enabled": {
+          "label": "Enable motion suppression",
+          "description": "Suppress image-based motion detection when no ONVIF motion events are detected within the suppression window. This prevents false positive recordings when the camera's built-in motion detection has not triggered."
+        },
+        "suppression_window": {
+          "label": "Suppression window",
+          "description": "Number of seconds to look back for ONVIF motion events. If no ONVIF motion is detected within this window, image-based motion detection is suppressed."
+        }
+      },
       "poll_interval": {
         "label": "Poll interval",
         "description": "Seconds between polling the camera for smart detection results (person/vehicle). Set to 0 to disable polling and only use event-driven detection."

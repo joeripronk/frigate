@@ -10,6 +10,7 @@ from .objects import DEFAULT_TRACKED_OBJECTS
 __all__ = [
     "OnvifConfig",
     "OnvifDetectionConfig",
+    "OnvifMotionSuppressionConfig",
     "OnvifVendorEnum",
     "PtzAutotrackConfig",
     "PtzConfig",
@@ -111,6 +112,21 @@ class PtzAutotrackConfig(FrigateBaseModel):
         return weights
 
 
+class OnvifMotionSuppressionConfig(FrigateBaseModel):
+    enabled: bool = Field(
+        default=False,
+        title="Enable motion suppression",
+        description="Suppress image-based motion detection when no ONVIF motion events are detected within the suppression window. This prevents false positive recordings when the camera's built-in motion detection has not triggered.",
+    )
+    suppression_window: int = Field(
+        default=60,
+        title="Suppression window",
+        description="Number of seconds to look back for ONVIF motion events. If no ONVIF motion is detected within this window, image-based motion detection is suppressed.",
+        ge=10,
+        le=300,
+    )
+
+
 class OnvifDetectionConfig(FrigateBaseModel):
     enabled: bool = Field(
         default=False,
@@ -152,6 +168,11 @@ class OnvifDetectionConfig(FrigateBaseModel):
         default=False,
         title="Motion correlation",
         description="Use ONVIF motion events to boost or reduce Frigate image motion detection sensitivity. When ONVIF motion is detected within the correlation window, lower the motion detection threshold to catch more real motion. When no ONVIF motion is detected, raise the threshold to filter out false positives.",
+    )
+    motion_suppression: OnvifMotionSuppressionConfig = Field(
+        default_factory=OnvifMotionSuppressionConfig,
+        title="Motion suppression",
+        description="Suppress image motion detection when no ONVIF motion events are detected within the suppression window. This prevents false positive recordings when the camera's built-in motion detection has not triggered.",
     )
     poll_interval: int = Field(
         default=5,

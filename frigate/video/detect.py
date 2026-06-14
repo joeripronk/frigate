@@ -236,6 +236,8 @@ def process_frames(
 
     # ONVIF motion correlation state
     onvif_motion_timestamps: list[float] = []
+    # ONVIF motion timestamps for suppression (longer window)
+    onvif_motion_suppression_timestamps: list[float] = []
 
     attributes_map = model_config.attributes_map
     all_attributes = model_config.all_attributes
@@ -341,6 +343,7 @@ def process_frames(
                     y_max = int(min(detect_h - 1, ymax * detect_h))
                     onvif_motion_boxes.append((x_min, y_min, x_max, y_max))
                     onvif_motion_timestamps.append(frame_time)
+                    onvif_motion_suppression_timestamps.append(frame_time)
                 else:
                     onvif_non_motion_detections.append(od)
 
@@ -349,11 +352,31 @@ def process_frames(
             t for t in onvif_motion_timestamps if frame_time - t <= 30
         ]
 
+        # Clean old suppression timestamps (keep last suppression_window seconds)
+        suppression_window = getattr(
+            getattr(camera_config.onvif.detect, "motion_suppression", None),
+            "suppression_window",
+            60,
+        )
+        onvif_motion_suppression_timestamps = [
+            t
+            for t in onvif_motion_suppression_timestamps
+            if frame_time - t <= suppression_window
+        ]
+
         # Determine if ONVIF motion correlation is enabled
         motion_correlation = getattr(
             camera_config.onvif.detect, "motion_correlation", False
         )
         onvif_correlated = len(onvif_motion_timestamps) > 0
+
+        # Determine if ONVIF motion suppression is enabled
+        motion_suppression = getattr(
+            getattr(camera_config.onvif.detect, "motion_suppression", None),
+            "enabled",
+            False,
+        )
+        onvif_suppressed = len(onvif_motion_suppression_timestamps) == 0
 
         # Save original contour_area for restoration
         original_contour_area = (
@@ -362,7 +385,20 @@ def process_frames(
         contour_area_changed = False
 
         try:
-            if motion_correlation:
+            # Apply motion suppression (highest priority check)
+            if (
+                motion_suppression
+                and onvif_suppressed
+                and onvif_detector is not None
+                and camera_config.onvif.detect.motion
+            ):
+                logger.debug(
+                    "%s: image motion detection suppressed (no ONVIF motion in last %ds)",
+                    camera_config.name,
+                    suppression_window,
+                )
+                motion_boxes = []
+            elif motion_correlation:
                 # Modulate motion detection threshold based on ONVIF correlation
                 if original_contour_area is not None and original_contour_area > 0:
                     if onvif_correlated:
