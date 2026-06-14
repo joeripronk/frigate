@@ -395,34 +395,41 @@ def get_cluster_boundary(box, min_region):
 
 
 def get_cluster_candidates(frame_shape, min_region, boxes):
-    # and create a cluster of other boxes using it's max region size
-    # only include boxes where the region is an appropriate(except the region could possibly be smaller?)
-    # size in the cluster. in order to be in the cluster, the furthest corner needs to be within x,y offset
-    # determined by the max_region size minus half the box + 20%
-    # TODO: see if we can do this with numpy
+    if not boxes:
+        return []
+
+    boxes_arr = np.array(boxes, dtype=np.int32)
+    B = len(boxes)
+    used = np.zeros(B, dtype=bool)
     cluster_candidates = []
-    used_boxes = []
-    # loop over each box
-    for current_index, b in enumerate(boxes):
-        if current_index in used_boxes:
+
+    for i in range(B):
+        if used[i]:
             continue
-        cluster = [current_index]
-        used_boxes.append(current_index)
-        cluster_boundary = get_cluster_boundary(b, min_region)
-        # find all other boxes that fit inside the boundary
-        for compare_index, compare_box in enumerate(boxes):
-            if compare_index in used_boxes:
-                continue
 
-            # if the box is not inside the potential cluster area, cluster them
-            if not box_inside(cluster_boundary, compare_box):
-                continue
+        cluster = [i]
+        used[i] = True
+        boundary = get_cluster_boundary(boxes[i], min_region)
 
-            # get the region if you were to add this box to the cluster
-            potential_cluster = cluster + [compare_index]
+        # Vectorized: find un-used boxes inside the cluster boundary
+        # box_inside(boundary, compare_box) means compare_box is inside boundary
+        # i.e. compare_box[0] >= boundary[0] AND compare_box[1] >= boundary[1]
+        #      AND compare_box[2] <= boundary[2] AND compare_box[3] <= boundary[3]
+        candidates_mask = (
+            ~used
+            & (boxes_arr[:, 0] >= boundary[0])
+            & (boxes_arr[:, 1] >= boundary[1])
+            & (boxes_arr[:, 2] <= boundary[2])
+            & (boxes_arr[:, 3] <= boundary[3])
+        )
+        candidate_indices = np.flatnonzero(candidates_mask)
+
+        for j in candidate_indices:
+            potential_cluster = cluster + [j]
             cluster_region = get_cluster_region(
                 frame_shape, min_region, potential_cluster, boxes
             )
+
             # if region could be smaller and either box would be too small
             # for the resulting region, dont cluster
             should_cluster = True
@@ -435,8 +442,9 @@ def get_cluster_candidates(frame_shape, min_region, boxes):
                         break
 
             if should_cluster:
-                cluster.append(compare_index)
-                used_boxes.append(compare_index)
+                cluster.append(j)
+                used[j] = True
+
         cluster_candidates.append(cluster)
 
     # return the unique clusters only

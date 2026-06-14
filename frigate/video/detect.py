@@ -240,6 +240,13 @@ def process_frames(
     # ONVIF motion timestamps for suppression (longer window)
     onvif_motion_suppression_timestamps: deque[float] = deque(maxlen=10000)
 
+    # Cache ONVIF config values outside the frame loop to avoid repeated getattr
+    _ov = camera_config.onvif.detect
+    motion_correlation = getattr(_ov, "motion_correlation", False)
+    _ms = getattr(_ov, "motion_suppression", None)
+    motion_suppression = getattr(_ms, "enabled", False)
+    suppression_window = getattr(_ms, "suppression_window", 60)
+
     attributes_map = model_config.attributes_map
     all_attributes = model_config.all_attributes
 
@@ -353,29 +360,13 @@ def process_frames(
             onvif_motion_timestamps.popleft()
 
         # Clean old suppression timestamps (keep last suppression_window seconds)
-        suppression_window = getattr(
-            getattr(camera_config.onvif.detect, "motion_suppression", None),
-            "suppression_window",
-            60,
-        )
         while (
             onvif_motion_suppression_timestamps
             and frame_time - onvif_motion_suppression_timestamps[0] > suppression_window
         ):
             onvif_motion_suppression_timestamps.popleft()
 
-        # Determine if ONVIF motion correlation is enabled
-        motion_correlation = getattr(
-            camera_config.onvif.detect, "motion_correlation", False
-        )
         onvif_correlated = len(onvif_motion_timestamps) > 0
-
-        # Determine if ONVIF motion suppression is enabled
-        motion_suppression = getattr(
-            getattr(camera_config.onvif.detect, "motion_suppression", None),
-            "enabled",
-            False,
-        )
         onvif_suppressed = len(onvif_motion_suppression_timestamps) == 0
 
         # Save original contour_area for restoration
