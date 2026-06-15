@@ -506,6 +506,8 @@ class ReolinkTcpPushClient:
         self._doorbell_active_event: Optional[str] = None
         self._doorbell_active_event_time: float = 0.0
         self._doorbell_debounce_seconds: float = 5.0
+        self._previous_visitor_state: bool = False
+        self._last_doorbell_time: float = 0.0
 
     def start(self) -> None:
         """Start the TCP push connection in a background thread with its own event loop."""
@@ -618,10 +620,13 @@ class ReolinkTcpPushClient:
             channel = self._reolink.channels[0] if self._reolink.channels else 0
         self._reolink._ai_detection_states.setdefault(channel, {})["people"] = False
         self._reolink._ai_detection_states.setdefault(channel, {})["dog_cat"] = False
+        self._reolink._ai_detection_states.setdefault(channel, {})["vehicle"] = False
         self._reolink.baichuan._ai_yolo_600.setdefault(channel, {})["people"] = False
         self._reolink.baichuan._ai_yolo_600.setdefault(channel, {})["dog_cat"] = False
+        self._reolink.baichuan._ai_yolo_600.setdefault(channel, {})["vehicle"] = False
         self._reolink.baichuan._ai_yolo_696.setdefault(channel, {})["people"] = False
         self._reolink.baichuan._ai_yolo_696.setdefault(channel, {})["dog_cat"] = False
+        self._reolink.baichuan._ai_yolo_696.setdefault(channel, {})["vehicle"] = False
 
         # Pre-seed visitor state for doorbell detection on some firmware.
         self._reolink._visitor_states.setdefault(channel, False)
@@ -731,9 +736,6 @@ class ReolinkTcpPushClient:
             except Exception:
                 visitor_state = False
 
-            if not hasattr(self, "_previous_visitor_state"):
-                self._previous_visitor_state = False
-
             # Detect transition from not-pressed to pressed
             if visitor_state and not self._previous_visitor_state:
                 self._handle_doorbell_press(frame_time)
@@ -781,58 +783,39 @@ class ReolinkTcpPushClient:
             pass
 
     def _handle_doorbell_press(self, frame_time: float) -> None:
-        """Handle a doorbell press with debouncing.
+        """Handle a doorbell press by queuing a detection and creating an event.
 
-        When a doorbell press is detected:
-        - If an event is already active and within the debounce window, do nothing
-          (the existing event's auto-end timer will be extended by the camera state)
-        - If a debounce gap has elapsed (5+ seconds since last press), create a new event
-        - If no event is active, create a new event
+        Applies a cooldown period to prevent duplicate events from rapid state changes.
+        Ends any previous active event before creating a new one.
         """
         if not self._reolink:
             return
+
+        # Apply cooldown to prevent duplicate doorbell events
+        if (frame_time - self._last_doorbell_time) < self._COOLDOWN_SECONDS:
+            return
+
+        # Check cooldown against debounce window for event lifecycle
+        if self._doorbell_active_event is not None:
+            time_since_last = frame_time - self._doorbell_active_event_time
+            if time_since_last < self._doorbell_debounce_seconds:
+                return
 
         channel = 0
         if self._reolink.num_channels > 0:
             channel = self._reolink.channels[0] if self._reolink.channels else 0
 
-        # Check if we're within the debounce window of an existing event
-        if self._doorbell_active_event is not None:
-            time_since_last = frame_time - self._doorbell_active_event_time
-            if time_since_last < self._doorbell_debounce_seconds:
-                # Within debounce window - extend the existing event
-                # by sending an IPC update (the camera state handles the timer reset)
-                logger.debug(
-                    "%s: doorbell debounce - extending active event %s (%.1fs since last press)",
-                    self.camera_name,
-                    self._doorbell_active_event,
-                    time_since_last,
-                )
-                try:
-                    self._doorbell_metadata_publisher.publish(
-                        (
-                            "start",
-                            self.camera_name,
-                            self._doorbell_active_event,
-                            frame_time,
-                        ),
-                        sub_topic=EventMetadataTypeEnum.doorbell_event_create.value,
-                    )
-                except Exception:
-                    logger.debug(
-                        "Failed to publish doorbell debounce update for %s",
-                        self.camera_name,
-                    )
-                self._doorbell_active_event_time = frame_time
-                return
-
-        # Either no active event or debounce gap has elapsed - create new event
         event_id = f"doorbell_{self.camera_name}_{int(frame_time * 1000)}"
         logger.info(
             "%s: doorbell press detected (event=%s, channel=%s)",
             self.camera_name,
             event_id,
             channel,
+        )
+
+        # Queue doorbell detection for the object tracking pipeline
+        self._queue_detection(
+            DetectionType.DOORBELL, "doorbell", 0.9, channel, frame_time
         )
 
         # End any previous event that may have been missed
@@ -850,7 +833,7 @@ class ReolinkTcpPushClient:
             except Exception:
                 pass
 
-        # Create new event
+        # Create new doorbell event
         try:
             self._doorbell_metadata_publisher.publish(
                 (
@@ -870,6 +853,7 @@ class ReolinkTcpPushClient:
 
         self._doorbell_active_event = event_id
         self._doorbell_active_event_time = frame_time
+        self._last_doorbell_time = frame_time
 
     def _publish_doorbell_end(self, frame_time: float) -> None:
         """End the currently active doorbell event."""
@@ -980,7 +964,6 @@ class OnvifDetector:
         self.detection_queue = detection_queue
         self.stop_event = stop_event
 
-        self.reolink_detector: Optional[ReolinkSmartDetector] = None
         self.tcp_push_client: Optional[ReolinkTcpPushClient] = None
         self.event_subscriber: Optional[OnvifEventSubscriber] = None
         self.onvif_camera: Optional[ONVIFCamera] = None
@@ -1021,16 +1004,9 @@ class OnvifDetector:
                 )
                 self.tcp_push_client.start()
         else:
-            # Default: use polling for person/vehicle detection
-            # if (
-            #    self.camera_config.onvif.detect.person
-            #    or self.camera_config.onvif.detect.vehicle
-            # ):
-            #    self.reolink_detector = ReolinkSmartDetector(
-            #        self.camera_config, self.detection_queue, self.stop_event
-            #    )
-            #    self.reolink_detector.start()
-
+            # Default vendor: use ONVIF event subscription for motion only.
+            # AI detection (person/vehicle/pet) polling is not yet implemented
+            # for non-Reolink vendors.
             try:
                 wsdl_base: str | None = None
                 try:
@@ -1094,13 +1070,9 @@ class OnvifDetector:
         has_tcp_push = (
             self.tcp_push_client is not None and self.tcp_push_client._running
         )
-        has_polling = (
-            self.reolink_detector is not None
-            and self.reolink_detector.thread is not None
-        )
 
         logger.info(
-            "ONVIF detector started for %s (vendor=%s, motion=%s, person=%s, vehicle=%s, pet=%s, doorbell=%s, tcp_push=%s, polling=%s, streaming=%s)",
+            "ONVIF detector started for %s (vendor=%s, motion=%s, person=%s, vehicle=%s, pet=%s, doorbell=%s, tcp_push=%s, streaming=%s)",
             self.camera_name,
             vendor.value,
             self.camera_config.onvif.detect.motion,
@@ -1109,7 +1081,6 @@ class OnvifDetector:
             has_pet,
             has_doorbell,
             has_tcp_push,
-            has_polling,
             self.event_subscriber is not None and self.event_subscriber._subscribed,
         )
 
@@ -1118,8 +1089,6 @@ class OnvifDetector:
         self._running = False
         if self.tcp_push_client:
             self.tcp_push_client.stop()
-        if self.reolink_detector:
-            self.reolink_detector.stop()
         if self.event_subscriber:
             await self.event_subscriber.stop()
 

@@ -54,12 +54,12 @@ class TestReolinkTcpPushClientInit(unittest.TestCase):
         config.onvif.port = port
         config.onvif.user = user
         config.onvif.password = password
-        config.onvif.detection.person = person
-        config.onvif.detection.vehicle = vehicle
-        config.onvif.detection.pet = pet
-        config.onvif.detection.doorbell = doorbell
-        config.onvif.detection.motion = motion
-        config.onvif.detection.poll_interval = 5
+        config.onvif.detect.person = person
+        config.onvif.detect.vehicle = vehicle
+        config.onvif.detect.pet = pet
+        config.onvif.detect.doorbell = doorbell
+        config.onvif.detect.motion = motion
+        config.onvif.detect.poll_interval = 5
         return config
 
     def test_default_detection_types(self):
@@ -131,12 +131,12 @@ class TestReolinkTcpPushClientDetectionQueue(unittest.TestCase):
         config.onvif.port = 80
         config.onvif.user = "admin"
         config.onvif.password = "secret"
-        config.onvif.detection.person = True
-        config.onvif.detection.vehicle = True
-        config.onvif.detection.pet = True
-        config.onvif.detection.doorbell = True
-        config.onvif.detection.motion = True
-        config.onvif.detection.poll_interval = 5
+        config.onvif.detect.person = True
+        config.onvif.detect.vehicle = True
+        config.onvif.detect.pet = True
+        config.onvif.detect.doorbell = True
+        config.onvif.detect.motion = True
+        config.onvif.detect.poll_interval = 5
         return config
 
     def test_motion_detection_queues_correctly(self):
@@ -265,12 +265,12 @@ class TestReolinkTcpPushClientSyncMethods(unittest.TestCase):
         config.onvif.port = 80
         config.onvif.user = "admin"
         config.onvif.password = "secret"
-        config.onvif.detection.person = True
-        config.onvif.detection.vehicle = True
-        config.onvif.detection.pet = False
-        config.onvif.detection.doorbell = True
-        config.onvif.detection.motion = True
-        config.onvif.detection.poll_interval = 5
+        config.onvif.detect.person = True
+        config.onvif.detect.vehicle = True
+        config.onvif.detect.pet = False
+        config.onvif.detect.doorbell = True
+        config.onvif.detect.motion = True
+        config.onvif.detect.poll_interval = 5
         return config
 
     def test_sync_methods_return_false_when_no_reolink(self):
@@ -310,12 +310,12 @@ class TestReolinkTcpPushClientStartStop(unittest.TestCase):
         config.onvif.port = 80
         config.onvif.user = "admin"
         config.onvif.password = "secret"
-        config.onvif.detection.person = True
-        config.onvif.detection.vehicle = True
-        config.onvif.detection.pet = False
-        config.onvif.detection.doorbell = False
-        config.onvif.detection.motion = True
-        config.onvif.detection.poll_interval = 5
+        config.onvif.detect.person = True
+        config.onvif.detect.vehicle = True
+        config.onvif.detect.pet = False
+        config.onvif.detect.doorbell = False
+        config.onvif.detect.motion = True
+        config.onvif.detect.poll_interval = 5
         return config
 
     @patch("frigate.detectors.onvif_detector.ReolinkHost")
@@ -349,11 +349,11 @@ class TestReolinkTcpPushClientStartStop(unittest.TestCase):
     def test_start_disabled_when_all_off(self):
         """Test that start does nothing when all detection types are disabled."""
         config = self._make_config()
-        config.onvif.detection.person = False
-        config.onvif.detection.vehicle = False
-        config.onvif.detection.pet = False
-        config.onvif.detection.doorbell = False
-        config.onvif.detection.motion = False
+        config.onvif.detect.person = False
+        config.onvif.detect.vehicle = False
+        config.onvif.detect.pet = False
+        config.onvif.detect.doorbell = False
+        config.onvif.detect.motion = False
 
         detection_queue = queue.Queue()
         stop_event = threading.Event()
@@ -374,12 +374,12 @@ class TestReolinkTcpPushClientCooldown(unittest.TestCase):
         config.onvif.port = 80
         config.onvif.user = "admin"
         config.onvif.password = "secret"
-        config.onvif.detection.person = True
-        config.onvif.detection.vehicle = False
-        config.onvif.detection.pet = False
-        config.onvif.detection.doorbell = False
-        config.onvif.detection.motion = True
-        config.onvif.detection.poll_interval = 5
+        config.onvif.detect.person = True
+        config.onvif.detect.vehicle = False
+        config.onvif.detect.pet = False
+        config.onvif.detect.doorbell = False
+        config.onvif.detect.motion = True
+        config.onvif.detect.poll_interval = 5
         return config
 
     def test_cooldown_prevents_rapid_duplicates(self):
@@ -415,12 +415,12 @@ class TestReolinkTcpPushClientEventProcessing(unittest.TestCase):
         config.onvif.port = 80
         config.onvif.user = "admin"
         config.onvif.password = "secret"
-        config.onvif.detection.person = True
-        config.onvif.detection.vehicle = True
-        config.onvif.detection.pet = True
-        config.onvif.detection.doorbell = True
-        config.onvif.detection.motion = True
-        config.onvif.detection.poll_interval = 5
+        config.onvif.detect.person = True
+        config.onvif.detect.vehicle = True
+        config.onvif.detect.pet = True
+        config.onvif.detect.doorbell = True
+        config.onvif.detect.motion = True
+        config.onvif.detect.poll_interval = 5
         return config
 
     def test_process_events_queues_detected_objects(self):
@@ -544,13 +544,13 @@ class TestOnvifDetectorVendorLogic(unittest.TestCase):
         config.onvif.user = "admin"
         config.onvif.password = "secret"
         config.onvif.vendor = vendor
-        config.onvif.detection.enabled = True
-        config.onvif.detection.person = person
-        config.onvif.detection.vehicle = vehicle
-        config.onvif.detection.pet = pet
-        config.onvif.detection.doorbell = doorbell
-        config.onvif.detection.motion = True
-        config.onvif.detection.poll_interval = 5
+        config.onvif.detect.enabled = True
+        config.onvif.detect.person = person
+        config.onvif.detect.vehicle = vehicle
+        config.onvif.detect.pet = pet
+        config.onvif.detect.doorbell = doorbell
+        config.onvif.detect.motion = True
+        config.onvif.detect.poll_interval = 5
 
         from frigate.config.camera.onvif import OnvifVendorEnum
 
@@ -558,7 +558,6 @@ class TestOnvifDetectorVendorLogic(unittest.TestCase):
         return config
 
     @patch("frigate.detectors.onvif_detector.ReolinkTcpPushClient")
-    @patch("frigate.detectors.onvif_detector.ReolinkSmartDetector")
     @patch("frigate.detectors.onvif_detector.OnvifEventSubscriber")
     @patch("frigate.detectors.onvif_detector.asyncio")
     @patch("frigate.detectors.onvif_detector._create_onvif_camera")
@@ -567,7 +566,6 @@ class TestOnvifDetectorVendorLogic(unittest.TestCase):
         mock_create_camera,
         mock_asyncio,
         mock_event_subscriber,
-        mock_smart_detector,
         mock_tcp_push,
     ):
         """Test that vendor=reolink uses TCP push client."""
@@ -584,24 +582,21 @@ class TestOnvifDetectorVendorLogic(unittest.TestCase):
 
         mock_tcp_push.assert_called_once()
         mock_tcp_push.return_value.start.assert_called_once()
-        mock_smart_detector.assert_not_called()
 
         detector.stop()
 
     @patch("frigate.detectors.onvif_detector.ReolinkTcpPushClient")
-    @patch("frigate.detectors.onvif_detector.ReolinkSmartDetector")
     @patch("frigate.detectors.onvif_detector.OnvifEventSubscriber")
     @patch("frigate.detectors.onvif_detector.asyncio")
     @patch("frigate.detectors.onvif_detector._create_onvif_camera")
-    def test_vendor_default_uses_polling(
+    def test_vendor_default_uses_event_subscription(
         self,
         mock_create_camera,
         mock_asyncio,
         mock_event_subscriber,
-        mock_smart_detector,
         mock_tcp_push,
     ):
-        """Test that vendor=default uses polling."""
+        """Test that vendor=default uses ONVIF event subscription."""
         from frigate.detectors.onvif_detector import OnvifDetector
 
         mock_asyncio.run.side_effect = lambda coro: None
@@ -614,13 +609,12 @@ class TestOnvifDetectorVendorLogic(unittest.TestCase):
         detector.start()
 
         mock_tcp_push.assert_not_called()
-        mock_smart_detector.assert_called_once()
-        mock_smart_detector.return_value.start.assert_called_once()
+        mock_event_subscriber.assert_called_once()
+        mock_event_subscriber.return_value.start.assert_called_once()
 
         detector.stop()
 
     @patch("frigate.detectors.onvif_detector.ReolinkTcpPushClient")
-    @patch("frigate.detectors.onvif_detector.ReolinkSmartDetector")
     @patch("frigate.detectors.onvif_detector.OnvifEventSubscriber")
     @patch("frigate.detectors.onvif_detector.asyncio")
     @patch("frigate.detectors.onvif_detector._create_onvif_camera")
@@ -629,7 +623,6 @@ class TestOnvifDetectorVendorLogic(unittest.TestCase):
         mock_create_camera,
         mock_asyncio,
         mock_event_subscriber,
-        mock_smart_detector,
         mock_tcp_push,
     ):
         """Test that vendor=reolink with pet enabled uses TCP push."""
@@ -646,7 +639,6 @@ class TestOnvifDetectorVendorLogic(unittest.TestCase):
 
         mock_tcp_push.assert_called_once()
         mock_tcp_push.return_value.start.assert_called_once()
-        mock_smart_detector.assert_not_called()
 
         detector.stop()
 
