@@ -16,6 +16,7 @@ inference on the Frigate server.
 """
 
 import asyncio
+import base64
 import logging
 import queue
 import re
@@ -787,6 +788,7 @@ class ReolinkTcpPushClient:
 
         Applies a cooldown period to prevent duplicate events from rapid state changes.
         Ends any previous active event before creating a new one.
+        Captures a snapshot from the camera for the event.
         """
         if not self._reolink:
             return
@@ -812,6 +814,21 @@ class ReolinkTcpPushClient:
             event_id,
             channel,
         )
+
+        # Capture snapshot from the camera
+        snapshot_base64 = self.get_snapshot_bytes()
+        if snapshot_base64:
+            logger.debug(
+                "%s: captured doorbell snapshot for event %s",
+                self.camera_name,
+                event_id,
+            )
+        else:
+            logger.debug(
+                "%s: failed to capture doorbell snapshot for event %s",
+                self.camera_name,
+                event_id,
+            )
 
         # Queue doorbell detection for the object tracking pipeline
         self._queue_detection(
@@ -841,6 +858,7 @@ class ReolinkTcpPushClient:
                     self.camera_name,
                     event_id,
                     frame_time,
+                    snapshot_base64,
                 ),
                 sub_topic=EventMetadataTypeEnum.doorbell_event_create.value,
             )
@@ -922,6 +940,30 @@ class ReolinkTcpPushClient:
             return self._reolink.motion_detected(channel)
         except Exception:
             return False
+
+    def get_snapshot_bytes(self) -> Optional[str]:
+        """Capture a snapshot from the camera and return as base64 encoded JPEG.
+
+        Returns None if the camera is unavailable or the snapshot fails.
+        """
+        if not self._reolink:
+            return None
+
+        channel = 0
+        if self._reolink.num_channels > 0:
+            channel = self._reolink.channels[0] if self._reolink.channels else 0
+
+        try:
+            snapshot_data = asyncio.run(self._reolink.get_snapshot(channel))
+            if snapshot_data is None:
+                return None
+            return base64.b64encode(snapshot_data).decode("utf-8")
+        except Exception:
+            logger.debug(
+                "Failed to get snapshot from Reolink camera %s",
+                self.camera_name,
+            )
+            return None
 
 
 class OnvifDetector:

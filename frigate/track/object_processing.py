@@ -665,17 +665,29 @@ class TrackedObjectProcessor(threading.Thread):
 
     def handle_doorbell_event(self, payload: tuple) -> None:
         """Handle doorbell event creation or end request."""
-        event_type, camera, event_id, frame_time = payload
+        event_type, camera, event_id, frame_time = payload[:4]
+        snapshot_base64 = payload[4] if len(payload) > 4 else None
 
         if event_type == "start":
-            self._start_doorbell_event(camera, event_id, frame_time)
+            self._start_doorbell_event(camera, event_id, frame_time, snapshot_base64)
         elif event_type == "end":
             self._end_doorbell_event(camera, event_id, frame_time)
 
     def _start_doorbell_event(
-        self, camera: str, event_id: str, frame_time: float
+        self,
+        camera: str,
+        event_id: str,
+        frame_time: float,
+        snapshot_base64: str | None = None,
     ) -> None:
-        """Start a doorbell event with auto-end timer."""
+        """Start a doorbell event with auto-end timer.
+
+        Args:
+            camera: Camera name
+            event_id: Event ID
+            frame_time: Timestamp of the doorbell press
+            snapshot_base64: Base64 encoded JPEG snapshot from camera, or None
+        """
         self._cancel_doorbell_timer(camera)
 
         camera_config = self.config.cameras.get(camera)
@@ -697,6 +709,34 @@ class TrackedObjectProcessor(threading.Thread):
         }
         self._doorbell_events[event_id] = event_data
 
+        # Save snapshot if provided
+        has_snapshot = False
+        if snapshot_base64:
+            try:
+                self.camera_states[camera].save_manual_event_image(
+                    cv2.imdecode(
+                        np.frombuffer(
+                            base64.b64decode(snapshot_base64), dtype=np.uint8
+                        ),
+                        cv2.IMREAD_COLOR,
+                    ),
+                    event_id,
+                    "doorbell",
+                    {},
+                )
+                has_snapshot = True
+                logger.debug(
+                    "Saved doorbell snapshot for event %s on camera %s",
+                    event_id,
+                    camera,
+                )
+            except Exception:
+                logger.debug(
+                    "Failed to save doorbell snapshot for event %s on camera %s",
+                    event_id,
+                    camera,
+                )
+
         self.event_sender.publish(
             (
                 EventTypeEnum.api,
@@ -712,8 +752,8 @@ class TrackedObjectProcessor(threading.Thread):
                     "start_time": frame_time,
                     "end_time": end_time,
                     "has_clip": camera_config.record.enabled,
-                    "has_snapshot": False,
-                    "snapshot_clean": True,
+                    "has_snapshot": has_snapshot,
+                    "snapshot_clean": has_snapshot,
                     "type": "doorbell",
                 },
             )
