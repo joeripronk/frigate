@@ -3,6 +3,7 @@
 import logging
 import multiprocessing as mp
 import threading
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from multiprocessing import Queue
 from multiprocessing.managers import DictProxy, SyncManager
 from multiprocessing.synchronize import Event as MpEvent
@@ -206,7 +207,14 @@ class CameraMaintainer(threading.Thread):
                     f"Capture process for {camera} didn't exit, forcing termination"
                 )
                 capture_process.terminate()
-                capture_process.join()
+                capture_process.join(timeout=5)
+                if capture_process.is_alive():
+                    logger.warning(
+                        f"Capture process for {camera} did not exit after "
+                        "termination, killing"
+                    )
+                    capture_process.kill()
+                    capture_process.join(timeout=2)
 
     def __unlink_camera_frame_slots(self, camera: str) -> None:
         """Drop the camera's per-frame YUV SHM segments from this
@@ -250,9 +258,53 @@ class CameraMaintainer(threading.Thread):
             if camera_process.is_alive():
                 logger.warning(f"Process for {camera} didn't exit, forcing termination")
                 camera_process.terminate()
-                camera_process.join()
+                camera_process.join(timeout=5)
+                if camera_process.is_alive():
+                    logger.warning(
+                        f"Process for {camera} did not exit after termination, killing"
+                    )
+                    camera_process.kill()
+                    camera_process.join(timeout=2)
             logger.info(f"Closing frame queue for {camera}")
             empty_and_close_queue(self.camera_metrics[camera].frame_queue)
+
+    def __recycle_camera(self, camera: str, new_config: CameraConfig) -> None:
+        """Recycle a single camera: stop, cleanup, and restart.
+
+        Designed to run in a thread pool — only touches state for the
+        specified camera, making it safe to run in parallel with other
+        camera recycling operations.
+        """
+        # rebuild ffmpeg cmds on the shared config so the
+        # new subprocesses spawn with current args
+        new_config.recreate_ffmpeg_cmds()
+
+        self.__stop_camera_capture_process(camera)
+        self.__stop_camera_process(camera)
+        self.__unlink_camera_frame_slots(camera)
+        self.capture_processes.pop(camera, None)
+        self.camera_processes.pop(camera, None)
+
+        self.__start_camera_processor(camera, new_config, runtime=True)
+        self.__start_camera_capture(camera, new_config, runtime=True)
+
+    def __remove_camera(self, camera: str) -> None:
+        """Remove a single camera: stop, cleanup, and clean state.
+
+        Designed to run in a thread pool — only touches state for the
+        specified camera, making it safe to run in parallel with other
+        camera removal operations.
+        """
+        self.__stop_camera_capture_process(camera)
+        self.__stop_camera_process(camera)
+        self.__unlink_camera_frame_slots(camera)
+        self.capture_processes.pop(camera, None)
+        self.camera_processes.pop(camera, None)
+        self.camera_stop_events.pop(camera, None)
+        self.region_grids.pop(camera, None)
+        self.camera_metrics.pop(camera, None)
+        self.ptz_metrics.pop(camera, None)
+        self.camera_shm_slots.pop(camera, None)
 
     def run(self) -> None:
         self.__init_historical_regions()
@@ -285,21 +337,38 @@ class CameraMaintainer(threading.Thread):
                             runtime=True,
                         )
                 elif update_type == CameraConfigUpdateEnum.remove.name:
+                    # Parallelize camera removal — each camera's stop/cleanup
+                    # is independent, so they can run concurrently.
+                    cameras_to_remove: list[str] = []
                     for camera in updated_cameras:
-                        self.__stop_camera_capture_process(camera)
-                        self.__stop_camera_process(camera)
-                        self.__unlink_camera_frame_slots(camera)
-                        self.capture_processes.pop(camera, None)
-                        self.camera_processes.pop(camera, None)
-                        self.camera_stop_events.pop(camera, None)
-                        self.region_grids.pop(camera, None)
-                        self.camera_metrics.pop(camera, None)
-                        self.ptz_metrics.pop(camera, None)
+                        if (
+                            camera in self.camera_processes
+                            or camera in self.capture_processes
+                        ):
+                            cameras_to_remove.append(camera)
+
+                    if cameras_to_remove:
+                        with ThreadPoolExecutor(
+                            max_workers=min(len(cameras_to_remove), 4)
+                        ) as executor:
+                            futures = {
+                                executor.submit(self.__remove_camera, camera): camera
+                                for camera in cameras_to_remove
+                            }
+                            for future in as_completed(futures):
+                                camera = futures[future]
+                                try:
+                                    future.result()
+                                except Exception:
+                                    logger.exception("Error removing camera %s", camera)
                 elif update_type == CameraConfigUpdateEnum.refresh.name:
                     # Recycle replay cameras so detect width/height/fps
                     # propagate through ffmpeg args, SHM sizing, and the
                     # region grid. Regular cameras detect change still
                     # requires a full restart.
+                    # Parallelize recycling — each camera's stop/start is
+                    # independent, so they can run concurrently.
+                    cameras_to_recycle: list[tuple[str, CameraConfig]] = []
                     for camera in updated_cameras:
                         if not camera.startswith(REPLAY_CAMERA_PREFIX):
                             continue
@@ -315,26 +384,63 @@ class CameraMaintainer(threading.Thread):
                         ):
                             continue
 
-                        # rebuild ffmpeg cmds on the shared config so the
-                        # new subprocesses spawn with current args
-                        new_config.recreate_ffmpeg_cmds()
+                        cameras_to_recycle.append((camera, new_config))
 
-                        self.__stop_camera_capture_process(camera)
-                        self.__stop_camera_process(camera)
-                        self.__unlink_camera_frame_slots(camera)
-                        self.capture_processes.pop(camera, None)
-                        self.camera_processes.pop(camera, None)
+                    if cameras_to_recycle:
+                        with ThreadPoolExecutor(
+                            max_workers=min(len(cameras_to_recycle), 4)
+                        ) as executor:
+                            futures = {
+                                executor.submit(
+                                    self.__recycle_camera, camera, config
+                                ): camera
+                                for camera, config in cameras_to_recycle
+                            }
+                            for future in as_completed(futures):
+                                camera = futures[future]
+                                try:
+                                    future.result()
+                                except Exception:
+                                    logger.exception(
+                                        "Error recycling camera %s", camera
+                                    )
 
-                        self.__start_camera_processor(camera, new_config, runtime=True)
-                        self.__start_camera_capture(camera, new_config, runtime=True)
+        # Parallelize shutdown — captures and processors for different
+        # cameras are independent, so they can stop concurrently within
+        # each phase.  The two phases must remain sequential (captures
+        # must exit before processors, since processors depend on SHM
+        # buffers held by capture).
+        if self.capture_processes:
+            with ThreadPoolExecutor(
+                max_workers=min(len(self.capture_processes), 8)
+            ) as executor:
+                futures = {
+                    executor.submit(self.__stop_camera_capture_process, camera): camera
+                    for camera in self.capture_processes
+                }
+                for future in as_completed(futures):
+                    camera = futures[future]
+                    try:
+                        future.result()
+                    except Exception:
+                        logger.exception(
+                            "Error stopping capture process for %s", camera
+                        )
 
-        # ensure the capture processes are done
-        for camera in self.capture_processes.keys():
-            self.__stop_camera_capture_process(camera)
-
-        # ensure the camera processors are done
-        for camera in self.camera_processes.keys():
-            self.__stop_camera_process(camera)
+        if self.camera_processes:
+            with ThreadPoolExecutor(
+                max_workers=min(len(self.camera_processes), 8)
+            ) as executor:
+                futures = {
+                    executor.submit(self.__stop_camera_process, camera): camera
+                    for camera in self.camera_processes
+                }
+                for future in as_completed(futures):
+                    camera = futures[future]
+                    try:
+                        future.result()
+                    except Exception:
+                        logger.exception("Error stopping camera process for %s", camera)
 
         self.update_subscriber.stop()
         self.frame_manager.cleanup()

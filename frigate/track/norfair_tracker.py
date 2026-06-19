@@ -339,6 +339,7 @@ class NorfairTracker(ObjectTracker):
         stationary: bool,
         thresholds: StationaryThresholds,
         yuv_frame: np.ndarray | None,
+        motionless_count: int = 0,
     ) -> bool:
         def reset_position(xmin: int, ymin: int, xmax: int, ymax: int) -> None:
             self.positions[id] = {
@@ -379,8 +380,11 @@ class NorfairTracker(ObjectTracker):
         # assume object is active
         if avg_iou < thresholds.known_active_iou:
             if stationary and yuv_frame is not None:
-                if not self.stationary_classifier.evaluate(
-                    id, yuv_frame, cast(tuple[int, int, int, int], tuple(box))
+                if (
+                    motionless_count % thresholds.motion_classifier_eval_interval == 0
+                    and not self.stationary_classifier.evaluate(
+                        id, yuv_frame, cast(tuple[int, int, int, int], tuple(box))
+                    )
                 ):
                     reset_position(xmin, ymin, xmax, ymax)
                     return False
@@ -406,13 +410,16 @@ class NorfairTracker(ObjectTracker):
                 median_box,
             )
 
-            # if the median iou drops below the threshold
+           # if the median iou drops below the threshold
             # assume object is no longer stationary
             if median_iou < threshold:
                 # If we have a yuv_frame to check before flipping to active, check with classifier if we have YUV frame
                 if stationary and yuv_frame is not None:
-                    if not self.stationary_classifier.evaluate(
-                        id, yuv_frame, cast(tuple[int, int, int, int], tuple(box))
+                    if (
+                        motionless_count % thresholds.motion_classifier_eval_interval == 0
+                        and not self.stationary_classifier.evaluate(
+                            id, yuv_frame, cast(tuple[int, int, int, int], tuple(box))
+                        )
                     ):
                         reset_position(xmin, ymin, xmax, ymax)
                         return False
@@ -461,6 +468,7 @@ class NorfairTracker(ObjectTracker):
         obj: dict[str, Any],
         thresholds: StationaryThresholds,
         yuv_frame: np.ndarray | None,
+        motionless_count: int = 0,
     ) -> None:
         id = self.track_id_map[track_id]
         self.disappeared[id] = 0
@@ -469,7 +477,7 @@ class NorfairTracker(ObjectTracker):
             >= self.detect_config.stationary.threshold
         )
         # update the motionless count if the object has not moved to a new position
-        if self.update_position(id, obj["box"], stationary, thresholds, yuv_frame):
+        if self.update_position(id, obj["box"], stationary, thresholds, yuv_frame, motionless_count):
             self.tracked_objects[id]["motionless_count"] += 1
             if self.is_expired(id):
                 self.deregister(id, track_id)
@@ -628,11 +636,13 @@ class NorfairTracker(ObjectTracker):
             # else update it
             else:
                 thresholds = get_stationary_threshold(new_obj["label"])
+                motionless_count = self.tracked_objects[id]["motionless_count"]
                 self.update(
                     str(t.global_id),
                     new_obj,
                     thresholds,
                     yuv_frame if thresholds.motion_classifier_enabled else None,
+                    motionless_count,
                 )
 
         # clear expired tracks

@@ -40,6 +40,11 @@ class StationaryThresholds:
     # Whether to use the motion classifier
     motion_classifier_enabled: bool = False
 
+    # Evaluate the motion classifier every N frames when stationary
+    # Reduces CPU usage by skipping expensive FFT-based comparisons
+    # on consecutive frames for stationary objects (appearance changes slowly)
+    motion_classifier_eval_interval: int = 5
+
 
 # Thresholds for objects that are expected to be stationary
 STATIONARY_OBJECT_THRESHOLDS = StationaryThresholds(
