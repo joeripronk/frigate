@@ -58,6 +58,7 @@ class CameraMaintainer(threading.Thread):
         self.camera_processes: dict[str, mp.Process] = {}
         self.capture_processes: dict[str, mp.Process] = {}
         self.camera_stop_events: dict[str, MpEvent] = {}
+        self.camera_shm_slots: dict[str, set[str]] = {}
         self.metrics_manager = metrics_manager
 
     def __ensure_camera_stop_event(self, camera: str) -> MpEvent:
@@ -170,9 +171,12 @@ class CameraMaintainer(threading.Thread):
 
         # pre-create shms
         count = 10 if runtime else self.shm_count
+        self.camera_shm_slots.setdefault(name, set())
         for i in range(count):
+            slot_name = f"{name}_frame{i}"
             frame_size = config.frame_shape_yuv[0] * config.frame_shape_yuv[1]
-            self.frame_manager.create(f"{config.name}_frame{i}", frame_size)
+            self.frame_manager.create(slot_name, frame_size)
+            self.camera_shm_slots[name].add(slot_name)
 
         capture_process = CameraCapture(
             config,
@@ -215,9 +219,19 @@ class CameraMaintainer(threading.Thread):
         they call frame_manager.get with a shape that no longer fits
         (the get path drops and reopens stale refs).
         """
-        prefix = f"{camera}_frame"
-        names = [n for n in list(self.frame_manager.shm_store) if n.startswith(prefix)]
-        for name in names:
+        # Fast path: use per-camera tracking set — O(k) where k is the
+        # number of slots for this camera, rather than O(n) over the
+        # entire shm_store.
+        slot_names = self.camera_shm_slots.pop(camera, None)
+        if slot_names is None:
+            # No tracking data — camera may predate this optimization.
+            # Fall back to prefix scan.
+            prefix = f"{camera}_frame"
+            slot_names = (
+                n for n in self.frame_manager.shm_store if n.startswith(prefix)
+            )
+
+        for name in slot_names:
             try:
                 self.frame_manager.delete(name)
             except Exception as exc:

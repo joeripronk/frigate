@@ -38,6 +38,10 @@ class TestMaintainerUnlinkFrameSlotsOnRemove(unittest.TestCase):
             "front": object(),
             "out-front": object(),
         }
+        # Per-camera tracking set — the optimization path.
+        maintainer.camera_shm_slots = {
+            "front": {"front_frame0", "front_frame1", "front_frame2"},
+        }
 
         # __name-mangled access from outside the class.
         maintainer._CameraMaintainer__unlink_camera_frame_slots("front")
@@ -53,6 +57,8 @@ class TestMaintainerUnlinkFrameSlotsOnRemove(unittest.TestCase):
         created (e.g. cancelled during preparing_clip) should be a no-op."""
         maintainer = self._make_maintainer()
         maintainer.frame_manager.shm_store = {"other_frame0": object()}
+        # No tracking entries for "front" — triggers fallback path.
+        maintainer.camera_shm_slots = {}
 
         maintainer._CameraMaintainer__unlink_camera_frame_slots("front")
 
@@ -65,6 +71,9 @@ class TestMaintainerUnlinkFrameSlotsOnRemove(unittest.TestCase):
             "front_frame0": object(),
             "front_frame1": object(),
         }
+        maintainer.camera_shm_slots = {
+            "front": {"front_frame0", "front_frame1"},
+        }
         maintainer.frame_manager.delete.side_effect = OSError("simulated")
 
         # Both slots are attempted; the OSError on the first doesn't
@@ -73,6 +82,29 @@ class TestMaintainerUnlinkFrameSlotsOnRemove(unittest.TestCase):
             maintainer._CameraMaintainer__unlink_camera_frame_slots("front")
 
         self.assertEqual(maintainer.frame_manager.delete.call_count, 2)
+
+    def test_fallback_prefix_scan_when_no_tracking(self) -> None:
+        """When camera_shm_slots lacks this camera (e.g. pre-optimization
+        deployments), the method falls back to a prefix scan of shm_store."""
+        maintainer = self._make_maintainer()
+        maintainer.frame_manager.shm_store = {
+            "front_frame0": object(),
+            "front_frame1": object(),
+            "other_frame0": object(),
+            "front": object(),
+            "out-front": object(),
+        }
+        # No tracking entry for "front" — triggers the fallback path.
+        maintainer.camera_shm_slots = {}
+
+        # __name-mangled access from outside the class.
+        maintainer._CameraMaintainer__unlink_camera_frame_slots("front")
+
+        deleted = [c.args[0] for c in maintainer.frame_manager.delete.call_args_list]
+        self.assertEqual(
+            sorted(deleted),
+            ["front_frame0", "front_frame1"],
+        )
 
 
 if __name__ == "__main__":
