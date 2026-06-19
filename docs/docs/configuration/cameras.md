@@ -24,11 +24,13 @@ Each role can only be assigned to one input per camera. The options for roles ar
 <ConfigTabs>
 <TabItem value="ui">
 
-Navigate to <NavPath path="Settings > Camera configuration > FFmpeg" />.
+Navigate to <NavPath path="Settings > Camera configuration > Streams (FFmpeg)" />.
 
 | Field             | Description                                                         |
 | ----------------- | ------------------------------------------------------------------- |
 | **Camera inputs** | List of input stream definitions (paths and roles) for this camera. |
+
+For each input you can choose its source: select **Restream (go2rtc)** to pick an existing [go2rtc stream](restream.md) from a dropdown (Frigate uses the `rtsp://127.0.0.1:8554/<stream>` path and `preset-rtsp-restream` input args for that input automatically), or **Manual input path** to type the stream URL directly.
 
 Navigate to <NavPath path="Settings > Camera configuration > Object detection" />.
 
