@@ -461,6 +461,13 @@ class ReolinkTcpPushClient:
     # Detection cooldown per type to prevent duplicate events
     _COOLDOWN_SECONDS: float = 2.0
 
+    # Mapping of DetectionType enum to its Reolink internal label
+    _AI_TYPE_LABELS: dict[DetectionType, str] = {
+        DetectionType.PERSON: "people",
+        DetectionType.VEHICLE: "vehicle",
+        DetectionType.PET: "dog_cat",
+    }
+
     def __init__(
         self,
         camera_config: CameraConfig,
@@ -509,6 +516,15 @@ class ReolinkTcpPushClient:
         self._doorbell_debounce_seconds: float = 5.0
         self._previous_visitor_state: bool = False
         self._last_doorbell_time: float = 0.0
+
+        # AI detection event tracking (person/vehicle/pet)
+        self._ai_detection_metadata_publisher = EventMetadataPublisher()
+        self._ai_active_events: dict[str, tuple[str, float]] = {}
+        self._ai_previous_states: dict[DetectionType, bool] = {
+            DetectionType.PERSON: False,
+            DetectionType.VEHICLE: False,
+            DetectionType.PET: False,
+        }
 
     def start(self) -> None:
         """Start the TCP push connection in a background thread with its own event loop."""
@@ -646,7 +662,7 @@ class ReolinkTcpPushClient:
         try:
             while self._running and not self.stop_event.is_set():
                 await asyncio.sleep(1)
-                self._process_events()
+                await self._process_events()
         except asyncio.CancelledError:
             raise
         except Exception:
@@ -671,6 +687,22 @@ class ReolinkTcpPushClient:
                 self._doorbell_active_event = None
                 self._doorbell_active_event_time = 0.0
 
+            # End any active AI detection events when connection drops
+            for label, (event_id, event_time) in self._ai_active_events.items():
+                try:
+                    self._ai_detection_metadata_publisher.publish(
+                        (
+                            "end",
+                            self.camera_name,
+                            event_id,
+                            time.time(),
+                        ),
+                        sub_topic=f"ai_detection_{label}_event_end",
+                    )
+                except Exception:
+                    pass
+            self._ai_active_events.clear()
+
             try:
                 await self._reolink.baichuan.unsubscribe_events()
                 await self._reolink.logout()
@@ -681,7 +713,7 @@ class ReolinkTcpPushClient:
             finally:
                 self._reolink = None
 
-    def _process_events(self) -> None:
+    async def _process_events(self) -> None:
         """Check current detection states and push new detections to the queue."""
         if not self._reolink:
             return
@@ -705,19 +737,19 @@ class ReolinkTcpPushClient:
                 )
 
         # AI detections (person, vehicle, pet)
-        ai_types_to_check: list[tuple[DetectionType, str, bool]] = []
+        ai_types_to_check: list[tuple[DetectionType, str]] = []
         if self.detect_person:
-            ai_types_to_check.append((DetectionType.PERSON, "people", True))
+            ai_types_to_check.append((DetectionType.PERSON, "people"))
         if self.detect_vehicle:
-            ai_types_to_check.append((DetectionType.VEHICLE, "vehicle", True))
+            ai_types_to_check.append((DetectionType.VEHICLE, "vehicle"))
         if self.detect_pet:
-            ai_types_to_check.append((DetectionType.PET, "dog_cat", True))
+            ai_types_to_check.append((DetectionType.PET, "dog_cat"))
 
         channel = 0
         if self._reolink.num_channels > 0:
             channel = self._reolink.channels[0] if self._reolink.channels else 0
 
-        for det_type, ai_type, _ in ai_types_to_check:
+        for det_type, ai_type in ai_types_to_check:
             key = ai_type
             last_time = self._last_detection_times.get(key, 0)
 
@@ -726,6 +758,32 @@ class ReolinkTcpPushClient:
             except Exception:
                 detected = False
 
+            current_state = self._ai_previous_states[det_type]
+            label = det_type.value
+
+            # Detect transition: not detected -> detected (start event)
+            if detected and not current_state:
+                self._ai_previous_states[det_type] = True
+                event_id = f"{label}_{self.camera_name}_{int(frame_time * 1000)}"
+                logger.info(
+                    "%s: AI detection started: %s (event=%s, channel=%s)",
+                    self.camera_name,
+                    label,
+                    event_id,
+                    channel,
+                )
+                self._queue_detection(det_type, ai_type, 0.9, channel, frame_time)
+                await self._queue_ai_event_start(det_type, label, event_id, frame_time)
+                # Update last time to prevent cooldown block from queuing again
+                self._last_detection_times[key] = frame_time
+                continue
+
+            # Detect transition: detected -> not detected (end event)
+            elif not detected and current_state:
+                self._ai_previous_states[det_type] = False
+                self._queue_ai_event_end(det_type, label, frame_time)
+
+            # Queue detection for object tracking pipeline (only if not already queued)
             if detected and (frame_time - last_time) > self._COOLDOWN_SECONDS:
                 self._last_detection_times[key] = frame_time
                 self._queue_detection(det_type, ai_type, 0.9, channel, frame_time)
@@ -739,11 +797,11 @@ class ReolinkTcpPushClient:
 
             # Detect transition from not-pressed to pressed
             if visitor_state and not self._previous_visitor_state:
-                self._handle_doorbell_press(frame_time)
+                await self._handle_doorbell_press(frame_time)
 
             # Detect transition from pressed to not-pressed - end the event
             if not visitor_state and self._previous_visitor_state:
-                self._publish_doorbell_end(frame_time)
+                await self._publish_doorbell_end(frame_time)
 
             self._previous_visitor_state = visitor_state
 
@@ -783,10 +841,10 @@ class ReolinkTcpPushClient:
         except queue.Full:
             pass
 
-    def _handle_doorbell_press(self, frame_time: float) -> None:
+    async def _handle_doorbell_press(self, frame_time: float) -> None:
         """Handle a doorbell press by queuing a detection and creating an event.
 
-        Applies a cooldown period to prevent duplicate events from rapid state changes.
+        Applies a cooldown period to prevent duplicate doorbell events from rapid state changes.
         Ends any previous active event before creating a new one.
         Captures a snapshot from the camera for the event.
         """
@@ -816,15 +874,15 @@ class ReolinkTcpPushClient:
         )
 
         # Capture snapshot from the camera
-        snapshot_base64 = self.get_snapshot_bytes()
+        snapshot_base64 = await self.get_snapshot_bytes()
         if snapshot_base64:
-            logger.debug(
+            logger.info(
                 "%s: captured doorbell snapshot for event %s",
                 self.camera_name,
                 event_id,
             )
         else:
-            logger.debug(
+            logger.warning(
                 "%s: failed to capture doorbell snapshot for event %s",
                 self.camera_name,
                 event_id,
@@ -873,7 +931,7 @@ class ReolinkTcpPushClient:
         self._doorbell_active_event_time = frame_time
         self._last_doorbell_time = frame_time
 
-    def _publish_doorbell_end(self, frame_time: float) -> None:
+    async def _publish_doorbell_end(self, frame_time: float) -> None:
         """End the currently active doorbell event."""
         if self._doorbell_active_event is None:
             return
@@ -903,6 +961,94 @@ class ReolinkTcpPushClient:
 
         self._doorbell_active_event = None
         self._doorbell_active_event_time = 0.0
+
+    async def _queue_ai_event_start(
+        self,
+        det_type: DetectionType,
+        label: str,
+        event_id: str,
+        frame_time: float,
+    ) -> None:
+        """Queue an AI detection event start for processing by the main pipeline.
+
+        Applies cooldown to prevent duplicate events from rapid state changes.
+        Captures a snapshot from the camera for the event.
+        """
+        if not self._reolink:
+            return
+
+        # Apply cooldown to prevent duplicate AI detection events
+        active_key = det_type.value
+        last_event_time = self._last_detection_times.get(f"event_{active_key}", 0)
+        if (frame_time - last_event_time) < self._COOLDOWN_SECONDS:
+            return
+
+        # Capture snapshot from the camera
+        snapshot_base64 = await self.get_snapshot_bytes()
+        if snapshot_base64:
+            logger.debug(
+                "%s: captured %s snapshot for event %s",
+                self.camera_name,
+                label,
+                event_id,
+            )
+
+        try:
+            self._ai_detection_metadata_publisher.publish(
+                (
+                    "start",
+                    self.camera_name,
+                    event_id,
+                    frame_time,
+                    snapshot_base64,
+                ),
+                sub_topic=f"ai_detection_{label}_event_create",
+            )
+            self._last_detection_times[f"event_{active_key}"] = frame_time
+            self._ai_active_events[label] = (event_id, frame_time)
+        except Exception:
+            logger.debug(
+                "Failed to publish %s event start for %s",
+                label,
+                self.camera_name,
+            )
+
+    def _queue_ai_event_end(
+        self,
+        det_type: DetectionType,
+        label: str,
+        frame_time: float,
+    ) -> None:
+        """End the currently active AI detection event."""
+        event_data = self._ai_active_events.pop(label, None)
+        if event_data is None:
+            return
+
+        event_id, event_start_time = event_data
+        logger.info(
+            "%s: ending %s event %s (duration=%.1fs)",
+            self.camera_name,
+            label,
+            event_id,
+            frame_time - event_start_time,
+        )
+
+        try:
+            self._ai_detection_metadata_publisher.publish(
+                (
+                    "end",
+                    self.camera_name,
+                    event_id,
+                    frame_time,
+                ),
+                sub_topic=f"ai_detection_{label}_event_end",
+            )
+        except Exception:
+            logger.debug(
+                "Failed to publish %s event end for %s",
+                label,
+                self.camera_name,
+            )
 
     def get_ai_detected_sync(self, object_type: str, channel: int = 0) -> bool:
         """Synchronously check if an AI object type is currently detected.
@@ -941,7 +1087,7 @@ class ReolinkTcpPushClient:
         except Exception:
             return False
 
-    def get_snapshot_bytes(self) -> Optional[str]:
+    async def get_snapshot_bytes(self) -> Optional[str]:
         """Capture a snapshot from the camera and return as base64 encoded JPEG.
 
         Returns None if the camera is unavailable or the snapshot fails.
@@ -953,17 +1099,46 @@ class ReolinkTcpPushClient:
         if self._reolink.num_channels > 0:
             channel = self._reolink.channels[0] if self._reolink.channels else 0
 
-        try:
-            snapshot_data = asyncio.run(self._reolink.get_snapshot(channel))
-            if snapshot_data is None:
-                return None
-            return base64.b64encode(snapshot_data).decode("utf-8")
-        except Exception:
-            logger.debug(
-                "Failed to get snapshot from Reolink camera %s",
+        # Ensure _stream_channels is populated from _channels for Baichuan-only connections
+        if not self._reolink._stream_channels and self._reolink._channels:
+            self._reolink._stream_channels = self._reolink._channels.copy()
+
+        snapshot_data = None
+
+        # Try HTTP snapshot first
+        if self._reolink.session_active:
+            try:
+                snapshot_data = await self._reolink.get_snapshot(channel)
+            except Exception:
+                logger.debug(
+                    "HTTP snapshot failed for %s (channel=%s), falling back to Baichuan",
+                    self.camera_name,
+                    channel,
+                )
+
+        # Fall back to Baichuan snapshot
+        if snapshot_data is None and self._reolink.baichuan:
+            try:
+                snapshot_data = await self._reolink.baichuan.snapshot(
+                    channel=channel, snapType="main"
+                )
+            except Exception as e:
+                logger.debug(
+                    "Baichuan snapshot failed for %s (channel=%s): %s",
+                    self.camera_name,
+                    channel,
+                    e,
+                )
+
+        if snapshot_data is None:
+            logger.warning(
+                "%s: failed to capture snapshot from camera (channel=%s)",
                 self.camera_name,
+                channel,
             )
             return None
+
+        return base64.b64encode(snapshot_data).decode("utf-8")
 
 
 class OnvifDetector:

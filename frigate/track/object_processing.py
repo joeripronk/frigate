@@ -3,6 +3,7 @@ import datetime
 import json
 import logging
 import queue
+import re
 import threading
 from collections import defaultdict
 from enum import Enum
@@ -96,6 +97,7 @@ class TrackedObjectProcessor(threading.Thread):
         self.ongoing_manual_events: dict[str, str] = {}
         self._doorbell_timers: dict[str, threading.Timer] = {}
         self._doorbell_events: dict[str, dict[str, Any]] = {}
+        self._ai_detection_timers: dict[str, threading.Timer] = {}
 
         # {
         #   'zone_name': {
@@ -823,6 +825,163 @@ class TrackedObjectProcessor(threading.Thread):
         if timer is not None:
             timer.cancel()
 
+    def handle_ai_detection_event(self, payload: tuple, topic: str) -> None:
+        """Handle AI detection (person/vehicle/pet) event creation or end request."""
+        event_type, camera, event_id, frame_time = payload[:4]
+        snapshot_base64 = payload[4] if len(payload) > 4 else None
+
+        # Extract detection type from topic (e.g., "ai_detection_person_event_create")
+        # Format: ai_detection_{label}_event_{create|end}
+        label_match = re.search(r"ai_detection_([a-z]+)_event_", topic)
+        label = label_match.group(1) if label_match else "detected"
+
+        if event_type == "start":
+            self._start_ai_detection_event(
+                camera, label, event_id, frame_time, snapshot_base64
+            )
+        elif event_type == "end":
+            self._end_ai_detection_event(camera, label, event_id, frame_time)
+
+    def _start_ai_detection_event(
+        self,
+        camera: str,
+        label: str,
+        event_id: str,
+        frame_time: float,
+        snapshot_base64: str | None = None,
+    ) -> None:
+        """Start an AI detection event (person/vehicle/pet) with auto-end timer."""
+        # Cancel any existing event for this label on this camera
+        timer_key = f"{label}_{camera}"
+        self._cancel_ai_detection_timer(timer_key)
+
+        camera_config = self.config.cameras.get(camera)
+        if camera_config is None:
+            return
+
+        timeout = getattr(camera_config.onvif.detect, "detection_timeout", 30)
+        if timeout <= 0:
+            timeout = 30
+
+        end_time = frame_time + timeout
+
+        # Save snapshot if provided
+        has_snapshot = False
+        if snapshot_base64:
+            try:
+                self.camera_states[camera].save_manual_event_image(
+                    cv2.imdecode(
+                        np.frombuffer(
+                            base64.b64decode(snapshot_base64), dtype=np.uint8
+                        ),
+                        cv2.IMREAD_COLOR,
+                    ),
+                    event_id,
+                    label,
+                    {},
+                )
+                has_snapshot = True
+                logger.debug(
+                    "Saved %s snapshot for event %s on camera %s",
+                    label,
+                    event_id,
+                    camera,
+                )
+            except Exception:
+                logger.debug(
+                    "Failed to save %s snapshot for event %s on camera %s",
+                    label,
+                    event_id,
+                    camera,
+                )
+
+        self.event_sender.publish(
+            (
+                EventTypeEnum.api,
+                EventStateEnum.start,
+                camera,
+                "",
+                {
+                    "id": event_id,
+                    "label": label,
+                    "sub_label": None,
+                    "score": 0.9,
+                    "camera": camera,
+                    "start_time": frame_time,
+                    "end_time": end_time,
+                    "has_clip": camera_config.record.enabled,
+                    "has_snapshot": has_snapshot,
+                    "snapshot_clean": has_snapshot,
+                    "type": label,
+                },
+            )
+        )
+
+        self.detection_publisher.publish(
+            (
+                camera,
+                frame_time,
+                {
+                    "state": ManualEventState.start,
+                    "label": label,
+                    "event_id": event_id,
+                    "end_time": end_time,
+                },
+            ),
+            DetectionTypeEnum.api.value,
+        )
+
+        self._ai_detection_timers[timer_key] = threading.Timer(
+            timeout,
+            self._auto_end_ai_detection,
+            args=[camera, label, event_id, end_time, timer_key],
+        )
+        self._ai_detection_timers[timer_key].daemon = True
+        self._ai_detection_timers[timer_key].start()
+
+    def _auto_end_ai_detection(
+        self, camera: str, label: str, event_id: str, end_time: float, timer_key: str
+    ) -> None:
+        """Auto-end an AI detection event when the timeout expires."""
+        self._end_ai_detection_event(camera, label, event_id, end_time)
+        self._ai_detection_timers.pop(timer_key, None)
+
+    def _end_ai_detection_event(
+        self, camera: str, label: str, event_id: str, frame_time: float
+    ) -> None:
+        """End an AI detection event."""
+        timer_key = f"{label}_{camera}"
+        self._cancel_ai_detection_timer(timer_key)
+
+        self.event_sender.publish(
+            (
+                EventTypeEnum.api,
+                EventStateEnum.end,
+                None,
+                "",
+                {"id": event_id, "end_time": frame_time},
+            )
+        )
+
+        self.detection_publisher.publish(
+            (
+                camera,
+                frame_time,
+                {
+                    "state": ManualEventState.end,
+                    "event_id": event_id,
+                    "end_time": frame_time,
+                },
+            ),
+            DetectionTypeEnum.api.value,
+        )
+
+    def _cancel_ai_detection_timer(self, timer_key: str) -> None:
+        """Cancel an auto-end timer for an AI detection event."""
+        timer = self._ai_detection_timers.pop(timer_key, None)
+        if timer is not None:
+            timer.cancel()
+
     def force_end_all_events(self, camera: str, camera_state: CameraState) -> None:
         """Ends all active events on camera when disabling."""
         last_frame_name = camera_state.previous_frame_id
@@ -921,6 +1080,10 @@ class TrackedObjectProcessor(threading.Thread):
                     self.handle_doorbell_event(payload)
                 elif topic.endswith(EventMetadataTypeEnum.doorbell_event_end.value):
                     self.handle_doorbell_event(payload)
+                elif "_event_create" in topic and "ai_detection_" in topic:
+                    self.handle_ai_detection_event(payload, topic)
+                elif "_event_end" in topic and "ai_detection_" in topic:
+                    self.handle_ai_detection_event(payload, topic)
 
             try:
                 (

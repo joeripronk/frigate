@@ -164,6 +164,12 @@ class OnvifDetectionConfig(FrigateBaseModel):
         description="Seconds after the last doorbell press before the event ends automatically. Set to 0 to disable auto-end.",
         ge=0,
     )
+    detection_timeout: int = Field(
+        default=30,
+        title="Detection event timeout",
+        description="Seconds after person/vehicle/pet detection ends before the event ends automatically. Set to 0 to disable auto-end.",
+        ge=0,
+    )
     motion_correlation: bool = Field(
         default=False,
         title="Motion correlation",

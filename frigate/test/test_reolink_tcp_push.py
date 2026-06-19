@@ -1,5 +1,6 @@
 """Tests for Reolink TCP push event detection."""
 
+import asyncio
 import queue
 import threading
 import time
@@ -443,7 +444,7 @@ class TestReolinkTcpPushClientEventProcessing(unittest.TestCase):
         mock_reolink.visitor_detected.return_value = True
         client._reolink = mock_reolink
 
-        client._process_events()
+        asyncio.run(client._process_events())
 
         # Should have queued: motion, person, vehicle, pet, doorbell
         self.assertEqual(detection_queue.qsize(), 5)
