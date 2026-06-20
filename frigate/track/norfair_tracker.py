@@ -635,6 +635,7 @@ class NorfairTracker(ObjectTracker):
                     self.tracked_objects[id]["estimate"] = new_obj["estimate"]
             # else update it
             else:
+                id = self.track_id_map[str(t.global_id)]
                 thresholds = get_stationary_threshold(new_obj["label"])
                 motionless_count = self.tracked_objects[id]["motionless_count"]
                 self.update(

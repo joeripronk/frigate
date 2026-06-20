@@ -1058,9 +1058,13 @@ class UntrackedSharedMemory(_mpshm.SharedMemory):
                 _mprt.unregister(self._name, "shared_memory")
 
 
+
 class SharedMemoryFrameManager(FrameManager):
     def __init__(self):
         self.shm_store: dict[str, UntrackedSharedMemory] = {}
+        # Per-name expected size — cached so get() skips np.prod(shape)
+        # on the hot path (called 10-30x/sec per camera).
+        self._expected_sizes: dict[str, int] = {}
 
     def create(self, name: str, size) -> AnyStr:
         try:
@@ -1073,6 +1077,7 @@ class SharedMemoryFrameManager(FrameManager):
             shm = UntrackedSharedMemory(name=name)
 
         self.shm_store[name] = shm
+        self._expected_sizes[name] = size
         return shm.buf
 
     def write(self, name: str) -> Optional[memoryview]:
@@ -1082,6 +1087,7 @@ class SharedMemoryFrameManager(FrameManager):
             else:
                 shm = UntrackedSharedMemory(name=name)
                 self.shm_store[name] = shm
+                self._expected_sizes[name] = shm.size
             return shm.buf
         except FileNotFoundError:
             logger.info(f"the file {name} not found")
@@ -1089,8 +1095,16 @@ class SharedMemoryFrameManager(FrameManager):
 
     def get(self, name: str, shape) -> Optional[np.ndarray]:
         try:
-            required = int(np.prod(shape))
             shm = self.shm_store.get(name)
+            cached_size = self._expected_sizes.get(name)
+            if shm is not None and cached_size is not None and shm.size == cached_size:
+                # Hot path: cached size matches — no need to compute
+                # np.prod(shape) or do any size comparison.
+                return np.ndarray(shape, dtype=np.uint8, buffer=shm.buf)
+
+            # Cold path: compute required size and do full comparison.
+            # This handles cache misses, size mismatches, and stale refs.
+            required = int(np.prod(shape))
             if shm is not None and shm.size != required:
                 # stale cached ref from a same-name recreate — drop and reopen
                 try:
@@ -1098,6 +1112,7 @@ class SharedMemoryFrameManager(FrameManager):
                 except Exception:
                     pass
                 self.shm_store.pop(name, None)
+                self._expected_sizes.pop(name, None)
                 shm = None
             if shm is None:
                 shm = UntrackedSharedMemory(name=name)
@@ -1109,6 +1124,7 @@ class SharedMemoryFrameManager(FrameManager):
                         pass
                     return None
                 self.shm_store[name] = shm
+                self._expected_sizes[name] = shm.size
             return np.ndarray(shape, dtype=np.uint8, buffer=shm.buf)
         except FileNotFoundError:
             return None
