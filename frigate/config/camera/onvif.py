@@ -7,13 +7,55 @@ from ..base import FrigateBaseModel
 from ..env import EnvString
 from .objects import DEFAULT_TRACKED_OBJECTS
 
-__all__ = ["OnvifConfig", "PtzAutotrackConfig", "ZoomingModeEnum"]
+__all__ = ["OnvifConfig", "OnvifDetectConfig", "OnvifVendorEnum", "PtzAutotrackConfig", "ZoomingModeEnum"]
 
 
 class ZoomingModeEnum(str, Enum):
     disabled = "disabled"
     absolute = "absolute"
     relative = "relative"
+
+
+class OnvifVendorEnum(str, Enum):
+    reolink = "reolink"
+
+
+class OnvifDetectConfig(FrigateBaseModel):
+    enabled: bool = Field(
+        default=False,
+        title="Enable detection",
+        description="Enable or disable ONVIF/Reolink camera-based detection for this camera.",
+    )
+    motion: bool = Field(
+        default=True,
+        title="Motion detection",
+        description="Enable motion detection via ONVIF event subscription.",
+    )
+    person: bool = Field(
+        default=False,
+        title="Person detection",
+        description="Enable person detection via Reolink AI detection (Reolink cameras only).",
+    )
+    vehicle: bool = Field(
+        default=False,
+        title="Vehicle detection",
+        description="Enable vehicle detection via Reolink AI detection (Reolink cameras only).",
+    )
+    pet: bool = Field(
+        default=False,
+        title="Pet detection",
+        description="Enable pet detection via Reolink AI detection (Reolink cameras only).",
+    )
+    doorbell: bool = Field(
+        default=False,
+        title="Doorbell detection",
+        description="Enable doorbell press detection via Reolick AI detection (Reolink doorbell cameras only).",
+    )
+    vendor: OnvifVendorEnum = Field(
+        default=OnvifVendorEnum.reolink,
+        title="Camera vendor",
+        description="Camera vendor for selecting the appropriate detection protocol.",
+    )
 
 
 class PtzAutotrackConfig(FrigateBaseModel):
@@ -121,6 +163,11 @@ class OnvifConfig(FrigateBaseModel):
         default=None,
         title="ONVIF profile",
         description="Specific ONVIF media profile to use for PTZ control, matched by token or name. If not set, the first profile with valid PTZ configuration is selected automatically.",
+    )
+    detect: OnvifDetectConfig = Field(
+        default_factory=OnvifDetectConfig,
+        title="Detection",
+        description="Detection settings for ONVIF/Reolick camera-based AI detection including motion, person, vehicle, pet, and doorbell.",
     )
     autotracking: PtzAutotrackConfig = Field(
         default_factory=PtzAutotrackConfig,

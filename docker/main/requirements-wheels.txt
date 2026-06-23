@@ -83,3 +83,4 @@ soundfile==0.13.*
 degirum == 0.16.*
 # Memory profiling
 memray == 1.15.*
+reolink-aio == 0.21.1

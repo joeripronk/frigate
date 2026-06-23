@@ -1,5 +1,6 @@
 """Create and maintain camera processes / management."""
 
+import asyncio
 import logging
 import multiprocessing as mp
 import threading
@@ -15,6 +16,7 @@ from frigate.config.camera.updater import (
     CameraConfigUpdateSubscriber,
 )
 from frigate.const import REPLAY_CAMERA_PREFIX
+from frigate.detectors.onvif_detector import OnvifDetector
 from frigate.models import Regions
 from frigate.util.builtin import empty_and_close_queue
 from frigate.util.image import SharedMemoryFrameManager, UntrackedSharedMemory
@@ -58,6 +60,8 @@ class CameraMaintainer(threading.Thread):
         self.camera_processes: dict[str, mp.Process] = {}
         self.capture_processes: dict[str, mp.Process] = {}
         self.camera_stop_events: dict[str, MpEvent] = {}
+        self.onvif_detectors: dict[str, OnvifDetector] = {}
+        self.onvif_detection_queues: dict[str, Queue | None] = {}
         self.metrics_manager = metrics_manager
 
     def __ensure_camera_stop_event(self, camera: str) -> MpEvent:
@@ -138,9 +142,13 @@ class CameraMaintainer(threading.Thread):
                     name=name,
                     create=True,
                     size=largest_frame,
-                )
+               )
             except FileExistsError:
                 pass
+
+        onvif_detection_queue: Queue | None = Queue() if config.onvif.detect.enabled and config.onvif.host else None
+        if onvif_detection_queue:
+            self.onvif_detection_queues[name] = onvif_detection_queue
 
         camera_process = CameraTracker(
             config,
@@ -153,11 +161,21 @@ class CameraMaintainer(threading.Thread):
             self.region_grids[name],
             camera_stop_event,
             self.config.logger,
+            onvif_detection_queue=onvif_detection_queue,
         )
         self.camera_processes[name] = camera_process
         camera_process.start()
         self.camera_metrics[name].process_pid.value = camera_process.pid
         logger.info(f"Camera processor started for {name}: {camera_process.pid}")
+
+        if config.onvif.detect.enabled and config.onvif.host and onvif_detection_queue:
+            onvif_detector = OnvifDetector(
+                config,
+                onvif_detection_queue,
+                camera_stop_event,
+            )
+            self.onvif_detectors[name] = onvif_detector
+            onvif_detector.start()
 
     def __start_camera_capture(
         self, name: str, config: CameraConfig, runtime: bool = False
@@ -224,6 +242,11 @@ class CameraMaintainer(threading.Thread):
                 logger.debug("Could not unlink SHM %s: %s", name, exc)
 
     def __stop_camera_process(self, camera: str) -> None:
+        onvif_detector = self.onvif_detectors.pop(camera, None)
+        if onvif_detector is not None:
+            logger.info(f"Stopping ONVIF detector for {camera}")
+            asyncio.run(onvif_detector.stop())
+
         camera_process = self.camera_processes.get(camera)
         if camera_process is not None:
             logger.info(f"Waiting for process for {camera} to stop")
@@ -269,7 +292,7 @@ class CameraMaintainer(threading.Thread):
                             camera,
                             self.update_subscriber.camera_configs[camera],
                             runtime=True,
-                        )
+                    )
                 elif update_type == CameraConfigUpdateEnum.remove.name:
                     for camera in updated_cameras:
                         self.__stop_camera_capture_process(camera)
@@ -278,6 +301,8 @@ class CameraMaintainer(threading.Thread):
                         self.capture_processes.pop(camera, None)
                         self.camera_processes.pop(camera, None)
                         self.camera_stop_events.pop(camera, None)
+                        self.onvif_detectors.pop(camera, None)
+                        self.onvif_detection_queues.pop(camera, None)
                         self.region_grids.pop(camera, None)
                         self.camera_metrics.pop(camera, None)
                         self.ptz_metrics.pop(camera, None)

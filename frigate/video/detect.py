@@ -1,4 +1,5 @@
 """Manages camera object detection processes."""
+from __future__ import annotations
 
 import logging
 import queue
@@ -22,6 +23,7 @@ from frigate.const import (
     PROCESS_PRIORITY_HIGH,
     REQUEST_REGION_GRID,
 )
+from frigate.detectors.onvif_detector import DetectionType, OnvifDetection
 from frigate.motion import MotionDetector
 from frigate.motion.improved_motion import ImprovedMotionDetector
 from frigate.object_detection.base import RemoteObjectDetector
@@ -66,6 +68,7 @@ class CameraTracker(FrigateProcess):
         region_grid: list[list[dict[str, Any]]],
         stop_event: MpEvent,
         log_config: LoggerConfig | None = None,
+        onvif_detection_queue: Queue | None = None,
     ) -> None:
         super().__init__(
             stop_event,
@@ -82,6 +85,7 @@ class CameraTracker(FrigateProcess):
         self.ptz_metrics = ptz_metrics
         self.region_grid = region_grid
         self.log_config = log_config
+        self.onvif_detection_queue = onvif_detection_queue
 
     def run(self) -> None:
         self.pre_run_setup(self.log_config)
@@ -125,6 +129,7 @@ class CameraTracker(FrigateProcess):
             self.stop_event,
             self.ptz_metrics,
             self.region_grid,
+            onvif_detection_queue=self.onvif_detection_queue,
         )
 
         # empty the frame queue
@@ -189,6 +194,7 @@ def process_frames(
     ptz_metrics: PTZMetrics,
     region_grid: list[list[dict[str, Any]]],
     exit_on_empty: bool = False,
+    onvif_detection_queue: Queue | None = None,
 ):
     next_region_update = get_tomorrow_at_time(2)
     config_subscriber = CameraConfigUpdateSubscriber(
@@ -299,8 +305,19 @@ def process_frames(
             )
             continue
 
-        # look for motion if enabled
+    # look for motion if enabled
         motion_boxes = motion_detector.detect(frame)
+
+        # inject ONVIF/Reolick detections
+        onvif_detections = []
+        if onvif_detection_queue is not None:
+            while not onvif_detection_queue.empty():
+                try:
+                    det = onvif_detection_queue.get_nowait()
+                    if isinstance(det, OnvifDetection):
+                        onvif_detections.append(det)
+                except Exception:
+                    break
 
         regions = []
         consolidated_detections = []
@@ -391,9 +408,42 @@ def process_frames(
             if startup_scan:
                 for region in get_startup_regions(
                     frame_shape, region_min_size, region_grid
-                ):
+                 ):
                     regions.append(region)
                 startup_scan = False
+
+            # convert ONVIF detections to tracking format
+            for onvif_det in onvif_detections:
+                if onvif_det.type == DetectionType.MOTION:
+                    continue
+
+                box = onvif_det.box
+                frame_w = onvif_det.frame_width
+                frame_h = onvif_det.frame_height
+
+                xmin = int(box[1] * frame_w)
+                ymin = int(box[0] * frame_h)
+                xmax = int(box[2] * frame_w)
+                ymax = int(box[3] * frame_h)
+
+                width = xmax - xmin
+                height = ymax - ymin
+                area = width * height
+                ratio = width / max(1, height)
+
+                # Use full frame as region for ONVIF detections
+                region = (0, 0, frame_w, frame_h)
+
+                detections.append(
+                    (
+                        onvif_det.label,
+                        onvif_det.score,
+                        (xmin, ymin, xmax, ymax),
+                        area,
+                        ratio,
+                        region,
+                    )
+                )
 
             # resize regions and detect
             # seed with stationary objects
