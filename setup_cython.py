@@ -19,6 +19,7 @@ setup(
             "frigate/embeddings/util_cython.pyx",
             "frigate/events/audio_cython.pyx",
             "frigate/detectors/detection_cython.pyx",
+            "frigate/record/record_cython.pyx",
         ],
         language_level=3,
         compiler_directives={
