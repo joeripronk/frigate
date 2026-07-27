@@ -49,6 +49,13 @@ except ModuleNotFoundError:
 
 logger = logging.getLogger(__name__)
 
+from frigate.events.audio_cython import cython_detect_raw
+
+try:
+    from frigate.events.audio_cython import cython_build_detections
+except ImportError:
+    cython_build_detections = None
+
 
 def get_ffmpeg_command(ffmpeg: CameraFfmpegConfig) -> list[str]:
     ffmpeg_input: CameraInput = [i for i in ffmpeg.inputs if "audio" in i.roles][0]
@@ -469,30 +476,8 @@ class AudioTfl:
     def _detect_raw(self, tensor_input: np.ndarray) -> np.ndarray:
         self.interpreter.set_tensor(self.tensor_input_details[0]["index"], tensor_input)
         self.interpreter.invoke()
-        detections = np.zeros((20, 6), np.float32)
-
         res = self.interpreter.get_tensor(self.tensor_output_details[0]["index"])[0]
-        non_zero_indices = res > 0
-        class_ids = np.argpartition(-res, 20)[:20]
-        class_ids = class_ids[np.argsort(-res[class_ids])]
-        class_ids = class_ids[non_zero_indices[class_ids]]
-        scores = res[class_ids]
-        boxes = np.full((scores.shape[0], 4), -1, np.float32)
-        count = len(scores)
-
-        for i in range(count):
-            if scores[i] < AUDIO_MIN_CONFIDENCE or i == 20:
-                break
-            detections[i] = [
-                class_ids[i],
-                float(scores[i]),
-                boxes[i][0],
-                boxes[i][1],
-                boxes[i][2],
-                boxes[i][3],
-            ]
-
-        return detections
+        return cython_detect_raw(res, 20, AUDIO_MIN_CONFIDENCE)
 
     def detect(
         self, tensor_input: np.ndarray, threshold: float = AUDIO_MIN_CONFIDENCE

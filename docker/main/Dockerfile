@@ -366,9 +366,10 @@ FROM scratch AS rootfs
 WORKDIR /opt/frigate/
 COPY frigate frigate/
 COPY migrations migrations/
-COPY --from=cython-build frigate/util frigate/util
+  COPY --from=cython-build frigate/util frigate/util
 COPY --from=cython-build frigate/detectors frigate/detectors
 COPY --from=cython-build frigate/embeddings frigate/embeddings
+COPY --from=cython-build frigate/events frigate/events
 COPY --from=web-build /work/dist/ web/
 
 # Frigate final container
