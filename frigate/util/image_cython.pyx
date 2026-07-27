@@ -1,4 +1,8 @@
-"""Utilities for creating and manipulating image frames."""
+"""
+Cython-accelerated utilities for creating and manipulating image frames.
+"""
+
+# cython: language_level=3, boundscheck=False, wraparound=False, cdivision=True
 
 import datetime
 import logging
@@ -13,31 +17,13 @@ from typing import Any, AnyStr
 import cv2
 import numpy as np
 from unidecode import unidecode
-from frigate.util.image_cython import cython_yuv_crop_and_resize, yuv_to_3_channel_yuv, get_yuv_crop, yuv_region_2_rgb, yuv_region_2_bgr
 
 logger = logging.getLogger(__name__)
 
+# Type declarations
 
 def transliterate_to_latin(text: str) -> str:
-    """
-    Transliterate a given text to Latin.
-
-    This function uses the unidecode library to transliterate the input text to Latin.
-    It is useful for converting texts with diacritics or non-Latin characters to a
-    Latin equivalent.
-
-    Args:
-        text (str): The text to be transliterated.
-
-    Returns:
-        str: The transliterated text.
-
-    Example:
-        >>> transliterate_to_latin('frégate')
-        'fregate'
-    """
     return unidecode(text)
-
 
 def on_edge(box, frame_shape):
     if (
@@ -47,7 +33,6 @@ def on_edge(box, frame_shape):
         or box[3] == frame_shape[0] - 1
     ):
         return True
-
 
 def has_better_attr(current_thumb, new_obj, attr_label) -> bool:
     max_new_attr = max(
@@ -62,10 +47,7 @@ def has_better_attr(current_thumb, new_obj, attr_label) -> bool:
             if a["label"] == attr_label
         ]
     )
-
-    # if the thumb has a higher scoring attr
     return max_new_attr > max_current_attr
-
 
 def is_better_thumbnail(
     label: str,
@@ -73,42 +55,30 @@ def is_better_thumbnail(
     new_obj: dict[str, Any],
     frame_shape: tuple[int, int],
 ) -> bool:
-    # larger is better
-    # cutoff images are less ideal, but they should also be smaller?
-    # better scores are obviously better too
-
-    # check face on person
     if label == "person":
         if has_better_attr(current_thumb, new_obj, "face"):
             return True
-        # if the current thumb has a face attr, dont update unless it gets better
         if any([a["label"] == "face" for a in current_thumb["attributes"]]):
             return False
 
-    # check license_plate on car
     if label in ["car", "motorcycle"]:
         if has_better_attr(current_thumb, new_obj, "license_plate"):
             return True
-        # if the current thumb has a license_plate attr, dont update unless it gets better
         if any([a["label"] == "license_plate" for a in current_thumb["attributes"]]):
             return False
 
-    # if the new_thumb is on an edge, and the current thumb is not
     if on_edge(new_obj["box"], frame_shape) and not on_edge(
         current_thumb["box"], frame_shape
     ):
         return False
 
-    # if the score is better by more than 5%
     if new_obj["score"] > current_thumb["score"] + 0.05:
         return True
 
-    # if the area is 10% larger
     if new_obj["area"] > current_thumb["area"] * 1.1:
         return True
 
     return False
-
 
 def draw_timestamp(
     frame,
@@ -121,7 +91,6 @@ def draw_timestamp(
 ):
     time_to_show = datetime.datetime.fromtimestamp(timestamp).strftime(timestamp_format)
 
-    # calculate a dynamic font size
     size = cv2.getTextSize(
         time_to_show,
         cv2.FONT_HERSHEY_SIMPLEX,
@@ -133,7 +102,6 @@ def draw_timestamp(
     desired_size = max(150, 0.33 * frame.shape[1])
     font_scale = desired_size / text_width
 
-    # calculate the actual size with the dynamic scale
     size = cv2.getTextSize(
         time_to_show,
         cv2.FONT_HERSHEY_SIMPLEX,
@@ -161,7 +129,6 @@ def draw_timestamp(
         text_offset_y = image_height - (line_height + 8)
 
     if font_effect == "solid":
-        # make the coords of the box with a small padding of two pixels
         timestamp_box_coords = np.array(
             [
                 [text_offset_x, text_offset_y],
@@ -174,7 +141,6 @@ def draw_timestamp(
         cv2.fillPoly(
             frame,
             [timestamp_box_coords],
-            # inverse color of text for background for max. contrast
             (255 - font_color[0], 255 - font_color[1], 255 - font_color[2]),
         )
     elif font_effect == "shadow":
@@ -198,7 +164,6 @@ def draw_timestamp(
         thickness=font_thickness,
     )
 
-
 def draw_box_with_label(
     frame,
     x_min,
@@ -220,14 +185,12 @@ def draw_box_with_label(
     cv2.rectangle(frame, (x_min, y_min), (x_max, y_max), color, thickness)
     font_scale = 0.5
     font = cv2.FONT_HERSHEY_SIMPLEX
-    # get the width and height of the text box
     size = cv2.getTextSize(display_text, font, fontScale=font_scale, thickness=2)
     text_width = size[0][0]
     text_height = size[0][1]
     line_height = text_height + size[1]
-    # get frame height
     frame_height = frame.shape[0]
-    # set the text start position
+
     if position == "ul":
         text_offset_x = x_min
         text_offset_y = max(0, y_min - (line_height + 8))
@@ -240,21 +203,17 @@ def draw_box_with_label(
     elif position == "br":
         text_offset_x = max(0, x_max - (text_width + 8))
         text_offset_y = min(frame_height - line_height, y_max)
-    # Adjust position if it overlaps with the box or goes out of frame
+
     if position in {"ul", "ur"}:
-        if text_offset_y < y_min + thickness:  # Label overlaps with the box
+        if text_offset_y < y_min + thickness:
             if y_min - (line_height + 8) < 0 and y_max + line_height <= frame_height:
-                # Not enough space above, and there is space below
                 text_offset_y = y_max
             elif y_min - (line_height + 8) >= 0:
-                # Enough space above, keep the label at the top
                 text_offset_y = max(0, y_min - (line_height + 8))
     elif position in {"bl", "br"}:
         if text_offset_y + line_height > frame_height:
-            # If there's not enough space below, try above the box
             text_offset_y = max(0, y_min - (line_height + 8))
 
-    # make the coords of the box with a small padding of two pixels
     textbox_coords = (
         (text_offset_x, text_offset_y),
         (text_offset_x + text_width + 2, text_offset_y + line_height),
@@ -270,7 +229,6 @@ def draw_box_with_label(
         thickness=2,
     )
 
-
 def get_image_quality_params(ext: str, quality: int | None) -> list[int]:
     if ext in ("jpg", "jpeg"):
         return [int(cv2.IMWRITE_JPEG_QUALITY), quality if quality is not None else 70]
@@ -279,7 +237,6 @@ def get_image_quality_params(ext: str, quality: int | None) -> list[int]:
         return [int(cv2.IMWRITE_WEBP_QUALITY), quality if quality is not None else 60]
 
     return []
-
 
 def relative_box_to_absolute(
     frame_shape: tuple[int, ...], box: list[float] | tuple[float, ...] | None
@@ -301,7 +258,6 @@ def relative_box_to_absolute(
 
     return (x_min, y_min, x_max, y_max)
 
-
 def _format_snapshot_label(
     score: float | None,
     area: int | None,
@@ -321,7 +277,6 @@ def _format_snapshot_label(
         label = f"{label} {estimated_speed:.1f}"
 
     return label
-
 
 def draw_snapshot_bounding_boxes(
     frame: np.ndarray,
@@ -369,7 +324,6 @@ def draw_snapshot_bounding_boxes(
             color=color,
         )
 
-
 def _get_snapshot_overlay_box_label(
     score: float | int | None, box: tuple[int, int, int, int]
 ) -> str:
@@ -383,7 +337,6 @@ def _get_snapshot_overlay_box_label(
         f"{int(score_value * 100)}%" if score_value <= 1 else f"{int(score_value)}%"
     )
     return f"{score_text} {area}"
-
 
 def draw_snapshot_overlay_boxes(
     frame: np.ndarray,
@@ -411,7 +364,6 @@ def draw_snapshot_overlay_boxes(
             thickness=2,
             color=color,
         )
-
 
 def get_snapshot_bytes(
     frame: np.ndarray,
@@ -493,43 +445,28 @@ def get_snapshot_bytes(
 
     return None, frame_time
 
-
 def grab_cv2_contours(cnts):
-    # if the length the contours tuple returned by cv2.findContours
-    # is '2' then we are using either OpenCV v2.4, v4-beta, or
-    # v4-official
     if len(cnts) == 2:
         return cnts[0]
 
-    # if the length of the contours tuple is '3' then we are using
-    # either OpenCV v3, v4-pre, or v4-alpha
     elif len(cnts) == 3:
         return cnts[1]
 
-
 def is_label_printable(label) -> bool:
-    """Check if label is printable."""
     return not bool(set(label) - set(printable))
 
-
 def calculate_region(frame_shape, xmin, ymin, xmax, ymax, model_size, multiplier=2):
-    # size is the longest edge and divisible by 4
     size = int((max(xmax - xmin, ymax - ymin) * multiplier) // 4 * 4)
-    # dont go any smaller than the model_size
     if size < model_size:
         size = model_size
 
-    # x_offset is midpoint of bounding box minus half the size
     x_offset = int((xmax - xmin) / 2.0 + xmin - size / 2.0)
-    # if outside the image
     if x_offset < 0:
         x_offset = 0
     elif x_offset > (frame_shape[1] - size):
         x_offset = max(0, (frame_shape[1] - size))
 
-    # y_offset is midpoint of bounding box minus half the size
     y_offset = int((ymax - ymin) / 2.0 + ymin - size / 2.0)
-    # # if outside the image
     if y_offset < 0:
         y_offset = 0
     elif y_offset > (frame_shape[0] - size):
@@ -537,11 +474,9 @@ def calculate_region(frame_shape, xmin, ymin, xmax, ymax, model_size, multiplier
 
     return (x_offset, y_offset, x_offset + size, y_offset + size)
 
-
 def calculate_16_9_crop(frame_shape, xmin, ymin, xmax, ymax, multiplier=1.25):
     min_size = 200
 
-    # size is the longest edge and divisible by 4
     x_size = int((xmax - xmin) * multiplier)
 
     if x_size < min_size:
@@ -555,10 +490,8 @@ def calculate_16_9_crop(frame_shape, xmin, ymin, xmax, ymax, multiplier=1.25):
     if frame_shape[1] / frame_shape[0] > 16 / 9 and x_size / y_size > 4:
         return None
 
-    # calculate 16x9 using height
     aspect_y_size = int(9 / 16 * x_size)
 
-    # if 16:9 by height is too small
     if aspect_y_size < y_size or aspect_y_size > frame_shape[0]:
         x_size = int((16 / 9) * y_size) // 4 * 4
 
@@ -567,17 +500,13 @@ def calculate_16_9_crop(frame_shape, xmin, ymin, xmax, ymax, multiplier=1.25):
     else:
         y_size = aspect_y_size // 4 * 4
 
-    # x_offset is midpoint of bounding box minus half the size
     x_offset = int((xmax - xmin) / 2.0 + xmin - x_size / 2.0)
-    # if outside the image
     if x_offset < 0:
         x_offset = 0
     elif x_offset > (frame_shape[1] - x_size):
         x_offset = max(0, (frame_shape[1] - x_size))
 
-    # y_offset is midpoint of bounding box minus half the size
     y_offset = int((ymax - ymin) / 2.0 + ymin - y_size / 2.0)
-    # # if outside the image
     if y_offset < 0:
         y_offset = 0
     elif y_offset > (frame_shape[0] - y_size):
@@ -585,25 +514,19 @@ def calculate_16_9_crop(frame_shape, xmin, ymin, xmax, ymax, multiplier=1.25):
 
     return (x_offset, y_offset, x_offset + x_size, y_offset + y_size)
 
-
 def get_yuv_crop(frame_shape, crop):
-    # crop should be (x1,y1,x2,y2)
     frame_height = frame_shape[0] // 3 * 2
     frame_width = frame_shape[1]
 
-    # compute the width/height of the uv channels
-    uv_width = frame_width // 2  # width of the uv channels
-    uv_height = frame_height // 4  # height of the uv channels
+    uv_width = frame_width // 2
+    uv_height = frame_height // 4
 
-    # compute the offset for upper left corner of the uv channels
-    uv_x_offset = crop[0] // 2  # x offset of the uv channels
-    uv_y_offset = crop[1] // 4  # y offset of the uv channels
+    uv_x_offset = crop[0] // 2
+    uv_y_offset = crop[1] // 4
 
-    # compute the width/height of the uv crops
-    uv_crop_width = (crop[2] - crop[0]) // 2  # width of the cropped uv channels
-    uv_crop_height = (crop[3] - crop[1]) // 4  # height of the cropped uv channels
+    uv_crop_width = (crop[2] - crop[0]) // 2
+    uv_crop_height = (crop[3] - crop[1]) // 4
 
-    # ensure crop dimensions are multiples of 2 and 4
     y = (crop[0], crop[1], crop[0] + uv_crop_width * 2, crop[1] + uv_crop_height * 4)
 
     u1 = (
@@ -636,27 +559,79 @@ def get_yuv_crop(frame_shape, crop):
 
     return y, u1, u2, v1, v2
 
-def yuv_crop_and_resize(frame, region, height=None):
-    return cython_yuv_crop_and_resize(frame, region, height)
+def cython_yuv_crop_and_resize(frame, region, height=None):
+    """
+    Crops and resizes a YUV frame while maintaining aspect ratio.
+    """
+    if isinstance(frame, bytes):
+        frame = np.frombuffer(frame, dtype=np.uint8).reshape(-1, 2)
+    elif isinstance(frame, np.ndarray) and frame.dtype == np.uint8:
+        # YUV data is already 2D (height, width), do not reshape
+        pass
+
+    height = frame.shape[0] // 3 * 2
+    width = frame.shape[1]
+
+    crop_x1 = max(0, region[0])
+    crop_y1 = max(0, region[1])
+    crop_x2 = min(width, region[2])
+    crop_y2 = min(height, region[3])
+    crop_box = (crop_x1, crop_y1, crop_x2, crop_y2)
+
+    y, u1, u2, v1, v2 = get_yuv_crop(frame.shape, crop_box)
+
+    y_channel_x_offset = abs(min(0, region[0]))
+    y_channel_y_offset = abs(min(0, region[1]))
+
+    uv_channel_x_offset = y_channel_x_offset // 2
+    uv_channel_y_offset = y_channel_y_offset // 4
+
+    size = (region[3] - region[1]) // 4 * 4
+    yuv_cropped_frame = np.zeros((size + size // 2, size), np.uint8)
+    yuv_cropped_frame[:] = 128
+    yuv_cropped_frame[0:size, 0:size] = 16
+
+    yuv_cropped_frame[
+        y_channel_y_offset : y_channel_y_offset + y[3] - y[1],
+        y_channel_x_offset : y_channel_x_offset + y[2] - y[0],
+    ] = frame[y[1] : y[3], y[0] : y[2]]
+
+    uv_crop_width = u1[2] - u1[0]
+    uv_crop_height = u1[3] - u1[1]
+
+    yuv_cropped_frame[
+        size + uv_channel_y_offset : size + uv_channel_y_offset + uv_crop_height,
+        0 + uv_channel_x_offset : 0 + uv_channel_x_offset + uv_crop_width,
+    ] = frame[u1[1] : u1[3], u1[0] : u1[2]]
+
+    yuv_cropped_frame[
+        size + uv_channel_y_offset : size + uv_channel_y_offset + uv_crop_height,
+        size // 2 + uv_channel_x_offset : size // 2 + uv_channel_x_offset + uv_crop_width,
+    ] = frame[u2[1] : u2[3], u2[0] : u2[2]]
+
+    yuv_cropped_frame[
+        size + size // 4 + uv_channel_y_offset : size + size // 4 + uv_channel_y_offset + uv_crop_height,
+        0 + uv_channel_x_offset : 0 + uv_channel_x_offset + uv_crop_width,
+    ] = frame[v1[1] : v1[3], v1[0] : v1[2]]
+
+    yuv_cropped_frame[
+        size + size // 4 + uv_channel_y_offset : size + size // 4 + uv_channel_y_offset + uv_crop_height,
+        size // 2 + uv_channel_x_offset : size // 2 + uv_channel_x_offset + uv_crop_width,
+    ] = frame[v2[1] : v2[3], v2[0] : v2[2]]
+
     return yuv_cropped_frame
-
-
 def yuv_to_3_channel_yuv(yuv_frame):
     height = yuv_frame.shape[0] // 3 * 2
     width = yuv_frame.shape[1]
 
-    # flatten the image into array
     yuv_data = yuv_frame.ravel()
 
-    # create a numpy array to hold all the 3 channel yuv data
     all_yuv_data = np.empty((height, width, 3), dtype=np.uint8)
 
     y_count = height * width
     uv_count = y_count // 4
 
-    # copy the y_channel
     all_yuv_data[:, :, 0] = yuv_data[0:y_count].reshape((height, width))
-    # copy the u channel doubling each dimension
     all_yuv_data[:, :, 1] = np.repeat(
         np.reshape(
             np.repeat(yuv_data[y_count : y_count + uv_count], repeats=2, axis=0),
@@ -665,7 +640,6 @@ def yuv_to_3_channel_yuv(yuv_frame):
         repeats=2,
         axis=0,
     )
-    # copy the v channel doubling each dimension
     all_yuv_data[:, :, 2] = np.repeat(
         np.reshape(
             np.repeat(
@@ -681,7 +655,6 @@ def yuv_to_3_channel_yuv(yuv_frame):
 
     return all_yuv_data
 
-
 def copy_yuv_to_position(
     destination_frame,
     destination_offset,
@@ -690,7 +663,6 @@ def copy_yuv_to_position(
     source_channel_dim=None,
     interpolation=cv2.INTER_LINEAR,
 ):
-    # get the coordinates of the channels for this position in the layout
     y, u1, u2, v1, v2 = get_yuv_crop(
         destination_frame.shape,
         (
@@ -701,23 +673,17 @@ def copy_yuv_to_position(
         ),
     )
 
-    # clear y
     destination_frame[
         y[1] : y[3],
         y[0] : y[2],
     ] = 16
 
-    # clear u1
     destination_frame[u1[1] : u1[3], u1[0] : u1[2]] = 128
-    # clear u2
     destination_frame[u2[1] : u2[3], u2[0] : u2[2]] = 128
-    # clear v1
     destination_frame[v1[1] : v1[3], v1[0] : v1[2]] = 128
-    # clear v2
     destination_frame[v2[1] : v2[3], v2[0] : v2[2]] = 128
 
     if source_frame is not None:
-        # calculate the resized frame, maintaining the aspect ratio
         source_aspect_ratio = source_frame.shape[1] / (source_frame.shape[0] // 3 * 2)
         dest_aspect_ratio = destination_shape[1] / destination_shape[0]
 
@@ -737,7 +703,6 @@ def copy_yuv_to_position(
         uv_y_offset = y_y_offset // 4
         uv_x_offset = y_x_offset // 2
 
-        # resize/copy y channel
         destination_frame[
             y[1] + y_y_offset : y[1] + y_y_offset + y_resize_height,
             y[0] + y_x_offset : y[0] + y_x_offset + y_resize_width,
@@ -750,7 +715,6 @@ def copy_yuv_to_position(
             interpolation=interpolation,
         )
 
-        # resize/copy u1
         destination_frame[
             u1[1] + uv_y_offset : u1[1] + uv_y_offset + uv_resize_height,
             u1[0] + uv_x_offset : u1[0] + uv_x_offset + uv_resize_width,
@@ -762,7 +726,6 @@ def copy_yuv_to_position(
             dsize=(uv_resize_width, uv_resize_height),
             interpolation=interpolation,
         )
-        # resize/copy u2
         destination_frame[
             u2[1] + uv_y_offset : u2[1] + uv_y_offset + uv_resize_height,
             u2[0] + uv_x_offset : u2[0] + uv_x_offset + uv_resize_width,
@@ -774,7 +737,6 @@ def copy_yuv_to_position(
             dsize=(uv_resize_width, uv_resize_height),
             interpolation=interpolation,
         )
-        # resize/copy v1
         destination_frame[
             v1[1] + uv_y_offset : v1[1] + uv_y_offset + uv_resize_height,
             v1[0] + uv_x_offset : v1[0] + uv_x_offset + uv_resize_width,
@@ -786,7 +748,6 @@ def copy_yuv_to_position(
             dsize=(uv_resize_width, uv_resize_height),
             interpolation=interpolation,
         )
-        # resize/copy v2
         destination_frame[
             v2[1] + uv_y_offset : v2[1] + uv_y_offset + uv_resize_height,
             v2[0] + uv_x_offset : v2[0] + uv_x_offset + uv_resize_width,
@@ -799,26 +760,21 @@ def copy_yuv_to_position(
             interpolation=interpolation,
         )
 
-
 def get_blank_yuv_frame(width: int, height: int) -> np.ndarray:
-    """Creates a black YUV 4:2:0 frame."""
     yuv_height = height * 3 // 2
     yuv_frame = np.zeros((yuv_height, width), dtype=np.uint8)
 
     uv_height = height // 2
 
-    # The U and V planes are stored after the Y plane.
-    u_start = height  # U plane starts right after Y plane
-    v_start = u_start + uv_height // 2  # V plane starts after U plane
+    u_start = height
+    v_start = u_start + uv_height // 2
     yuv_frame[u_start : u_start + uv_height, :width] = 128
     yuv_frame[v_start : v_start + uv_height, :width] = 128
 
     return yuv_frame
 
-
 def yuv_region_2_yuv(frame, region):
     try:
-        # TODO: does this copy the numpy array?
         yuv_cropped_frame = cython_yuv_crop_and_resize(frame, region)
         return yuv_to_3_channel_yuv(yuv_cropped_frame)
     except:
@@ -826,17 +782,14 @@ def yuv_region_2_yuv(frame, region):
         print(f"region: {region}")
         raise
 
-
 def yuv_region_2_rgb(frame, region):
     try:
-        # TODO: does this copy the numpy array?
         yuv_cropped_frame = cython_yuv_crop_and_resize(frame, region)
         return cv2.cvtColor(yuv_cropped_frame, cv2.COLOR_YUV2RGB_I420)
     except:
         print(f"frame.shape: {frame.shape}")
         print(f"region: {region}")
         raise
-
 
 def yuv_region_2_bgr(frame, region):
     try:
@@ -847,9 +800,7 @@ def yuv_region_2_bgr(frame, region):
         print(f"region: {region}")
         raise
 
-
 def intersection(box_a, box_b) -> list[int] | None:
-    """Return intersection box or None if boxes do not intersect."""
     if (
         box_a[2] < box_b[0]
         or box_a[0] > box_b[2]
@@ -865,19 +816,15 @@ def intersection(box_a, box_b) -> list[int] | None:
         min(box_a[3], box_b[3]),
     )
 
-
 def area(box):
     return (box[2] - box[0] + 1) * (box[3] - box[1] + 1)
 
-
 def intersection_over_union(box_a, box_b):
-    # determine the (x, y)-coordinates of the intersection rectangle
     intersect = intersection(box_a, box_b)
 
     if intersect is None:
         return 0.0
 
-    # compute the area of intersection rectangle
     inter_area = max(0, intersect[2] - intersect[0] + 1) * max(
         0, intersect[3] - intersect[1] + 1
     )
@@ -885,23 +832,14 @@ def intersection_over_union(box_a, box_b):
     if inter_area == 0:
         return 0.0
 
-    # compute the area of both the prediction and ground-truth
-    # rectangles
     box_a_area = (box_a[2] - box_a[0] + 1) * (box_a[3] - box_a[1] + 1)
     box_b_area = (box_b[2] - box_b[0] + 1) * (box_b[3] - box_b[1] + 1)
 
-    # compute the intersection over union by taking the intersection
-    # area and dividing it by the sum of prediction + ground-truth
-    # areas - the intersection area
     iou = inter_area / float(box_a_area + box_b_area - inter_area)
 
-    # return the intersection over union value
     return iou
 
-
 def clipped(obj, frame_shape):
-    # if the object is within 5 pixels of the region border, and the region is not on the edge
-    # consider the object to be clipped
     box = obj[2]
     region = obj[5]
     if (
@@ -913,7 +851,6 @@ def clipped(obj, frame_shape):
         return True
     else:
         return False
-
 
 class FrameManager(ABC):
     @abstractmethod
@@ -940,10 +877,7 @@ class FrameManager(ABC):
     def cleanup(self):
         pass
 
-
 class UntrackedSharedMemory(_mpshm.SharedMemory):
-    # https://github.com/python/cpython/issues/82300#issuecomment-2169035092
-
     __lock = threading.Lock()
 
     def __init__(
@@ -956,19 +890,13 @@ class UntrackedSharedMemory(_mpshm.SharedMemory):
     ) -> None:
         self._track = track
 
-        # if tracking, normal init will suffice
         if track:
             return super().__init__(name=name, create=create, size=size)
 
-        # lock so that other threads don't attempt to use the
-        # register function during this time
         with self.__lock:
-            # temporarily disable registration during initialization
             orig_register = _mprt.register
             _mprt.register = self.__tmp_register
 
-            # initialize; ensure original register function is
-            # re-instated
             try:
                 super().__init__(name=name, create=create, size=size)
             finally:
@@ -983,7 +911,6 @@ class UntrackedSharedMemory(_mpshm.SharedMemory):
             _mpshm._posixshmem.shm_unlink(self._name)
             if self._track:
                 _mprt.unregister(self._name, "shared_memory")
-
 
 class SharedMemoryFrameManager(FrameManager):
     def __init__(self):
@@ -1019,7 +946,6 @@ class SharedMemoryFrameManager(FrameManager):
             required = int(np.prod(shape))
             shm = self.shm_store.get(name)
             if shm is not None and shm.size != required:
-                # stale cached ref from a same-name recreate — drop and reopen
                 try:
                     shm.close()
                 except Exception:
@@ -1029,7 +955,6 @@ class SharedMemoryFrameManager(FrameManager):
             if shm is None:
                 shm = UntrackedSharedMemory(name=name)
                 if shm.size != required:
-                    # mid-recreate: OS segment doesn't match shape yet; skip
                     try:
                         shm.close()
                     except Exception:
@@ -1072,7 +997,6 @@ class SharedMemoryFrameManager(FrameManager):
             except FileNotFoundError:
                 pass
 
-
 def create_mask(frame_shape, mask):
     mask_img = np.zeros(frame_shape, np.uint8)
     mask_img[:] = 255
@@ -1086,13 +1010,9 @@ def create_mask(frame_shape, mask):
 
     return mask_img
 
-
 def add_mask(mask: str, mask_img: np.ndarray):
     points = mask.split(",")
 
-    # masks and zones are saved as relative coordinates
-    # we know if any points are > 1 then it is using the
-    # old native resolution coordinates
     if any(x > "1.0" for x in points):
         raise Exception("add mask expects relative coordinates only")
 
@@ -1107,7 +1027,6 @@ def add_mask(mask: str, mask_img: np.ndarray):
     )
     cv2.fillPoly(mask_img, pts=[contour], color=(0))
 
-
 def run_ffmpeg_snapshot(
     ffmpeg,
     input_path: str,
@@ -1116,7 +1035,6 @@ def run_ffmpeg_snapshot(
     height: int | None = None,
     timeout: int | None = None,
 ) -> tuple[bytes | None, str]:
-    """Run ffmpeg to extract a snapshot/image from a video source."""
     ffmpeg_cmd = [
         ffmpeg.ffmpeg_path,
         "-hide_banner",
@@ -1159,22 +1077,18 @@ def run_ffmpeg_snapshot(
     except sp.TimeoutExpired:
         return None, "timeout"
 
-
 def get_image_from_recording(
-    ffmpeg,  # Ffmpeg Config
+    ffmpeg,
     file_path: str,
     relative_frame_time: float,
     codec: str,
     height: int | None = None,
 ) -> Any | None:
-    """retrieve a frame from given time in recording file."""
-
     image_data, _ = run_ffmpeg_snapshot(
         ffmpeg, file_path, codec, seek_time=relative_frame_time, height=height
     )
 
     return image_data
-
 
 def get_histogram(image, x_min, y_min, x_max, y_max):
     image_bgr = cv2.cvtColor(image, cv2.COLOR_YUV2BGR_I420)
@@ -1185,11 +1099,9 @@ def get_histogram(image, x_min, y_min, x_max, y_max):
     )
     return cv2.normalize(hist, hist).flatten()
 
-
 def create_thumbnail(
     yuv_frame: np.ndarray, box: tuple[int, int, int, int], height=500
 ) -> bytes | None:
-    """Return jpg thumbnail of a region of the frame."""
     frame = cv2.cvtColor(yuv_frame, cv2.COLOR_YUV2BGR_I420)
     region = calculate_region(
         frame.shape, box[0], box[1], box[2], box[3], height, multiplier=1.4
@@ -1204,9 +1116,7 @@ def create_thumbnail(
 
     return None
 
-
 def ensure_jpeg_bytes(image_data: bytes) -> bytes:
-    """Ensure image data is jpeg bytes for genai"""
     try:
         img_array = np.frombuffer(image_data, dtype=np.uint8)
         img = cv2.imdecode(img_array, cv2.IMREAD_COLOR)
@@ -1222,3 +1132,17 @@ def ensure_jpeg_bytes(image_data: bytes) -> bytes:
         logger.warning(f"Error when converting thumbnail to jpeg for genai: {e}")
 
     return image_data
+
+# DEBUGGING
+def debug_yuv_to_3_channel_yuv(yuv_frame):
+    height = yuv_frame.shape[0]
+    width = yuv_frame.shape[1]
+    yuv_data = yuv_frame.ravel()
+    y_count = height * width
+    uv_count = y_count // 4
+    print(f"DEBUG: yuv_data shape: {yuv_data.shape}")
+    print(f"DEBUG: y_count: {y_count}")
+    print(f"DEBUG: uv_count: {uv_count}")
+    print(f"DEBUG: yuv_data[0:y_count]: {yuv_data[0:y_count].shape}")
+    print(f"DEBUG: yuv_data[y_count:y_count+uv_count]: {yuv_data[y_count:y_count+uv_count].shape}")
+    print(f"DEBUG: yuv_data[y_count+uv_count:y_count+uv_count+uv_count]: {yuv_data[y_count+uv_count:y_count+uv_count+uv_count].shape}")

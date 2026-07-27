@@ -204,6 +204,14 @@ RUN pip3 wheel --wheel-dir=/wheels -r /requirements-wheels.txt && \
 RUN --mount=type=bind,source=docker/main/install_hailort.sh,target=/deps/install_hailort.sh \
     /deps/install_hailort.sh
 
+# Build Cython extensions (separate stage to avoid bloating deps image)
+FROM wheels AS cython-build
+COPY frigate frigate/
+COPY setup_cython.py setup_cython.py
+COPY setup_cython_detectors.py setup_cython_detectors.py
+RUN python3 setup_cython.py build_ext --inplace \
+    && python3 setup_cython_detectors.py build_ext --inplace
+
 # Collect deps in a single layer
 FROM scratch AS deps-rootfs
 COPY --from=nginx /usr/local/nginx/ /usr/local/nginx/
@@ -356,6 +364,8 @@ FROM scratch AS rootfs
 WORKDIR /opt/frigate/
 COPY frigate frigate/
 COPY migrations migrations/
+COPY --from=cython-build /frigate/util/ frigate/util/
+COPY --from=cython-build /frigate/detectors/ frigate/detectors/
 COPY --from=web-build /work/dist/ web/
 
 # Frigate final container
@@ -363,3 +373,22 @@ FROM deps AS frigate
 
 WORKDIR /opt/frigate/
 COPY --from=rootfs / /
+
+# Install frigate package (Cython extensions pre-built in cython-build stage)
+RUN pip3 install . \
+    || pip3 install --no-build-isolation .
+
+EXPOSE 5000
+EXPOSE 8554
+EXPOSE 8555/tcp 8555/udp
+
+# Configure logging to prepend timestamps, log to stdout, keep 0 archives and rotate on 10MB
+ENV S6_LOGGING_SCRIPT="T 1 n0 s10000000 T"
+# Do not fail on long-running download scripts
+ENV S6_CMD_WAIT_FOR_SERVICES_MAXTIME=0
+
+ENTRYPOINT ["/init"]
+CMD []
+
+HEALTHCHECK --start-period=300s --start-interval=5s --interval=15s --timeout=5s --retries=3 \
+    CMD test -f /dev/shm/.frigate-is-stopping && exit 0; curl --fail --silent --show-error http://127.0.0.1:5000/api/version || exit 1

@@ -8,14 +8,14 @@ from abc import ABC, abstractmethod
 from typing import Any
 
 import numpy as np
-import onnxruntime as ort
-
-from frigate.util.model import get_ort_providers
-from frigate.util.rknn_converter import auto_convert_model, is_rknn_compatible
-
-logger = logging.getLogger(__name__)
-
-# Process-wide lock serializing all OpenVINO compile/inference calls
+from frigate.detectors.detection_runners_cython import (
+    nchw_to_nhwc_transpose,
+    nchw_to_nhwc_transpose_face,
+    face_normalization,
+    copyto_inplace,
+    convert_dtype_inplace,
+    prepare_tensor,
+)
 _OPENVINO_LOCK = threading.Lock()
 
 
@@ -230,7 +230,7 @@ class CudaGraphRunner(BaseModelRunner):
         # Extract the single tensor input (assuming one input)
         input_name = list(input.keys())[0]
         tensor_input = input[input_name]
-        tensor_input = np.ascontiguousarray(tensor_input)
+        tensor_input = prepare_tensor(input, input_name)
 
         if not self._captured:
             # Prepare IOBinding with CUDA buffers and let ORT allocate outputs on device
@@ -403,7 +403,7 @@ class OpenVINOModelRunner(BaseModelRunner):
             ):
                 # Single input case - use the pre-allocated tensor for efficiency
                 input_data = list(inputs.values())[0]
-                np.copyto(self.input_tensor.data, input_data)
+                copyto_inplace(self.input_tensor.data, input_data)
                 self.infer_request.infer(self.input_tensor)
             else:
                 if self.complex_model:
@@ -439,10 +439,10 @@ class OpenVINOModelRunner(BaseModelRunner):
                         logger.debug(
                             f"Converting input '{input_name}' from {input_data.dtype} to {expected_dtype}"
                         )
-                        input_data = input_data.astype(expected_dtype)
+                        input_data = convert_dtype_inplace(input_data, expected_dtype)
 
                     input_tensor = ov.Tensor(input_element_type, input_data.shape)
-                    np.copyto(input_tensor.data, input_data)
+                    copyto_inplace(input_tensor.data, input_data)
 
                     # Set the input tensor for the specific port index
                     self.infer_request.set_input_tensor(input_index, input_tensor)
@@ -544,7 +544,7 @@ class RKNNModelRunner(BaseModelRunner):
                         pixel_data = inputs[name]
                         if len(pixel_data.shape) == 4 and pixel_data.shape[1] == 3:
                             # Transpose from NCHW to NHWC
-                            pixel_data = np.transpose(pixel_data, (0, 2, 3, 1))
+                            pixel_data = nchw_to_nhwc_transpose(pixel_data)
                         rknn_inputs.append(pixel_data)
                     elif name == "data":
                         # ArcFace: undo Python normalisation to uint8 [0,255]
@@ -552,9 +552,10 @@ class RKNNModelRunner(BaseModelRunner):
                         face_data = inputs[name]
                         if len(face_data.shape) == 4 and face_data.shape[1] == 3:
                             # Transpose from NCHW to NHWC
-                            face_data = np.transpose(face_data, (0, 2, 3, 1))
+                            face_data = nchw_to_nhwc_transpose_face(face_data)
                         face_data = (
-                            ((face_data + 1.0) * 127.5).clip(0, 255).astype(np.uint8)
+                            ((face_data + 1.0) * 127.5).clip(0, 255));
+                        face_data = face_normalization(face_data)
                         )
                         rknn_inputs.append(face_data)
                     else:
