@@ -366,8 +366,6 @@ RUN npm run build \
 
 # Collect final files in a single layer
 FROM scratch AS rootfs
-ARG VERSION=0.18.0-unknown
-ARG COMMIT_HASH=unknown
 
 WORKDIR /opt/frigate/
 COPY frigate frigate/
@@ -378,14 +376,16 @@ COPY --from=cython-build frigate/embeddings frigate/embeddings
 COPY --from=cython-build frigate/events frigate/events
 COPY --from=cython-build frigate/record frigate/record
 COPY --from=web-build /work/dist/ web/
-# Generate version.py from build args (needed at runtime by go2rtc config)
-RUN echo "VERSION = \"${VERSION}-${COMMIT_HASH}\"" > frigate/version.py
 
 # Frigate final container
 FROM deps AS frigate
+ARG VERSION=0.18.0-unknown
+ARG COMMIT_HASH=unknown
 
 WORKDIR /opt/frigate/
 COPY --from=rootfs / /
+# Generate version.py (needed at runtime by go2rtc config)
+RUN echo "VERSION = \"${VERSION}-${COMMIT_HASH}\"" > /opt/frigate/frigate/version.py
 
 EXPOSE 5000
 EXPOSE 8554
