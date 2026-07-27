@@ -27,6 +27,7 @@ def convert_detection_boxes(
     float region_y0,
     float region_size,
     list raw_detections,
+    region=None,
 ) -> list:
     """Convert normalized detection boxes to frame coordinates.
 
@@ -39,9 +40,10 @@ def convert_detection_boxes(
         region_y0: Region y offset (frame coord)
         region_size: Region width/height (same for both, square region)
         raw_detections: List of (label, score, (y0_norm, x0_norm, y1_norm, x1_norm))
+        region: Region tuple (x0, y0, x1, y1) to attach to each detection
 
     Returns:
-        List of (label, score, (x_min, y_min, x_max, y_max), area, ratio)
+        List of (label, score, (x_min, y_min, x_max, y_max), area, ratio, region)
     """
     results: list = []
 
@@ -76,7 +78,10 @@ def convert_detection_boxes(
         area = w_box * h_box
         ratio = w_box / max(1.0, <float>h_box)
 
-        results.append((label, score, (x_min, y_min, x_max, y_max), area, ratio))
+        if region is not None:
+            results.append((label, score, (x_min, y_min, x_max, y_max), area, ratio, region))
+        else:
+            results.append((label, score, (x_min, y_min, x_max, y_max), area, ratio))
 
     return results
 

@@ -163,6 +163,7 @@ def detect(
         region[1],
         region[2] - region[0],
         region_detections,
+        region,
     )
 
     for d in converted:
