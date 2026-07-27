@@ -2,6 +2,13 @@
 
 import math
 
+from frigate.embeddings.util_cython import cython_normalize
+
+try:
+    from frigate.embeddings.util_cython import cython_normalize_inplace
+except ImportError:
+    cython_normalize_inplace = None
+
 
 class ZScoreNormalization:
     def __init__(self, scale_factor: float = 1.0, bias: float = 0.0):
@@ -27,10 +34,10 @@ class ZScoreNormalization:
             self._update(distances)
         if self.stddev == 0:
             return distances
-        return [
-            (x - self.mean) / self.stddev * self.scale_factor + self.bias
-            for x in distances
-        ]
+
+        return cython_normalize(
+            distances, self.mean, self.stddev, self.scale_factor, self.bias
+        )
 
     def _update(self, distances: list[float]):
         for x in distances:
