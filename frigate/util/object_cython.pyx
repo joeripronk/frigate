@@ -17,10 +17,12 @@ def cython_intersection(box_a, box_b):
     Returns:
         [x_min, y_min, x_max, y_max] or None if no overlap
     """
-    x_min = max(box_a[0], box_b[0])
-    y_min = max(box_a[1], box_b[1])
-    x_max = min(box_a[2], box_b[2])
-    y_max = min(box_a[3], box_b[3])
+    a0, a1, a2, a3 = box_a
+    b0, b1, b2, b3 = box_b
+    x_min = max(a0, b0)
+    y_min = max(a1, b1)
+    x_max = min(a2, b2)
+    y_max = min(a3, b3)
 
     if x_min >= x_max or y_min >= y_max:
         return None
@@ -37,7 +39,8 @@ def cython_area(box):
     Returns:
         Area as int
     """
-    return (box[2] - box[0] + 1) * (box[3] - box[1] + 1)
+    b0, b1, b2, b3 = box
+    return (b2 - b0 + 1) * (b3 - b1 + 1)
 
 
 def cython_box_inside(b1, b2):
@@ -50,7 +53,9 @@ def cython_box_inside(b1, b2):
     Returns:
         True if b2 is inside b1
     """
-    return b2[0] >= b1[0] and b2[1] >= b1[1] and b2[2] <= b1[2] and b2[3] <= b1[3]
+    b10, b11, b12, b13 = b1
+    b20, b21, b22, b23 = b2
+    return b20 >= b10 and b21 >= b11 and b22 <= b12 and b23 <= b13
 
 
 def cython_intersection_over_union(box_a, box_b):
@@ -63,20 +68,23 @@ def cython_intersection_over_union(box_a, box_b):
     Returns:
         IoU value between 0 and 1
     """
-    intersect = cython_intersection(box_a, box_b)
+    a0, a1, a2, a3 = box_a
+    b0, b1, b2, b3 = box_b
+    ix = max(a0, b0)
+    iy = max(a1, b1)
+    ix2 = min(a2, b2)
+    iy2 = min(a3, b3)
 
-    if intersect is None:
+    if ix >= ix2 or iy >= iy2:
         return 0.0
 
-    inter_area = max(0, intersect[2] - intersect[0] + 1) * max(
-        0, intersect[3] - intersect[1] + 1
-    )
+    inter_area = (ix2 - ix + 1) * (iy2 - iy + 1)
 
     if inter_area == 0:
         return 0.0
 
-    box_a_area = (box_a[2] - box_a[0] + 1) * (box_a[3] - box_a[1] + 1)
-    box_b_area = (box_b[2] - box_b[0] + 1) * (box_b[3] - box_b[1] + 1)
+    box_a_area = (a2 - a0 + 1) * (a3 - a1 + 1)
+    box_b_area = (b2 - b0 + 1) * (b3 - b1 + 1)
 
     return inter_area / (box_a_area + box_b_area - inter_area)
 
@@ -94,21 +102,22 @@ def cython_reduce_boxes(boxes, double iou_threshold):
     clusters = []
 
     for box in boxes:
+        b0, b1, b2, b3 = box
         matched = 0
         for cluster in clusters:
             if cython_intersection_over_union(box, cluster) > iou_threshold:
                 matched = 1
-                if box[0] < cluster[0]:
-                    cluster[0] = box[0]
-                if box[1] < cluster[1]:
-                    cluster[1] = box[1]
-                if box[2] > cluster[2]:
-                    cluster[2] = box[2]
-                if box[3] > cluster[3]:
-                    cluster[3] = box[3]
+                if b0 < cluster[0]:
+                    cluster[0] = b0
+                if b1 < cluster[1]:
+                    cluster[1] = b1
+                if b2 > cluster[2]:
+                    cluster[2] = b2
+                if b3 > cluster[3]:
+                    cluster[3] = b3
 
         if not matched:
-            clusters.append([box[0], box[1], box[2], box[3]])
+            clusters.append([b0, b1, b2, b3])
 
     return [tuple(c) for c in clusters]
 
@@ -131,15 +140,16 @@ def cython_get_cluster_region(frame_shape, int min_region, cluster, boxes):
     max_y = 0
 
     for b in cluster:
-        box = boxes[b]
-        if box[0] < min_x:
-            min_x = box[0]
-        if box[1] < min_y:
-            min_y = box[1]
-        if box[2] > max_x:
-            max_x = box[2]
-        if box[3] > max_y:
-            max_y = box[3]
+        bx = boxes[b]
+        b0, b1, b2, b3 = bx
+        if b0 < min_x:
+            min_x = b0
+        if b1 < min_y:
+            min_y = b1
+        if b2 > max_x:
+            max_x = b2
+        if b3 > max_y:
+            max_y = b3
 
     return _cython_calculate_region(
         frame_shape, min_x, min_y, max_x, max_y, min_region, 1.35
@@ -164,15 +174,16 @@ def cython_get_cluster_region_from_grid(frame_shape, int min_region, cluster, bo
     max_y = 0
 
     for b in cluster:
-        box = boxes[b]
-        if box[0] < min_x:
-            min_x = box[0]
-        if box[1] < min_y:
-            min_y = box[1]
-        if box[2] > max_x:
-            max_x = box[2]
-        if box[3] > max_y:
-            max_y = box[3]
+        bx = boxes[b]
+        b0, b1, b2, b3 = bx
+        if b0 < min_x:
+            min_x = b0
+        if b1 < min_y:
+            min_y = b1
+        if b2 > max_x:
+            max_x = b2
+        if b3 > max_y:
+            max_y = b3
 
     return _cython_calculate_region(
         frame_shape, min_x, min_y, max_x, max_y, min_region, 1.0
@@ -189,13 +200,14 @@ def cython_get_cluster_boundary(box, int min_region):
     Returns:
         [x_min, y_min, x_max, y_max] boundary
     """
-    box_width = box[2] - box[0]
-    box_height = box[3] - box[1]
+    b0, b1, b2, b3 = box
+    box_width = b2 - b0
+    box_height = b3 - b1
     max_region_area = abs(box_width * box_height) / 0.1
     max_region_size = max(min_region, int(max_region_area**0.5))
 
-    centroid_x = box[0] + box_width / 2
-    centroid_y = box[1] + box_height / 2
+    centroid_x = b0 + box_width / 2
+    centroid_y = b1 + box_height / 2
 
     max_x_dist = int(max_region_size - box_width / 2 * 1.1)
     max_y_dist = int(max_region_size - box_height / 2 * 1.1)
@@ -236,7 +248,8 @@ def cython_get_cluster_candidates(frame_shape, int min_region, boxes):
             if used[compare_idx]:
                 continue
 
-            if not cython_box_inside(boundary, boxes[compare_idx]):
+            bx = boxes[compare_idx]
+            if not cython_box_inside(boundary, bx):
                 continue
 
             potential = cluster + [compare_idx]

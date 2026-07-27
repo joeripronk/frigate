@@ -800,40 +800,50 @@ def yuv_region_2_bgr(frame, region):
         print(f"region: {region}")
         raise
 
-def intersection(box_a, box_b) -> list[int] | None:
+def intersection(box_a, box_b) -> tuple[int, int, int, int] | None:
+    a0, a1, a2, a3 = box_a
+    b0, b1, b2, b3 = box_b
     if (
-        box_a[2] < box_b[0]
-        or box_a[0] > box_b[2]
-        or box_a[1] > box_b[3]
-        or box_a[3] < box_b[1]
+        a2 < b0
+        or a0 > b2
+        or a1 > b3
+        or a3 < b1
     ):
         return None
 
     return (
-        max(box_a[0], box_b[0]),
-        max(box_a[1], box_b[1]),
-        min(box_a[2], box_b[2]),
-        min(box_a[3], box_b[3]),
+        max(a0, b0),
+        max(a1, b1),
+        min(a2, b2),
+        min(a3, b3),
     )
 
 def area(box):
-    return (box[2] - box[0] + 1) * (box[3] - box[1] + 1)
+    b0, b1, b2, b3 = box
+    return (b2 - b0 + 1) * (b3 - b1 + 1)
 
 def intersection_over_union(box_a, box_b):
-    intersect = intersection(box_a, box_b)
-
-    if intersect is None:
+    a0, a1, a2, a3 = box_a
+    b0, b1, b2, b3 = box_b
+    if (
+        a2 < b0
+        or a0 > b2
+        or a1 > b3
+        or a3 < b1
+    ):
         return 0.0
 
-    inter_area = max(0, intersect[2] - intersect[0] + 1) * max(
-        0, intersect[3] - intersect[1] + 1
-    )
+    ix = max(a0, b0)
+    iy = max(a1, b1)
+    ix2 = min(a2, b2)
+    iy2 = min(a3, b3)
+    inter_area = max(0, ix2 - ix + 1) * max(0, iy2 - iy + 1)
 
     if inter_area == 0:
         return 0.0
 
-    box_a_area = (box_a[2] - box_a[0] + 1) * (box_a[3] - box_a[1] + 1)
-    box_b_area = (box_b[2] - box_b[0] + 1) * (box_b[3] - box_b[1] + 1)
+    box_a_area = (a2 - a0 + 1) * (a3 - a1 + 1)
+    box_b_area = (b2 - b0 + 1) * (b3 - b1 + 1)
 
     iou = inter_area / float(box_a_area + box_b_area - inter_area)
 
