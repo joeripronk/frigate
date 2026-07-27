@@ -37,6 +37,11 @@ from frigate.const import (
     RECORD_DIR,
 )
 from frigate.models import Recordings, ReviewSegment
+from frigate.record.record_cython import (
+    compute_motion_heatmap_cython,
+    compute_segment_stats_cython,
+    compute_average_audio_cython,
+)
 from frigate.review.types import SeverityEnum
 from frigate.util.services import get_video_properties
 
@@ -528,49 +533,37 @@ class RecordingMaintainer(threading.Thread):
         if not frame_width or frame_width <= 0 or not frame_height or frame_height <= 0:
             return None
 
-        GRID_SIZE = 16
-        counts: dict[int, int] = {}
-
-        for box in motion_boxes:
-            if len(box) < 4:
-                continue
-            x1, y1, x2, y2 = box
-
-            # Convert pixel coordinates to grid cells
-            grid_x1 = max(0, int((x1 / frame_width) * GRID_SIZE))
-            grid_y1 = max(0, int((y1 / frame_height) * GRID_SIZE))
-            grid_x2 = min(GRID_SIZE - 1, int((x2 / frame_width) * GRID_SIZE))
-            grid_y2 = min(GRID_SIZE - 1, int((y2 / frame_height) * GRID_SIZE))
-
-            for y in range(grid_y1, grid_y2 + 1):
-                for x in range(grid_x1, grid_x2 + 1):
-                    idx = y * GRID_SIZE + x
-                    counts[idx] = min(255, counts.get(idx, 0) + 1)
-
-        if not counts:
-            return None
-
-        # Convert to string keys for JSON storage
-        return {str(k): v for k, v in counts.items()}
+        # Convert to numpy array for Cython
+        boxes_array = np.array(motion_boxes, dtype=np.float64).reshape(-1, 4)
+        return compute_motion_heatmap_cython(boxes_array, frame_width, frame_height)
 
     def segment_stats(
         self, camera: str, start_time: datetime.datetime, end_time: datetime.datetime
     ) -> SegmentInfo:
-        video_frame_count = 0
+        # Extract arrays from object_recordings_info for Cython
+        object_frames = self.object_recordings_info[camera]
+        timestamps = np.array([f[0] for f in object_frames], dtype=np.float64)
+        motion_counts = np.array([len(f[2]) for f in object_frames], dtype=np.int32)
+        region_counts = np.array([len(f[3]) for f in object_frames], dtype=np.int32)
+
+        seg_start = start_time.timestamp()
+        seg_end = end_time.timestamp()
+
+        video_frame_count, motion_count, region_count = compute_segment_stats_cython(
+            timestamps, motion_counts, region_counts, 0, len(timestamps), seg_start, seg_end
+        )
+
+        # Count active objects (requires Python loop for complex filtering)
         active_count = 0
-        region_count = 0
-        motion_count = 0
         all_motion_boxes: list[tuple[int, int, int, int]] = []
 
-        for frame in self.object_recordings_info[camera]:
-            # frame is after end time of segment
-            if frame[0] > end_time.timestamp():
+        for i in range(len(object_frames)):
+            if timestamps[i] > seg_end:
                 break
-            # frame is before start time of segment
-            if frame[0] < start_time.timestamp():
+            if timestamps[i] < seg_start:
                 continue
 
-            video_frame_count += 1
+            frame = object_frames[i]
             active_count += len(
                 [
                     o
@@ -578,28 +571,24 @@ class RecordingMaintainer(threading.Thread):
                     if not o["false_positive"] and o["motionless_count"] == 0
                 ]
             )
-            motion_count += len(frame[2])
-            region_count += len(frame[3])
-            # Collect motion boxes for heatmap computation
             all_motion_boxes.extend(frame[2])
 
-        audio_values = []
-        for frame in self.audio_recordings_info[camera]:
-            # frame is after end time of segment
-            if frame[0] > end_time.timestamp():
-                break
+        # Audio stats
+        audio_frames = self.audio_recordings_info[camera]
+        audio_timestamps = np.array([f[0] for f in audio_frames], dtype=np.float64)
+        audio_dbfs = np.array([f[1] for f in audio_frames], dtype=np.float64)
 
-            # frame is before start time of segment
-            if frame[0] < start_time.timestamp():
-                continue
+        active_count += len(
+            [
+                f
+                for f in audio_frames
+                if seg_start <= f[0] <= seg_end
+            ]
+        )
 
-            # add active audio label count to count of active objects
-            active_count += len(frame[2])
-
-            # add sound level to audio values
-            audio_values.append(frame[1])
-
-        average_dBFS = 0 if not audio_values else np.average(audio_values)
+        average_dBFS = compute_average_audio_cython(
+            audio_timestamps, audio_dbfs, 0, len(audio_frames), seg_start, seg_end
+        )
 
         motion_heatmap = self._compute_motion_heatmap(camera, all_motion_boxes)
 

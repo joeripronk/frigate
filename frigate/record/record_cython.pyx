@@ -21,7 +21,6 @@ import logging
 import numpy as np
 
 from libc.stdlib cimport malloc, free
-from libc.math cimport fmin, fmax
 
 logger = logging.getLogger(__name__)
 
@@ -167,15 +166,19 @@ def compute_motion_heatmap_cython(
         Dict mapping string cell index to intensity (1-255), or None
     """
     cdef:
-        MotionHeatmapAccumulator heatmap = MotionHeatmapAccumulator(frame_width, frame_height)
+        MotionHeatmapAccumulator heatmap
 
-    if not motion_boxes:
+    if motion_boxes is None:
         return None
+
+    heatmap = MotionHeatmapAccumulator(frame_width, frame_height)
 
     if isinstance(motion_boxes, np.ndarray):
         if motion_boxes.size == 0:
             return None
         heatmap.add_boxes_from_array(motion_boxes)
+    elif len(motion_boxes) == 0:
+        return None
     else:
         for box in motion_boxes:
             if len(box) >= 4:
@@ -205,11 +208,15 @@ def compute_motion_heatmap_from_array(
         Dict mapping string cell index to intensity (1-255), or None
     """
     cdef:
-        MotionHeatmapAccumulator heatmap = MotionHeatmapAccumulator(frame_width, frame_height)
+        MotionHeatmapAccumulator heatmap
 
-    if boxes_array is None or boxes_array.size == 0:
+    if boxes_array is None:
+        return None
+    
+    if hasattr(boxes_array, 'size') and boxes_array.size == 0:
         return None
 
+    heatmap = MotionHeatmapAccumulator(frame_width, frame_height)
     heatmap.add_boxes_from_array(boxes_array)
     result = heatmap.get_result()
     if not result:
