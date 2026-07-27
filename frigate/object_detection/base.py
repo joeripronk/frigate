@@ -28,6 +28,8 @@ from frigate.util.builtin import EventsPerSecond, load_labels
 from frigate.util.image import SharedMemoryFrameManager, UntrackedSharedMemory
 from frigate.util.process import FrigateProcess
 
+from frigate.detectors.detection_cython import filter_raw_detections, filter_from_shared_memory
+
 from .util import tensor_transform
 
 logger = logging.getLogger(__name__)
@@ -78,19 +80,9 @@ class BaseLocalDetector(ObjectDetector):
         return tensor_input
 
     def detect(self, tensor_input: np.ndarray, threshold: float = 0.4) -> list:
-        detections = []
-
         raw_detections = self.detect_raw(tensor_input)  # type: ignore[attr-defined]
 
-        for d in raw_detections:
-            if int(d[0]) < 0 or int(d[0]) >= len(self.labels):
-                logger.warning(f"Raw Detect returned invalid label: {d}")
-                continue
-            if d[1] < threshold:
-                break
-            detections.append(
-                (self.labels[int(d[0])], float(d[1]), (d[2], d[3], d[4], d[5]))
-            )
+        detections = filter_raw_detections(raw_detections, self.labels, threshold)
         self.fps.update()
         return detections
 
@@ -433,12 +425,7 @@ class RemoteObjectDetector:
         if result is None:
             return detections
 
-        for d in self.out_np_shm:
-            if d[1] < threshold:
-                break
-            detections.append(
-                (self.labels[int(d[0])], float(d[1]), (d[2], d[3], d[4], d[5]))
-            )
+        detections = filter_from_shared_memory(self.out_np_shm, self.labels, threshold)
         self.fps.update()
         return detections
 

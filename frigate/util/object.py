@@ -30,6 +30,8 @@ from frigate.util.image import (
     yuv_region_2_yuv,
 )
 
+from frigate.const import LABEL_CONSOLIDATION_DEFAULT, LABEL_CONSOLIDATION_MAP
+
 logger = logging.getLogger(__name__)
 
 GRID_SIZE = 8
@@ -381,6 +383,17 @@ def get_cluster_region(frame_shape, min_region, cluster, boxes):
     return cython_get_cluster_region(frame_shape, min_region, cluster, boxes)
 
 
+def cython_overlap_consolidate(
+    sorted_by_area: list[tuple],
+    consolidation_map: dict[str, float],
+    default_threshold: float,
+) -> list[tuple]:
+    """Consolidate overlapping detections using Cython-accelerated loop."""
+    from frigate.detectors.detection_cython import overlap_consolidate
+
+    return overlap_consolidate(sorted_by_area, consolidation_map, default_threshold)
+
+
 def get_startup_regions(
     frame_shape: tuple[int, int],
     region_min_size: int,
@@ -476,37 +489,13 @@ def reduce_detections(
             # sort smallest to largest by area
             sorted_by_area = sorted(group, key=lambda g: g[3])
 
-            for current_detection_idx in range(0, len(sorted_by_area)):
-                current_detection = sorted_by_area[current_detection_idx]
-                current_label = current_detection[0]
-                current_box = current_detection[2]
-                current_area = area(current_box)
-                overlap = 0
-                for to_check_idx in range(
-                    min(current_detection_idx + 1, len(sorted_by_area)),
-                    len(sorted_by_area),
-                ):
-                    to_check = sorted_by_area[to_check_idx][2]
-
-                    # if area of current detection / area of check < 5% they should not be compared
-                    # this covers cases where a large car parked in a driveway doesn't block detections
-                    # of cars in the street behind it
-                    if current_area / area(to_check) < 0.05:
-                        continue
-
-                    intersect_box = intersection(current_box, to_check)
-                    # if % of smaller detection is inside of another detection, consolidate
-                    if intersect_box is not None and area(
-                        intersect_box
-                    ) / current_area > LABEL_CONSOLIDATION_MAP.get(
-                        current_label, LABEL_CONSOLIDATION_DEFAULT
-                    ):
-                        overlap = 1
-                        break
-                if overlap == 0:
-                    consolidated_detections.append(
-                        sorted_by_area[current_detection_idx]
-                    )
+            # Use Cython-accelerated overlap consolidation
+            consolidated = cython_overlap_consolidate(
+                sorted_by_area,
+                LABEL_CONSOLIDATION_MAP,
+                LABEL_CONSOLIDATION_DEFAULT,
+            )
+            consolidated_detections.extend(consolidated)
 
         return consolidated_detections
 

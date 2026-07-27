@@ -25,6 +25,11 @@ from frigate.const import (
 from frigate.motion import MotionDetector
 from frigate.motion.improved_motion import ImprovedMotionDetector
 from frigate.object_detection.base import RemoteObjectDetector
+from frigate.detectors.detection_cython import (
+    convert_detection_boxes,
+    filter_from_shared_memory,
+    cython_standalone_motion_boxes,
+)
 from frigate.ptz.autotrack import ptz_moving_at_frame_time
 from frigate.track import ObjectTracker
 from frigate.track.norfair_tracker import NorfairTracker
@@ -149,27 +154,22 @@ def detect(
 
     detections = []
     region_detections = object_detector.detect(tensor_input)
-    for d in region_detections:
-        box = d[2]
-        size = region[2] - region[0]
-        x_min = int(max(0, (box[1] * size) + region[0]))
-        y_min = int(max(0, (box[0] * size) + region[1]))
-        x_max = int(min(detect_config.width - 1, (box[3] * size) + region[0]))
-        y_max = int(min(detect_config.height - 1, (box[2] * size) + region[1]))
 
-        # ignore objects that were detected outside the frame
-        if (x_min >= detect_config.width - 1) or (y_min >= detect_config.height - 1):
-            continue
+    # Cython-accelerated box conversion and frame-coord filtering
+    converted = convert_detection_boxes(
+        detect_config.width,
+        detect_config.height,
+        region[0],
+        region[1],
+        region[2] - region[0],
+        region_detections,
+    )
 
-        width = x_max - x_min
-        height = y_max - y_min
-        area = width * height
-        ratio = width / max(1, height)
-        det = (d[0], d[1], (x_min, y_min, x_max, y_max), area, ratio, region)
+    for d in converted:
         # apply object filters
-        if is_object_filtered(det, objects_to_track, object_filters):
+        if is_object_filtered(d, objects_to_track, object_filters):
             continue
-        detections.append(det)
+        detections.append(d)
     return detections
 
 
