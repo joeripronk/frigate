@@ -848,55 +848,22 @@ def yuv_region_2_bgr(frame, region):
         raise
 
 
-def intersection(box_a, box_b) -> list[int] | None:
-    """Return intersection box or None if boxes do not intersect."""
-    if (
-        box_a[2] < box_b[0]
-        or box_a[0] > box_b[2]
-        or box_a[1] > box_b[3]
-        or box_a[3] < box_b[1]
-    ):
-        return None
+def intersection(box_a, box_b):
+    from frigate.util.image_cython import intersection
 
-    return (
-        max(box_a[0], box_b[0]),
-        max(box_a[1], box_b[1]),
-        min(box_a[2], box_b[2]),
-        min(box_a[3], box_b[3]),
-    )
+    return intersection(box_a, box_b)
 
 
 def area(box):
-    return (box[2] - box[0] + 1) * (box[3] - box[1] + 1)
+    from frigate.util.image_cython import area
+
+    return area(box)
 
 
 def intersection_over_union(box_a, box_b):
-    # determine the (x, y)-coordinates of the intersection rectangle
-    intersect = intersection(box_a, box_b)
+    from frigate.util.image_cython import intersection_over_union as cython_iou
 
-    if intersect is None:
-        return 0.0
-
-    # compute the area of intersection rectangle
-    inter_area = max(0, intersect[2] - intersect[0] + 1) * max(
-        0, intersect[3] - intersect[1] + 1
-    )
-
-    if inter_area == 0:
-        return 0.0
-
-    # compute the area of both the prediction and ground-truth
-    # rectangles
-    box_a_area = (box_a[2] - box_a[0] + 1) * (box_a[3] - box_a[1] + 1)
-    box_b_area = (box_b[2] - box_b[0] + 1) * (box_b[3] - box_b[1] + 1)
-
-    # compute the intersection over union by taking the intersection
-    # area and dividing it by the sum of prediction + ground-truth
-    # areas - the intersection area
-    iou = inter_area / float(box_a_area + box_b_area - inter_area)
-
-    # return the intersection over union value
-    return iou
+    return cython_iou(box_a, box_b)
 
 
 def clipped(obj, frame_shape):

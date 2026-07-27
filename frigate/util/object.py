@@ -150,17 +150,11 @@ def get_camera_regions_grid(
 
 
 def get_cluster_region_from_grid(frame_shape, min_region, cluster, boxes, region_grid):
-    min_x = frame_shape[1]
-    min_y = frame_shape[0]
-    max_x = 0
-    max_y = 0
-    for b in cluster:
-        min_x = min(boxes[b][0], min_x)
-        min_y = min(boxes[b][1], min_y)
-        max_x = max(boxes[b][2], max_x)
-        max_y = max(boxes[b][3], max_y)
+    from frigate.util.object_cython import cython_get_cluster_region_from_grid
+
+    region = cython_get_cluster_region_from_grid(frame_shape, min_region, cluster, boxes)
     return get_region_from_grid(
-        frame_shape, [min_x, min_y, max_x, max_y], min_region, region_grid
+        frame_shape, list(region), min_region, region_grid
     )
 
 
@@ -312,29 +306,15 @@ def box_overlaps(b1, b2):
 
 
 def box_inside(b1, b2):
-    # check if b2 is inside b1
-    if b2[0] >= b1[0] and b2[1] >= b1[1] and b2[2] <= b1[2] and b2[3] <= b1[3]:
-        return True
-    return False
+    from frigate.util.object_cython import cython_box_inside
+
+    return cython_box_inside(b1, b2)
 
 
 def reduce_boxes(boxes, iou_threshold=0.0):
-    clusters = []
+    from frigate.util.object_cython import cython_reduce_boxes
 
-    for box in boxes:
-        matched = 0
-        for cluster in clusters:
-            if intersection_over_union(box, cluster) > iou_threshold:
-                matched = 1
-                cluster[0] = min(cluster[0], box[0])
-                cluster[1] = min(cluster[1], box[1])
-                cluster[2] = max(cluster[2], box[2])
-                cluster[3] = max(cluster[3], box[3])
-
-        if not matched:
-            clusters.append(list(box))
-
-    return [tuple(c) for c in clusters]
+    return cython_reduce_boxes(boxes, iou_threshold)
 
 
 def average_boxes(boxes: list[list[int, int, int, int]]) -> list[int, int, int, int]:
@@ -390,68 +370,15 @@ def get_cluster_boundary(box, min_region):
 
 
 def get_cluster_candidates(frame_shape, min_region, boxes):
-    # and create a cluster of other boxes using it's max region size
-    # only include boxes where the region is an appropriate(except the region could possibly be smaller?)
-    # size in the cluster. in order to be in the cluster, the furthest corner needs to be within x,y offset
-    # determined by the max_region size minus half the box + 20%
-    # TODO: see if we can do this with numpy
-    cluster_candidates = []
-    used_boxes = set()
-    # loop over each box
-    for current_index, b in enumerate(boxes):
-        if current_index in used_boxes:
-            continue
-        cluster = [current_index]
-        used_boxes.add(current_index)
-        cluster_boundary = get_cluster_boundary(b, min_region)
-        # find all other boxes that fit inside the boundary
-        for compare_index, compare_box in enumerate(boxes):
-            if compare_index in used_boxes:
-                continue
+    from frigate.util.object_cython import cython_get_cluster_candidates
 
-            # if the box is not inside the potential cluster area, cluster them
-            if not box_inside(cluster_boundary, compare_box):
-                continue
-
-            # get the region if you were to add this box to the cluster
-            potential_cluster = cluster + [compare_index]
-            cluster_region = get_cluster_region(
-                frame_shape, min_region, potential_cluster, boxes
-            )
-            # if region could be smaller and either box would be too small
-            # for the resulting region, dont cluster
-            should_cluster = True
-            if (cluster_region[2] - cluster_region[0]) > min_region:
-                for b in potential_cluster:
-                    box = boxes[b]
-                    # boxes should be more than 5% of the area of the region
-                    if area(box) / area(cluster_region) < 0.05:
-                        should_cluster = False
-                        break
-
-            if should_cluster:
-                cluster.append(compare_index)
-                used_boxes.add(compare_index)
-        cluster_candidates.append(cluster)
-
-    # return the unique clusters only
-    unique = {tuple(sorted(c)) for c in cluster_candidates}
-    return [list(tup) for tup in unique]
+    return cython_get_cluster_candidates(frame_shape, min_region, boxes)
 
 
 def get_cluster_region(frame_shape, min_region, cluster, boxes):
-    min_x = frame_shape[1]
-    min_y = frame_shape[0]
-    max_x = 0
-    max_y = 0
-    for b in cluster:
-        min_x = min(boxes[b][0], min_x)
-        min_y = min(boxes[b][1], min_y)
-        max_x = max(boxes[b][2], max_x)
-        max_y = max(boxes[b][3], max_y)
-    return calculate_region(
-        frame_shape, min_x, min_y, max_x, max_y, min_region, multiplier=1.35
-    )
+    from frigate.util.object_cython import cython_get_cluster_region
+
+    return cython_get_cluster_region(frame_shape, min_region, cluster, boxes)
 
 
 def get_startup_regions(
