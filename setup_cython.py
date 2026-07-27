@@ -15,6 +15,7 @@ setup(
         [
             "frigate/util/image_cython.pyx",
             "frigate/util/object_cython.pyx",
+            "frigate/util/multiprocessing_sync_cython.pyx",
             "frigate/embeddings/util_cython.pyx",
             "frigate/events/audio_cython.pyx",
             "frigate/detectors/detection_cython.pyx",

@@ -27,58 +27,68 @@ if TYPE_CHECKING:
 
 logger = logging.getLogger(__name__)
 
+# Prefer Cython-accelerated implementations when available
+try:
+    from frigate.util.multiprocessing_sync_cython import (
+        CythonEventsPerSecond,
+        CythonInferenceSpeed,
+    )
 
-class EventsPerSecond:
-    def __init__(self, max_events=1000, last_n_seconds=10) -> None:
-        self._start = None
-        self._max_events = max_events
-        self._last_n_seconds = last_n_seconds
-        self._timestamps: deque[float] = deque(maxlen=max_events)
+    # Export Cython versions as the default (same names as the Python classes)
+    EventsPerSecond = CythonEventsPerSecond
+    InferenceSpeed = CythonInferenceSpeed
+except ImportError:
+    # Fall back to pure Python implementations when Cython not available
+    class EventsPerSecond:
+        def __init__(self, max_events=1000, last_n_seconds=10) -> None:
+            self._start = None
+            self._max_events = max_events
+            self._last_n_seconds = last_n_seconds
+            self._timestamps: deque[float] = deque(maxlen=max_events)
 
-    def start(self) -> None:
-        self._start = time.monotonic()
+        def start(self) -> None:
+            self._start = time.monotonic()
 
-    def update(self) -> None:
-        now = time.monotonic()
-        if self._start is None:
-            self._start = now
-        self._timestamps.append(now)
-        self.expire_timestamps(now)
+        def update(self) -> None:
+            now = time.monotonic()
+            if self._start is None:
+                self._start = now
+            self._timestamps.append(now)
+            self.expire_timestamps(now)
 
-    def eps(self) -> float:
-        now = time.monotonic()
-        if self._start is None:
-            self._start = now
-        # compute the (approximate) events in the last n seconds
-        self.expire_timestamps(now)
-        seconds = min(now - self._start, self._last_n_seconds)
-        # avoid divide by zero
-        if seconds == 0:
-            seconds = 1
-        return len(self._timestamps) / seconds
+        def eps(self) -> float:
+            now = time.monotonic()
+            if self._start is None:
+                self._start = now
+            # compute the (approximate) events in the last n seconds
+            self.expire_timestamps(now)
+            seconds = min(now - self._start, self._last_n_seconds)
+            # avoid divide by zero
+            if seconds == 0:
+                seconds = 1
+            return len(self._timestamps) / seconds
 
-    # remove aged out timestamps
-    def expire_timestamps(self, now: float) -> None:
-        threshold = now - self._last_n_seconds
-        while self._timestamps and self._timestamps[0] < threshold:
-            self._timestamps.popleft()
+        # remove aged out timestamps
+        def expire_timestamps(self, now: float) -> None:
+            threshold = now - self._last_n_seconds
+            while self._timestamps and self._timestamps[0] < threshold:
+                self._timestamps.popleft()
 
+    class InferenceSpeed:
+        def __init__(self, metric: ValueProxy[float]) -> None:
+            self.__metric = metric
+            self.__initialized = False
 
-class InferenceSpeed:
-    def __init__(self, metric: ValueProxy[float]) -> None:
-        self.__metric = metric
-        self.__initialized = False
+        def update(self, inference_time: float) -> None:
+            if not self.__initialized:
+                self.__metric.value = inference_time
+                self.__initialized = True
+                return
 
-    def update(self, inference_time: float) -> None:
-        if not self.__initialized:
-            self.__metric.value = inference_time
-            self.__initialized = True
-            return
+            self.__metric.value = (self.__metric.value * 9 + inference_time) / 10
 
-        self.__metric.value = (self.__metric.value * 9 + inference_time) / 10
-
-    def current(self) -> float:
-        return self.__metric.value
+        def current(self) -> float:
+            return self.__metric.value
 
 
 def deep_merge(dct1: dict, dct2: dict, override=False, merge_lists=False) -> dict:
