@@ -366,9 +366,9 @@ FROM scratch AS rootfs
 WORKDIR /opt/frigate/
 COPY frigate frigate/
 COPY migrations migrations/
-COPY --from=cython-build /frigate/util/ frigate/util/
-COPY --from=cython-build /frigate/detectors/ frigate/detectors/
-COPY --from=cython-build /frigate/embeddings/ frigate/embeddings/
+COPY --from=cython-build frigate/util frigate/util
+COPY --from=cython-build frigate/detectors frigate/detectors
+COPY --from=cython-build frigate/embeddings frigate/embeddings
 COPY --from=web-build /work/dist/ web/
 
 # Frigate final container
@@ -376,11 +376,6 @@ FROM deps AS frigate
 
 WORKDIR /opt/frigate/
 COPY --from=rootfs / /
-
-# Install frigate package (Cython extensions pre-built in cython-build stage)
-WORKDIR /
-RUN pip3 install . \
-    || pip3 install --no-build-isolation .
 
 EXPOSE 5000
 EXPOSE 8554
