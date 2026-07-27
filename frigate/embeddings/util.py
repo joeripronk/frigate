@@ -2,6 +2,8 @@
 
 import math
 
+import numpy as np
+
 from frigate.embeddings.util_cython import (
     cython_normalize,
     cython_normalize_inplace,
@@ -39,12 +41,16 @@ class ZScoreNormalization:
         if self.stddev == 0:
             return distances
 
+        # Pass as numpy array for Cython typed memory view
+        distances_arr = np.asarray(distances, dtype=np.float64)
         return cython_normalize(
-            distances, self.mean, self.stddev, self.scale_factor, self.bias
+            distances_arr, self.mean, self.stddev, self.scale_factor, self.bias
         )
 
     def _update(self, distances: list[float]):
-        n, mean, m2 = cython_update_stats(distances)
+        # Pass as numpy array for Cython typed memory view
+        distances_arr = np.asarray(distances, dtype=np.float64)
+        n, mean, m2 = cython_update_stats(distances_arr)
         self.n = n
         self.mean = mean
         self.m2 = m2
