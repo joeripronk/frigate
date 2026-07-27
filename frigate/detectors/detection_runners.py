@@ -8,6 +8,7 @@ from abc import ABC, abstractmethod
 from typing import Any
 
 import numpy as np
+import onnxruntime as ort
 from frigate.detectors.detection_runners_cython import (
     nchw_to_nhwc_transpose,
     nchw_to_nhwc_transpose_face,
