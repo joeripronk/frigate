@@ -127,8 +127,18 @@ if __name__ == "__main__":
             "peewee",
             "zmq",
             "ruamel.yaml",
-            # Frigate core modules
+            # Frigate core modules (most widely imported)
+            "frigate.config",
+            "frigate.const",
+            "frigate.models",
+            "frigate.util.builtin",
+            "frigate.util.image",
+            "frigate.util.object",
+            "frigate.util.services",
+            "frigate.comms.inter_process",
+            # Worker processes
             "frigate.camera.maintainer",
+            "frigate.record.maintainer",
         ]
     )
     mp.set_start_method("forkserver", force=True)
