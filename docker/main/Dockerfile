@@ -209,8 +209,10 @@ FROM wheels AS cython-build
 COPY frigate frigate/
 COPY setup_cython.py setup_cython.py
 COPY setup_cython_detectors.py setup_cython_detectors.py
-RUN python3 setup_cython.py build_ext --inplace \
-    && python3 setup_cython_detectors.py build_ext --inplace
+RUN pip3 install --break-system-packages cython numpy \
+    && python3 setup_cython.py build_ext --inplace \
+    && python3 setup_cython_detectors.py build_ext --inplace \
+    && pip3 uninstall --break-system-packages -y cython numpy
 
 # Collect deps in a single layer
 FROM scratch AS deps-rootfs
