@@ -9,7 +9,7 @@ from typing import Any
 
 import numpy as np
 import onnxruntime as ort
-from frigate.util.rknn_converter import is_rknn_compatible
+from frigate.util.rknn_converter import auto_convert_model, is_rknn_compatible
 from frigate.util.model import get_ort_providers
 
 from frigate.detectors.detection_runners_cython import (
@@ -20,6 +20,7 @@ from frigate.detectors.detection_runners_cython import (
     convert_dtype_inplace,
     prepare_tensor,
 )
+logger = logging.getLogger(__name__)
 _OPENVINO_LOCK = threading.Lock()
 
 
