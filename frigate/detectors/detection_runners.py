@@ -554,9 +554,8 @@ class RKNNModelRunner(BaseModelRunner):
                             # Transpose from NCHW to NHWC
                             face_data = nchw_to_nhwc_transpose_face(face_data)
                         face_data = (
-                            ((face_data + 1.0) * 127.5).clip(0, 255));
+                            ((face_data + 1.0) * 127.5).clip(0, 255))
                         face_data = face_normalization(face_data)
-                        )
                         rknn_inputs.append(face_data)
                     else:
                         rknn_inputs.append(inputs[name])
