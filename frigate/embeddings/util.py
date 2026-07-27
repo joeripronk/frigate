@@ -2,7 +2,11 @@
 
 import math
 
-from frigate.embeddings.util_cython import cython_normalize
+from frigate.embeddings.util_cython import (
+    cython_normalize,
+    cython_normalize_inplace,
+    cython_update_stats,
+)
 
 try:
     from frigate.embeddings.util_cython import cython_normalize_inplace
@@ -40,12 +44,10 @@ class ZScoreNormalization:
         )
 
     def _update(self, distances: list[float]):
-        for x in distances:
-            self.n += 1
-            delta = x - self.mean
-            self.mean += delta / self.n
-            delta2 = x - self.mean
-            self.m2 += delta * delta2
+        n, mean, m2 = cython_update_stats(distances)
+        self.n = n
+        self.mean = mean
+        self.m2 = m2
 
     def to_dict(self):
         return {

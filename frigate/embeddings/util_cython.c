@@ -1862,6 +1862,14 @@ static int __Pyx_SetItemInt_Generic(PyObject *o, PyObject *j, PyObject *v);
 static CYTHON_INLINE int __Pyx_SetItemInt_Fast(PyObject *o, Py_ssize_t i, PyObject *v,
                                                int is_list, int wraparound, int boundscheck, int unsafe_shared);
 
+/* PyLongBinop.proto */
+#if !CYTHON_COMPILING_IN_PYPY
+static CYTHON_INLINE PyObject* __Pyx_PyLong_AddObjC(PyObject *op1, PyObject *op2, long intval, int inplace, int zerodivision_check);
+#else
+#define __Pyx_PyLong_AddObjC(op1, op2, intval, inplace, zerodivision_check)\
+    (inplace ? PyNumber_InPlaceAdd(op1, op2) : PyNumber_Add(op1, op2))
+#endif
+
 /* dict_setdefault.proto (used by FetchCommonType) */
 static CYTHON_INLINE PyObject *__Pyx_PyDict_SetDefault(PyObject *d, PyObject *key, PyObject *default_value);
 
@@ -2270,6 +2278,7 @@ static const char __pyx_k_Cython_accelerated_Z_score_norm[] = "\nCython-accelera
 /* #### Code section: decls ### */
 static PyObject *__pyx_pf_7frigate_10embeddings_11util_cython_cython_normalize(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_distances, double __pyx_v_mean, double __pyx_v_stddev, double __pyx_v_scale_factor, double __pyx_v_bias); /* proto */
 static PyObject *__pyx_pf_7frigate_10embeddings_11util_cython_2cython_normalize_inplace(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_distances, double __pyx_v_mean, double __pyx_v_stddev, double __pyx_v_scale_factor, double __pyx_v_bias); /* proto */
+static PyObject *__pyx_pf_7frigate_10embeddings_11util_cython_4cython_update_stats(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_distances); /* proto */
 /* #### Code section: late_includes ### */
 /* #### Code section: module_state ### */
 /* SmallCodeConfig */
@@ -2293,8 +2302,9 @@ typedef struct {
   __Pyx_CachedCFunction __pyx_umethod_PyDict_Type_items;
   __Pyx_CachedCFunction __pyx_umethod_PyDict_Type_pop;
   __Pyx_CachedCFunction __pyx_umethod_PyDict_Type_values;
-  PyObject *__pyx_codeobj_tab[2];
-  PyObject *__pyx_string_tab[30];
+  PyObject *__pyx_codeobj_tab[3];
+  PyObject *__pyx_string_tab[36];
+  PyObject *__pyx_number_tab[3];
 /* #### Code section: module_state_contents ### */
 /* CommonTypesMetaclass.module_state_decls */
 PyTypeObject *__pyx_CommonTypesMetaclassType;
@@ -2344,27 +2354,36 @@ static __pyx_mstatetype * const __pyx_mstate_global = &__pyx_mstate_global_stati
 #define __pyx_n_u_cline_in_traceback __pyx_string_tab[6]
 #define __pyx_n_u_cython_normalize __pyx_string_tab[7]
 #define __pyx_n_u_cython_normalize_inplace __pyx_string_tab[8]
-#define __pyx_n_u_distances __pyx_string_tab[9]
-#define __pyx_n_u_frigate_embeddings_util_cython __pyx_string_tab[10]
-#define __pyx_n_u_func __pyx_string_tab[11]
-#define __pyx_n_u_i __pyx_string_tab[12]
-#define __pyx_n_u_is_coroutine __pyx_string_tab[13]
-#define __pyx_n_u_items __pyx_string_tab[14]
-#define __pyx_n_u_main __pyx_string_tab[15]
-#define __pyx_n_u_mean __pyx_string_tab[16]
-#define __pyx_n_u_module __pyx_string_tab[17]
-#define __pyx_n_u_name __pyx_string_tab[18]
-#define __pyx_n_u_pop __pyx_string_tab[19]
-#define __pyx_n_u_qualname __pyx_string_tab[20]
-#define __pyx_n_u_scale_factor __pyx_string_tab[21]
-#define __pyx_n_u_set_name __pyx_string_tab[22]
-#define __pyx_n_u_setdefault __pyx_string_tab[23]
-#define __pyx_n_u_stddev __pyx_string_tab[24]
-#define __pyx_n_u_test __pyx_string_tab[25]
-#define __pyx_n_u_values __pyx_string_tab[26]
-#define __pyx_n_u_x __pyx_string_tab[27]
-#define __pyx_kp_b_iso88591_wc_q_1_2V2WBm2Q_E __pyx_string_tab[28]
-#define __pyx_kp_b_iso88591_wc_q_U_3aq_RvRwb_Rq_1 __pyx_string_tab[29]
+#define __pyx_n_u_cython_update_stats __pyx_string_tab[9]
+#define __pyx_n_u_delta __pyx_string_tab[10]
+#define __pyx_n_u_delta2 __pyx_string_tab[11]
+#define __pyx_n_u_distances __pyx_string_tab[12]
+#define __pyx_n_u_frigate_embeddings_util_cython __pyx_string_tab[13]
+#define __pyx_n_u_func __pyx_string_tab[14]
+#define __pyx_n_u_i __pyx_string_tab[15]
+#define __pyx_n_u_is_coroutine __pyx_string_tab[16]
+#define __pyx_n_u_items __pyx_string_tab[17]
+#define __pyx_n_u_m2 __pyx_string_tab[18]
+#define __pyx_n_u_main __pyx_string_tab[19]
+#define __pyx_n_u_mean __pyx_string_tab[20]
+#define __pyx_n_u_module __pyx_string_tab[21]
+#define __pyx_n_u_n __pyx_string_tab[22]
+#define __pyx_n_u_name __pyx_string_tab[23]
+#define __pyx_n_u_pop __pyx_string_tab[24]
+#define __pyx_n_u_qualname __pyx_string_tab[25]
+#define __pyx_n_u_scale_factor __pyx_string_tab[26]
+#define __pyx_n_u_set_name __pyx_string_tab[27]
+#define __pyx_n_u_setdefault __pyx_string_tab[28]
+#define __pyx_n_u_stddev __pyx_string_tab[29]
+#define __pyx_n_u_test __pyx_string_tab[30]
+#define __pyx_n_u_values __pyx_string_tab[31]
+#define __pyx_n_u_x __pyx_string_tab[32]
+#define __pyx_kp_b_iso88591_1_Q_Q_A_b_2Q_fBa_CvQ __pyx_string_tab[33]
+#define __pyx_kp_b_iso88591_wc_q_1_2V2WBm2Q_E __pyx_string_tab[34]
+#define __pyx_kp_b_iso88591_wc_q_U_3aq_RvRwb_Rq_1 __pyx_string_tab[35]
+#define __pyx_float_0_0 __pyx_number_tab[0]
+#define __pyx_int_0 __pyx_number_tab[1]
+#define __pyx_int_1 __pyx_number_tab[2]
 /* #### Code section: module_state_clear ### */
 #if CYTHON_USE_MODULE_STATE
 static CYTHON_SMALL_CODE int __pyx_m_clear(PyObject *m) {
@@ -2379,8 +2398,9 @@ static CYTHON_SMALL_CODE int __pyx_m_clear(PyObject *m) {
   #if CYTHON_PEP489_MULTI_PHASE_INIT
   __Pyx_State_RemoveModule(NULL);
   #endif
-  for (int i=0; i<2; ++i) { Py_CLEAR(clear_module_state->__pyx_codeobj_tab[i]); }
-  for (int i=0; i<30; ++i) { Py_CLEAR(clear_module_state->__pyx_string_tab[i]); }
+  for (int i=0; i<3; ++i) { Py_CLEAR(clear_module_state->__pyx_codeobj_tab[i]); }
+  for (int i=0; i<36; ++i) { Py_CLEAR(clear_module_state->__pyx_string_tab[i]); }
+  for (int i=0; i<3; ++i) { Py_CLEAR(clear_module_state->__pyx_number_tab[i]); }
 /* #### Code section: module_state_clear_contents ### */
 /* CommonTypesMetaclass.module_state_clear */
 Py_CLEAR(clear_module_state->__pyx_CommonTypesMetaclassType);
@@ -2403,8 +2423,9 @@ static CYTHON_SMALL_CODE int __pyx_m_traverse(PyObject *m, visitproc visit, void
   __Pyx_VISIT_CONST(traverse_module_state->__pyx_empty_tuple);
   __Pyx_VISIT_CONST(traverse_module_state->__pyx_empty_bytes);
   __Pyx_VISIT_CONST(traverse_module_state->__pyx_empty_unicode);
-  for (int i=0; i<2; ++i) { __Pyx_VISIT_CONST(traverse_module_state->__pyx_codeobj_tab[i]); }
-  for (int i=0; i<30; ++i) { __Pyx_VISIT_CONST(traverse_module_state->__pyx_string_tab[i]); }
+  for (int i=0; i<3; ++i) { __Pyx_VISIT_CONST(traverse_module_state->__pyx_codeobj_tab[i]); }
+  for (int i=0; i<36; ++i) { __Pyx_VISIT_CONST(traverse_module_state->__pyx_string_tab[i]); }
+  for (int i=0; i<3; ++i) { __Pyx_VISIT_CONST(traverse_module_state->__pyx_number_tab[i]); }
 /* #### Code section: module_state_traverse_contents ### */
 /* CommonTypesMetaclass.module_state_traverse */
 Py_VISIT(traverse_module_state->__pyx_CommonTypesMetaclassType);
@@ -2966,6 +2987,8 @@ static PyObject *__pyx_pf_7frigate_10embeddings_11util_cython_2cython_normalize_
  *         distances[i] = (distances[i] - mean) / stddev * scale_factor + bias
  * 
  *     return distances             # <<<<<<<<<<<<<<
+ * 
+ * 
 */
   __Pyx_XDECREF(__pyx_r);
   __Pyx_INCREF(__pyx_v_distances);
@@ -2988,6 +3011,332 @@ static PyObject *__pyx_pf_7frigate_10embeddings_11util_cython_2cython_normalize_
   __Pyx_AddTraceback("frigate.embeddings.util_cython.cython_normalize_inplace", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = NULL;
   __pyx_L0:;
+  __Pyx_XGIVEREF(__pyx_r);
+  __Pyx_RefNannyFinishContext();
+  return __pyx_r;
+}
+
+/* "frigate/embeddings/util_cython.pyx":58
+ * 
+ * 
+ * def cython_update_stats(distances):             # <<<<<<<<<<<<<<
+ *     """Welford's online algorithm for running mean and variance.
+ * 
+*/
+
+/* Python wrapper */
+static PyObject *__pyx_pw_7frigate_10embeddings_11util_cython_5cython_update_stats(PyObject *__pyx_self, 
+#if CYTHON_METH_FASTCALL
+PyObject *const *__pyx_args, Py_ssize_t __pyx_nargs, PyObject *__pyx_kwds
+#else
+PyObject *__pyx_args, PyObject *__pyx_kwds
+#endif
+); /*proto*/
+PyDoc_STRVAR(__pyx_doc_7frigate_10embeddings_11util_cython_4cython_update_stats, "Welford's online algorithm for running mean and variance.\n\n    Updates running statistics incrementally. Returns (n, mean, m2)\n    where n is count, mean is running mean, m2 is sum of squared differences.\n\n    Args:\n        distances: List of float distances to update statistics with\n\n    Returns:\n        Tuple of (n, mean, m2)\n    ");
+static PyMethodDef __pyx_mdef_7frigate_10embeddings_11util_cython_5cython_update_stats = {"cython_update_stats", (PyCFunction)(void(*)(void))(__Pyx_PyCFunction_FastCallWithKeywords)__pyx_pw_7frigate_10embeddings_11util_cython_5cython_update_stats, __Pyx_METH_FASTCALL|METH_KEYWORDS, __pyx_doc_7frigate_10embeddings_11util_cython_4cython_update_stats};
+static PyObject *__pyx_pw_7frigate_10embeddings_11util_cython_5cython_update_stats(PyObject *__pyx_self, 
+#if CYTHON_METH_FASTCALL
+PyObject *const *__pyx_args, Py_ssize_t __pyx_nargs, PyObject *__pyx_kwds
+#else
+PyObject *__pyx_args, PyObject *__pyx_kwds
+#endif
+) {
+  PyObject *__pyx_v_distances = 0;
+  #if !CYTHON_METH_FASTCALL
+  CYTHON_UNUSED Py_ssize_t __pyx_nargs;
+  #endif
+  CYTHON_UNUSED PyObject *const *__pyx_kwvalues;
+  PyObject* values[1] = {0};
+  int __pyx_lineno = 0;
+  const char *__pyx_filename = NULL;
+  int __pyx_clineno = 0;
+  PyObject *__pyx_r = 0;
+  __Pyx_RefNannyDeclarations
+  __Pyx_RefNannySetupContext("cython_update_stats (wrapper)", 0);
+  #if !CYTHON_METH_FASTCALL
+  #if CYTHON_ASSUME_SAFE_SIZE
+  __pyx_nargs = PyTuple_GET_SIZE(__pyx_args);
+  #else
+  __pyx_nargs = PyTuple_Size(__pyx_args); if (unlikely(__pyx_nargs < 0)) return NULL;
+  #endif
+  #endif
+  __pyx_kwvalues = __Pyx_KwValues_FASTCALL(__pyx_args, __pyx_nargs);
+  {
+    PyObject ** const __pyx_pyargnames[] = {&__pyx_mstate_global->__pyx_n_u_distances,0};
+    const Py_ssize_t __pyx_kwds_len = (__pyx_kwds) ? __Pyx_NumKwargs_FASTCALL(__pyx_kwds) : 0;
+    if (unlikely(__pyx_kwds_len < 0)) __PYX_ERR(0, 58, __pyx_L3_error)
+    if (__pyx_kwds_len > 0) {
+      switch (__pyx_nargs) {
+        case  1:
+        values[0] = __Pyx_ArgRef_FASTCALL(__pyx_args, 0);
+        if (!CYTHON_ASSUME_SAFE_MACROS && unlikely(!values[0])) __PYX_ERR(0, 58, __pyx_L3_error)
+        CYTHON_FALLTHROUGH;
+        case  0: break;
+        default: goto __pyx_L5_argtuple_error;
+      }
+      const Py_ssize_t kwd_pos_args = __pyx_nargs;
+      if (__Pyx_ParseKeywords(__pyx_kwds, __pyx_kwvalues, __pyx_pyargnames, 0, values, kwd_pos_args, __pyx_kwds_len, "cython_update_stats", 0) < (0)) __PYX_ERR(0, 58, __pyx_L3_error)
+      for (Py_ssize_t i = __pyx_nargs; i < 1; i++) {
+        if (unlikely(!values[i])) { __Pyx_RaiseArgtupleInvalid("cython_update_stats", 1, 1, 1, i); __PYX_ERR(0, 58, __pyx_L3_error) }
+      }
+    } else if (unlikely(__pyx_nargs != 1)) {
+      goto __pyx_L5_argtuple_error;
+    } else {
+      values[0] = __Pyx_ArgRef_FASTCALL(__pyx_args, 0);
+      if (!CYTHON_ASSUME_SAFE_MACROS && unlikely(!values[0])) __PYX_ERR(0, 58, __pyx_L3_error)
+    }
+    __pyx_v_distances = values[0];
+  }
+  goto __pyx_L6_skip;
+  __pyx_L5_argtuple_error:;
+  __Pyx_RaiseArgtupleInvalid("cython_update_stats", 1, 1, 1, __pyx_nargs); __PYX_ERR(0, 58, __pyx_L3_error)
+  __pyx_L6_skip:;
+  goto __pyx_L4_argument_unpacking_done;
+  __pyx_L3_error:;
+  for (Py_ssize_t __pyx_temp=0; __pyx_temp < (Py_ssize_t)(sizeof(values)/sizeof(values[0])); ++__pyx_temp) {
+    Py_XDECREF(values[__pyx_temp]);
+  }
+  __Pyx_AddTraceback("frigate.embeddings.util_cython.cython_update_stats", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_RefNannyFinishContext();
+  return NULL;
+  __pyx_L4_argument_unpacking_done:;
+  __pyx_r = __pyx_pf_7frigate_10embeddings_11util_cython_4cython_update_stats(__pyx_self, __pyx_v_distances);
+
+  /* function exit code */
+  for (Py_ssize_t __pyx_temp=0; __pyx_temp < (Py_ssize_t)(sizeof(values)/sizeof(values[0])); ++__pyx_temp) {
+    Py_XDECREF(values[__pyx_temp]);
+  }
+  __Pyx_RefNannyFinishContext();
+  return __pyx_r;
+}
+
+static PyObject *__pyx_pf_7frigate_10embeddings_11util_cython_4cython_update_stats(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_distances) {
+  PyObject *__pyx_v_n = NULL;
+  PyObject *__pyx_v_mean = NULL;
+  PyObject *__pyx_v_m2 = NULL;
+  PyObject *__pyx_v_x = NULL;
+  PyObject *__pyx_v_delta = NULL;
+  PyObject *__pyx_v_delta2 = NULL;
+  PyObject *__pyx_r = NULL;
+  __Pyx_RefNannyDeclarations
+  PyObject *__pyx_t_1 = NULL;
+  Py_ssize_t __pyx_t_2;
+  PyObject *(*__pyx_t_3)(PyObject *);
+  PyObject *__pyx_t_4 = NULL;
+  PyObject *__pyx_t_5 = NULL;
+  int __pyx_lineno = 0;
+  const char *__pyx_filename = NULL;
+  int __pyx_clineno = 0;
+  __Pyx_RefNannySetupContext("cython_update_stats", 0);
+
+  /* "frigate/embeddings/util_cython.pyx":70
+ *         Tuple of (n, mean, m2)
+ *     """
+ *     n = 0             # <<<<<<<<<<<<<<
+ *     mean = 0.0
+ *     m2 = 0.0
+*/
+  __Pyx_INCREF(__pyx_mstate_global->__pyx_int_0);
+  __pyx_v_n = __pyx_mstate_global->__pyx_int_0;
+
+  /* "frigate/embeddings/util_cython.pyx":71
+ *     """
+ *     n = 0
+ *     mean = 0.0             # <<<<<<<<<<<<<<
+ *     m2 = 0.0
+ * 
+*/
+  __Pyx_INCREF(__pyx_mstate_global->__pyx_float_0_0);
+  __pyx_v_mean = __pyx_mstate_global->__pyx_float_0_0;
+
+  /* "frigate/embeddings/util_cython.pyx":72
+ *     n = 0
+ *     mean = 0.0
+ *     m2 = 0.0             # <<<<<<<<<<<<<<
+ * 
+ *     for x in distances:
+*/
+  __Pyx_INCREF(__pyx_mstate_global->__pyx_float_0_0);
+  __pyx_v_m2 = __pyx_mstate_global->__pyx_float_0_0;
+
+  /* "frigate/embeddings/util_cython.pyx":74
+ *     m2 = 0.0
+ * 
+ *     for x in distances:             # <<<<<<<<<<<<<<
+ *         n += 1
+ *         delta = x - mean
+*/
+  if (likely(PyList_CheckExact(__pyx_v_distances)) || PyTuple_CheckExact(__pyx_v_distances)) {
+    __pyx_t_1 = __pyx_v_distances; __Pyx_INCREF(__pyx_t_1);
+    __pyx_t_2 = 0;
+    __pyx_t_3 = NULL;
+  } else {
+    __pyx_t_2 = -1; __pyx_t_1 = PyObject_GetIter(__pyx_v_distances); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 74, __pyx_L1_error)
+    __Pyx_GOTREF(__pyx_t_1);
+    __pyx_t_3 = (CYTHON_COMPILING_IN_LIMITED_API) ? PyIter_Next : __Pyx_PyObject_GetIterNextFunc(__pyx_t_1); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 74, __pyx_L1_error)
+  }
+  for (;;) {
+    if (likely(!__pyx_t_3)) {
+      if (likely(PyList_CheckExact(__pyx_t_1))) {
+        {
+          Py_ssize_t __pyx_temp = __Pyx_PyList_GET_SIZE(__pyx_t_1);
+          #if !CYTHON_ASSUME_SAFE_SIZE
+          if (unlikely((__pyx_temp < 0))) __PYX_ERR(0, 74, __pyx_L1_error)
+          #endif
+          if (__pyx_t_2 >= __pyx_temp) break;
+        }
+        __pyx_t_4 = __Pyx_PyList_GET_ITEM_REF(__pyx_t_1, __pyx_t_2, __Pyx_ReferenceSharing_OwnStrongReference);
+        ++__pyx_t_2;
+      } else {
+        {
+          Py_ssize_t __pyx_temp = __Pyx_PyTuple_GET_SIZE(__pyx_t_1);
+          #if !CYTHON_ASSUME_SAFE_SIZE
+          if (unlikely((__pyx_temp < 0))) __PYX_ERR(0, 74, __pyx_L1_error)
+          #endif
+          if (__pyx_t_2 >= __pyx_temp) break;
+        }
+        #if CYTHON_ASSUME_SAFE_MACROS && !CYTHON_AVOID_BORROWED_REFS
+        __pyx_t_4 = __Pyx_NewRef(PyTuple_GET_ITEM(__pyx_t_1, __pyx_t_2));
+        #else
+        __pyx_t_4 = __Pyx_PySequence_ITEM(__pyx_t_1, __pyx_t_2);
+        #endif
+        ++__pyx_t_2;
+      }
+      if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 74, __pyx_L1_error)
+    } else {
+      __pyx_t_4 = __pyx_t_3(__pyx_t_1);
+      if (unlikely(!__pyx_t_4)) {
+        PyObject* exc_type = PyErr_Occurred();
+        if (exc_type) {
+          if (unlikely(!__Pyx_PyErr_GivenExceptionMatches(exc_type, PyExc_StopIteration))) __PYX_ERR(0, 74, __pyx_L1_error)
+          PyErr_Clear();
+        }
+        break;
+      }
+    }
+    __Pyx_GOTREF(__pyx_t_4);
+    __Pyx_XDECREF_SET(__pyx_v_x, __pyx_t_4);
+    __pyx_t_4 = 0;
+
+    /* "frigate/embeddings/util_cython.pyx":75
+ * 
+ *     for x in distances:
+ *         n += 1             # <<<<<<<<<<<<<<
+ *         delta = x - mean
+ *         mean += delta / n
+*/
+    __pyx_t_4 = __Pyx_PyLong_AddObjC(__pyx_v_n, __pyx_mstate_global->__pyx_int_1, 1, 1, 0); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 75, __pyx_L1_error)
+    __Pyx_GOTREF(__pyx_t_4);
+    __Pyx_DECREF_SET(__pyx_v_n, __pyx_t_4);
+    __pyx_t_4 = 0;
+
+    /* "frigate/embeddings/util_cython.pyx":76
+ *     for x in distances:
+ *         n += 1
+ *         delta = x - mean             # <<<<<<<<<<<<<<
+ *         mean += delta / n
+ *         delta2 = x - mean
+*/
+    __pyx_t_4 = PyNumber_Subtract(__pyx_v_x, __pyx_v_mean); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 76, __pyx_L1_error)
+    __Pyx_GOTREF(__pyx_t_4);
+    __Pyx_XDECREF_SET(__pyx_v_delta, __pyx_t_4);
+    __pyx_t_4 = 0;
+
+    /* "frigate/embeddings/util_cython.pyx":77
+ *         n += 1
+ *         delta = x - mean
+ *         mean += delta / n             # <<<<<<<<<<<<<<
+ *         delta2 = x - mean
+ *         m2 += delta * delta2
+*/
+    __pyx_t_4 = __Pyx_PyNumber_Divide(__pyx_v_delta, __pyx_v_n); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 77, __pyx_L1_error)
+    __Pyx_GOTREF(__pyx_t_4);
+    __pyx_t_5 = PyNumber_InPlaceAdd(__pyx_v_mean, __pyx_t_4); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 77, __pyx_L1_error)
+    __Pyx_GOTREF(__pyx_t_5);
+    __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
+    __Pyx_DECREF_SET(__pyx_v_mean, __pyx_t_5);
+    __pyx_t_5 = 0;
+
+    /* "frigate/embeddings/util_cython.pyx":78
+ *         delta = x - mean
+ *         mean += delta / n
+ *         delta2 = x - mean             # <<<<<<<<<<<<<<
+ *         m2 += delta * delta2
+ * 
+*/
+    __pyx_t_5 = PyNumber_Subtract(__pyx_v_x, __pyx_v_mean); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 78, __pyx_L1_error)
+    __Pyx_GOTREF(__pyx_t_5);
+    __Pyx_XDECREF_SET(__pyx_v_delta2, __pyx_t_5);
+    __pyx_t_5 = 0;
+
+    /* "frigate/embeddings/util_cython.pyx":79
+ *         mean += delta / n
+ *         delta2 = x - mean
+ *         m2 += delta * delta2             # <<<<<<<<<<<<<<
+ * 
+ *     return (n, mean, m2)
+*/
+    __pyx_t_5 = PyNumber_Multiply(__pyx_v_delta, __pyx_v_delta2); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 79, __pyx_L1_error)
+    __Pyx_GOTREF(__pyx_t_5);
+    __pyx_t_4 = PyNumber_InPlaceAdd(__pyx_v_m2, __pyx_t_5); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 79, __pyx_L1_error)
+    __Pyx_GOTREF(__pyx_t_4);
+    __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
+    __Pyx_DECREF_SET(__pyx_v_m2, __pyx_t_4);
+    __pyx_t_4 = 0;
+
+    /* "frigate/embeddings/util_cython.pyx":74
+ *     m2 = 0.0
+ * 
+ *     for x in distances:             # <<<<<<<<<<<<<<
+ *         n += 1
+ *         delta = x - mean
+*/
+  }
+  __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
+
+  /* "frigate/embeddings/util_cython.pyx":81
+ *         m2 += delta * delta2
+ * 
+ *     return (n, mean, m2)             # <<<<<<<<<<<<<<
+*/
+  __Pyx_XDECREF(__pyx_r);
+  __pyx_t_1 = PyTuple_New(3); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 81, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_1);
+  __Pyx_INCREF(__pyx_v_n);
+  __Pyx_GIVEREF(__pyx_v_n);
+  if (__Pyx_PyTuple_SET_ITEM(__pyx_t_1, 0, __pyx_v_n) != (0)) __PYX_ERR(0, 81, __pyx_L1_error);
+  __Pyx_INCREF(__pyx_v_mean);
+  __Pyx_GIVEREF(__pyx_v_mean);
+  if (__Pyx_PyTuple_SET_ITEM(__pyx_t_1, 1, __pyx_v_mean) != (0)) __PYX_ERR(0, 81, __pyx_L1_error);
+  __Pyx_INCREF(__pyx_v_m2);
+  __Pyx_GIVEREF(__pyx_v_m2);
+  if (__Pyx_PyTuple_SET_ITEM(__pyx_t_1, 2, __pyx_v_m2) != (0)) __PYX_ERR(0, 81, __pyx_L1_error);
+  __pyx_r = __pyx_t_1;
+  __pyx_t_1 = 0;
+  goto __pyx_L0;
+
+  /* "frigate/embeddings/util_cython.pyx":58
+ * 
+ * 
+ * def cython_update_stats(distances):             # <<<<<<<<<<<<<<
+ *     """Welford's online algorithm for running mean and variance.
+ * 
+*/
+
+  /* function exit code */
+  __pyx_L1_error:;
+  __Pyx_XDECREF(__pyx_t_1);
+  __Pyx_XDECREF(__pyx_t_4);
+  __Pyx_XDECREF(__pyx_t_5);
+  __Pyx_AddTraceback("frigate.embeddings.util_cython.cython_update_stats", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __pyx_r = NULL;
+  __pyx_L0:;
+  __Pyx_XDECREF(__pyx_v_n);
+  __Pyx_XDECREF(__pyx_v_mean);
+  __Pyx_XDECREF(__pyx_v_m2);
+  __Pyx_XDECREF(__pyx_v_x);
+  __Pyx_XDECREF(__pyx_v_delta);
+  __Pyx_XDECREF(__pyx_v_delta2);
   __Pyx_XGIVEREF(__pyx_r);
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
@@ -3371,6 +3720,21 @@ __Pyx_RefNannySetupContext("PyInit_util_cython", 0);
   if (PyDict_SetItem(__pyx_mstate_global->__pyx_d, __pyx_mstate_global->__pyx_n_u_cython_normalize_inplace, __pyx_t_2) < (0)) __PYX_ERR(0, 36, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
 
+  /* "frigate/embeddings/util_cython.pyx":58
+ * 
+ * 
+ * def cython_update_stats(distances):             # <<<<<<<<<<<<<<
+ *     """Welford's online algorithm for running mean and variance.
+ * 
+*/
+  __pyx_t_2 = __Pyx_CyFunction_New(&__pyx_mdef_7frigate_10embeddings_11util_cython_5cython_update_stats, 0, __pyx_mstate_global->__pyx_n_u_cython_update_stats, NULL, __pyx_mstate_global->__pyx_n_u_frigate_embeddings_util_cython, __pyx_mstate_global->__pyx_d, ((PyObject *)__pyx_mstate_global->__pyx_codeobj_tab[2])); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 58, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_2);
+  #if CYTHON_COMPILING_IN_CPYTHON && PY_VERSION_HEX >= 0x030E0000
+  PyUnstable_Object_EnableDeferredRefcount(__pyx_t_2);
+  #endif
+  if (PyDict_SetItem(__pyx_mstate_global->__pyx_d, __pyx_mstate_global->__pyx_n_u_cython_update_stats, __pyx_t_2) < (0)) __PYX_ERR(0, 58, __pyx_L1_error)
+  __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
+
   /* "frigate/embeddings/util_cython.pyx":1
  * """             # <<<<<<<<<<<<<<
  * Cython-accelerated Z-score normalization for semantic search distances.
@@ -3441,31 +3805,31 @@ static int __Pyx_InitCachedConstants(__pyx_mstatetype *__pyx_mstate) {
 static int __Pyx_InitConstants(__pyx_mstatetype *__pyx_mstate) {
   CYTHON_UNUSED_VAR(__pyx_mstate);
   {
-    const struct { const unsigned int length: 7; } index[] = {{1},{34},{20},{12},{18},{4},{18},{16},{24},{9},{30},{8},{1},{13},{5},{8},{4},{10},{8},{3},{12},{12},{12},{10},{6},{8},{6},{1},{49},{67}};
-    #if (CYTHON_COMPRESS_STRINGS) == 2 /* compression: bz2 (375 bytes) */
-const char* const cstring = "BZh91AY&SY\246\354\317\261\000\000\031\177\377\346n\240\020)\001\270\000\226\001s\200\277\357\377\360@@@@@@@@@\000\000@@\000@\0000\0018\010D\215&OHi\204hd\310\321\246\206&\t\247\250i\210<\241\31510\021\246\004a\030\000\000\000\230F\003S\024\310\310\310Q\262!\246#@\001\240\310\304\3312$\260\313\254pR\306\336\00088\3540\367\336B\322-\3448\221\231\352\366\325\260\312\n]\345\232\027.\2453s\317\212\303X\313\314\021M\250\241\246s\t\270\255+\234\321\035\201h\010n5-\240\302\210\244f\311\255y\013\236\325M,\263\025\201\035K\034'\342\343\260\030#v\211\242A%\325\207\240-\352<\210*((\337\305*:\301\330\346Q\245\310\303\305\312#\376\237\220\242\326\225\007\006\200\220\333\214D0\257\002\007\204\234\215\353\021J:hlD\243)\034$\010\244\007\237\010j\314\037\244\261\265\235\214P8\205(9\257\002zV(\005@\201\267\021d\307\234\230\334\300\300\352\020\236\267R@\302Hqg\243\034D\3425\25290\001P\022%|\013\236J2\325\000\366\367h\035\363\205\323i.\000\216\266\203\316yDQw\353i\303\320|&@\374\211\275\341\372\365\3075\2441y\253`\331\354a\234\201%\310\010\341\374]\311\024\341BB\233\263>\304";
-    PyObject *data = __Pyx_DecompressString(cstring, 375, 2);
+    const struct { const unsigned int length: 7; } index[] = {{1},{34},{20},{12},{18},{4},{18},{16},{24},{19},{5},{6},{9},{30},{8},{1},{13},{5},{2},{8},{4},{10},{1},{8},{3},{12},{12},{12},{10},{6},{8},{6},{1},{76},{49},{67}};
+    #if (CYTHON_COMPRESS_STRINGS) == 2 /* compression: bz2 (449 bytes) */
+const char* const cstring = "BZh91AY&SY\326>i/\000\000*\177\377\367o\360P9\001\270\000\276\001s\200\277\357\377\360@@@@@@@@@\000\000@@\000@\0000\001X\332\326\rML\223CM4\323M4\000\000\000\000\003@\323&\231\006\246\232jI\376\251\372\251\265=\006MFLC\01024\r4\032\014&M\0144\322i52\217S\332P\321\240\000\000\00042=#\t\247\221)\267\247\207\036$\307\230f$\211R@\314\200N'\n\253h\244LE\205\004\010?\304Js\202\034\253U\332\260\251\202`\272\260\026\036r\"\325\237ti\034\247%\r\235\203\337d\016\n#Wz\207\023\220\3455\3150\267\224=\300\217\325@\371B\240b\240\272\324\230\247k\232DWJ\213\232&\337-`\365\223U\024\030H\177\354vC\301=\274\351@\302\355)\304\321\230(\227\201\315\327L\315\260b^$!\263\225\000\364\225\0103\326B\024J\224\260\243\2544H\356v\233\n\211&\010_\335\241\001]%1\0309\t\361\240\203\t\351\254\t\321\003|\212\301\004\034a\367g\024Q\0148\256\201\225\374r V\024\270lX\202\212^\"\r\002}\027Mp\356\353q\030M\276\024\016\001\031V\245\007\203\250Hp4\346\247^\023\007\261\003\210\005Y\234*\200\246\213\374\\'\"Z\2260\262\031\275\244_\230#M|\2300J\244\340\323\237r\215\004\013\230\035\006\276\245\226 \347q\367\310\202[ \277zI\330^~\357I\202\010`\305\305\370\223\250\274.m\224\261\351\253T\376\241\266eAE\271\t\246sMA\277\213\271\"\234(Hk\0374\227\200";
+    PyObject *data = __Pyx_DecompressString(cstring, 449, 2);
     if (unlikely(!data)) __PYX_ERR(0, 1, __pyx_L1_error)
     const char* const bytes = __Pyx_PyBytes_AsString(data);
     #if !CYTHON_ASSUME_SAFE_MACROS
     if (likely(bytes)); else { Py_DECREF(data); __PYX_ERR(0, 1, __pyx_L1_error) }
     #endif
-    #elif (CYTHON_COMPRESS_STRINGS) != 0 /* compression: zlib (315 bytes) */
-const char* const cstring = "x\332]N1N\303@\020\004\211H\216\002Bn\351\020RJG\204\007 !hQ\260\004\224\253\365y\035N\234\357\034\3379\211\251R^yeJ\227.))\363\014\227<\201'p(\021\2404\2733\332\231\331\271\316J>EC#\312\023JS.\247zT\031.\200\325\346E\311\250\250\227\000\023?&\365-g\006\356iib\312\000PJe\274\321#]K\306U\304T\251\274U\222N8j&<\002.\301\224\310(A\366\272M\004\251\312\034\005\177\243}\356\305\205\360\332\224k\203\222\221\336U\213\376\252E\377\252\001d\225d\000\034\270\206\337\337\334P\256\001r\364\237!'\374\231*\255\204\357\t 1\367\273P\005\300\254B\261\245\232\241\277f\310\214*=#\263\223y\224R\206\2250\332\244)\315\001\014i\0030GQ\221^\256\016\277\206\007\275`\265\260\314\205]pjg\237G\003{\331\365\007vl\237\334\330=\257o\326y;n\037\272\340\330\336\271\320\033\316\366\r\201\355\331Gw\356\256\034\272Y\027\204.t\303u\277\t\233\213&n\346m\334.\336\223\217\223M\274\331\206\177\003\265Z\253\003";
-    PyObject *data = __Pyx_DecompressString(cstring, 315, 1);
+    #elif (CYTHON_COMPRESS_STRINGS) != 0 /* compression: zlib (389 bytes) */
+const char* const cstring = "x\332]O=O\033A\020\305\310\216\316\002\022.\025JG\"Q\032\345\362\003\" i\021X\n)G{\273sd\225\275\335\363\355\236\261SQn9\245K\227.))\371\031W\372'\344'd\016[ID\363\364\346\343\275y\363\271\250\365\255\010x\212e\216Ji{\353O\233\240\r\310y\370\341\354\250\232\317\000\256\030\256\346_\264\014p\211\2630\306\002@X\353\002\013\231\371\271\225\332\215\244\253\035K-\372\\\013/\r3\320\026B-$\346B\376\3348\202uu)\214\376\205/k^\256\014\357n\373M\245:{\317G\274B\023\3043dJs\307J\364\333\340\243\177\301G\377\005\007(\032+\0014h\017\177\223\351\200\245/3\200Rp2(Qt\350Tc\370\017\246V\224L*W\001L\032a6\245\227\202\307\205\220\301\325\\a\330\2561SX\210\306\004\037\224\302)@@\037\000\246\3024\350g\367\275\337G;\203a\354\265\375\275\370\261\355\017c\272\356'q\020\257\333\344\240\203C\332\245\367t\326\221W\224/zm\222\322[\312\210G\257cA\347$\326\375\375x\021\247t\315^';\203\344\376.JJ\333\344M\234\254\237M\207{1\2137\254\371\2768_\224\253l\305\332\375\370\225R\026\274{)\350n\177\243c\372D\202&\335\261\224N\026\303e\272\374\260\034/\247\253\361\352\356!\177<x\032?m\314\377\000\026\240\3226";
+    PyObject *data = __Pyx_DecompressString(cstring, 389, 1);
     if (unlikely(!data)) __PYX_ERR(0, 1, __pyx_L1_error)
     const char* const bytes = __Pyx_PyBytes_AsString(data);
     #if !CYTHON_ASSUME_SAFE_MACROS
     if (likely(bytes)); else { Py_DECREF(data); __PYX_ERR(0, 1, __pyx_L1_error) }
     #endif
-    #else /* compression: none (429 bytes) */
-const char* const bytes = "?frigate/embeddings/util_cython.pyx__Pyx_PyDict_NextRef__annotate__asyncio.coroutinesbiascline_in_tracebackcython_normalizecython_normalize_inplacedistancesfrigate.embeddings.util_cython__func__i_is_coroutineitems__main__mean__module____name__pop__qualname__scale_factor__set_name__setdefaultstddev__test__valuesx\200\001\360&\000\005\010\200w\210c\220\021\330\010\017\210q\340\004\013\2101\330\t\013\2102\210V\2202\220W\230B\230m\2502\250Q\330\010\014\210E\220\021\200\001\360\032\000\005\010\200w\210c\220\021\330\010\017\210q\340\004\010\210\005\210U\220!\2203\220a\220q\330\010\021\220\021\220&\230\t\240\021\240#\240R\240v\250R\250w\260b\270\r\300R\300q\340\004\013\2101";
+    #else /* compression: none (538 bytes) */
+const char* const bytes = "?frigate/embeddings/util_cython.pyx__Pyx_PyDict_NextRef__annotate__asyncio.coroutinesbiascline_in_tracebackcython_normalizecython_normalize_inplacecython_update_statsdeltadelta2distancesfrigate.embeddings.util_cython__func__i_is_coroutineitemsm2__main__mean__module__n__name__pop__qualname__scale_factor__set_name__setdefaultstddev__test__valuesx\200\001\360\030\000\005\t\210\001\330\004\013\2101\330\004\t\210\021\340\004\010\210\005\210Q\330\010\r\210Q\330\010\020\220\002\220\"\220A\330\010\020\220\006\220b\230\001\330\010\021\220\022\2202\220Q\330\010\016\210f\220B\220a\340\004\014\210C\210v\220Q\200\001\360&\000\005\010\200w\210c\220\021\330\010\017\210q\340\004\013\2101\330\t\013\2102\210V\2202\220W\230B\230m\2502\250Q\330\010\014\210E\220\021\200\001\360\032\000\005\010\200w\210c\220\021\330\010\017\210q\340\004\010\210\005\210U\220!\2203\220a\220q\330\010\021\220\021\220&\230\t\240\021\240#\240R\240v\250R\250w\260b\270\r\300R\300q\340\004\013\2101";
     PyObject *data = NULL;
     CYTHON_UNUSED_VAR(__Pyx_DecompressString);
     #endif
     PyObject **stringtab = __pyx_mstate->__pyx_string_tab;
     Py_ssize_t pos = 0;
-    for (int i = 0; i < 28; i++) {
+    for (int i = 0; i < 33; i++) {
       Py_ssize_t bytes_length = index[i].length;
       PyObject *string = PyUnicode_DecodeUTF8(bytes + pos, bytes_length, NULL);
       if (likely(string) && i >= 2) PyUnicode_InternInPlace(&string);
@@ -3476,7 +3840,7 @@ const char* const bytes = "?frigate/embeddings/util_cython.pyx__Pyx_PyDict_NextR
       stringtab[i] = string;
       pos += bytes_length;
     }
-    for (int i = 28; i < 30; i++) {
+    for (int i = 33; i < 36; i++) {
       Py_ssize_t bytes_length = index[i].length;
       PyObject *string = PyBytes_FromStringAndSize(bytes + pos, bytes_length);
       stringtab[i] = string;
@@ -3487,15 +3851,15 @@ const char* const bytes = "?frigate/embeddings/util_cython.pyx__Pyx_PyDict_NextR
       }
     }
     Py_XDECREF(data);
-    for (Py_ssize_t i = 0; i < 30; i++) {
+    for (Py_ssize_t i = 0; i < 36; i++) {
       if (unlikely(PyObject_Hash(stringtab[i]) == -1)) {
         __PYX_ERR(0, 1, __pyx_L1_error)
       }
     }
     #if CYTHON_IMMORTAL_CONSTANTS
     {
-      PyObject **table = stringtab + 28;
-      for (Py_ssize_t i=0; i<2; ++i) {
+      PyObject **table = stringtab + 33;
+      for (Py_ssize_t i=0; i<3; ++i) {
         #if PY_VERSION_HEX >= 0x030F0000
         PyUnstable_SetImmortal(table[i]);
         #elif CYTHON_COMPILING_IN_CPYTHON_FREETHREADING
@@ -3516,6 +3880,45 @@ const char* const bytes = "?frigate/embeddings/util_cython.pyx__Pyx_PyDict_NextR
     }
     #endif
   }
+  {
+    PyObject **numbertab = __pyx_mstate->__pyx_number_tab;
+    double const c_constants[] = {0.0};
+    for (int i = 0; i < 1; i++) {
+      numbertab[i] = PyFloat_FromDouble(c_constants[i]);
+      if (unlikely(!numbertab[i])) __PYX_ERR(0, 1, __pyx_L1_error)
+    }
+  }
+  {
+    PyObject **numbertab = __pyx_mstate->__pyx_number_tab + 1;
+    int8_t const cint_constants_1[] = {0,1};
+    for (int i = 0; i < 2; i++) {
+      numbertab[i] = PyLong_FromLong(cint_constants_1[i - 0]);
+      if (unlikely(!numbertab[i])) __PYX_ERR(0, 1, __pyx_L1_error)
+    }
+  }
+  #if CYTHON_IMMORTAL_CONSTANTS
+  {
+    PyObject **table = __pyx_mstate->__pyx_number_tab;
+    for (Py_ssize_t i=0; i<3; ++i) {
+      #if PY_VERSION_HEX >= 0x030F0000
+      PyUnstable_SetImmortal(table[i]);
+      #elif CYTHON_COMPILING_IN_CPYTHON_FREETHREADING
+      if ((PY_SSIZE_T_MAX <= _Py_IMMORTAL_REFCNT_LOCAL)) break;
+      #if PY_VERSION_HEX < 0x030E0000
+      if (_Py_IsOwnedByCurrentThread(table[i]) && Py_REFCNT(table[i]) == 1)
+      #else
+      if (PyUnstable_Object_IsUniquelyReferenced(table[i]))
+      #endif
+      {
+        Py_SET_REFCNT(table[i], ((Py_ssize_t)_Py_IMMORTAL_REFCNT_LOCAL + 1));
+      }
+      #else
+      if ((PY_SSIZE_T_MAX < _Py_IMMORTAL_INITIAL_REFCNT)) break;
+      Py_SET_REFCNT(table[i], _Py_IMMORTAL_INITIAL_REFCNT);
+      #endif
+    }
+  }
+  #endif
   return 0;
   __pyx_L1_error:;
   return -1;
@@ -3552,6 +3955,11 @@ static int __Pyx_CreateCodeObjects(__pyx_mstatetype *__pyx_mstate) {
     const __Pyx_PyCode_New_function_description descr = {5, 0, 0, 6, (unsigned int)(CO_OPTIMIZED|CO_NEWLOCALS), 36};
     PyObject* const varnames[] = {__pyx_mstate->__pyx_n_u_distances, __pyx_mstate->__pyx_n_u_mean, __pyx_mstate->__pyx_n_u_stddev, __pyx_mstate->__pyx_n_u_scale_factor, __pyx_mstate->__pyx_n_u_bias, __pyx_mstate->__pyx_n_u_i};
     __pyx_mstate_global->__pyx_codeobj_tab[1] = __Pyx_PyCode_New(descr, varnames, __pyx_mstate->__pyx_kp_u_frigate_embeddings_util_cython_p, __pyx_mstate->__pyx_n_u_cython_normalize_inplace, __pyx_mstate->__pyx_kp_b_iso88591_wc_q_U_3aq_RvRwb_Rq_1, tuple_dedup_map); if (unlikely(!__pyx_mstate_global->__pyx_codeobj_tab[1])) goto bad;
+  }
+  {
+    const __Pyx_PyCode_New_function_description descr = {1, 0, 0, 7, (unsigned int)(CO_OPTIMIZED|CO_NEWLOCALS), 58};
+    PyObject* const varnames[] = {__pyx_mstate->__pyx_n_u_distances, __pyx_mstate->__pyx_n_u_n, __pyx_mstate->__pyx_n_u_mean, __pyx_mstate->__pyx_n_u_m2, __pyx_mstate->__pyx_n_u_x, __pyx_mstate->__pyx_n_u_delta, __pyx_mstate->__pyx_n_u_delta2};
+    __pyx_mstate_global->__pyx_codeobj_tab[2] = __Pyx_PyCode_New(descr, varnames, __pyx_mstate->__pyx_kp_u_frigate_embeddings_util_cython_p, __pyx_mstate->__pyx_n_u_cython_update_stats, __pyx_mstate->__pyx_kp_b_iso88591_1_Q_Q_A_b_2Q_fBa_CvQ, tuple_dedup_map); if (unlikely(!__pyx_mstate_global->__pyx_codeobj_tab[2])) goto bad;
   }
   Py_DECREF(tuple_dedup_map);
   return 0;
@@ -4866,6 +5274,105 @@ static CYTHON_INLINE int __Pyx_SetItemInt_Fast(PyObject *o, Py_ssize_t i, PyObje
     (void)boundscheck;
     return __Pyx_SetItemInt_Generic(o, PyLong_FromSsize_t(i), v);
 }
+
+/* PyLongBinop */
+#if !CYTHON_COMPILING_IN_PYPY
+static PyObject* __Pyx_Fallback___Pyx_PyLong_AddObjC(PyObject *op1, PyObject *op2, int inplace) {
+    return (inplace ? PyNumber_InPlaceAdd : PyNumber_Add)(op1, op2);
+}
+#if CYTHON_USE_PYLONG_INTERNALS
+static PyObject* __Pyx_Unpacked___Pyx_PyLong_AddObjC(PyObject *op1, PyObject *op2, long intval, int inplace, int zerodivision_check) {
+    CYTHON_MAYBE_UNUSED_VAR(inplace);
+    CYTHON_UNUSED_VAR(zerodivision_check);
+    const long b = intval;
+    long a;
+    const PY_LONG_LONG llb = intval;
+    PY_LONG_LONG lla;
+    if (unlikely(__Pyx_PyLong_IsZero(op1))) {
+        return __Pyx_NewRef(op2);
+    }
+    const int is_positive = __Pyx_PyLong_IsPos(op1);
+    const digit* digits = __Pyx_PyLong_Digits(op1);
+    const Py_ssize_t size = __Pyx_PyLong_DigitCount(op1);
+    if (likely(size == 1)) {
+        a = (long) digits[0];
+        if (!is_positive) a *= -1;
+    } else {
+        switch (size) {
+            case 2:
+                if (8 * sizeof(long) - 1 > 2 * PyLong_SHIFT) {
+                    a = (long) (((((unsigned long)digits[1]) << PyLong_SHIFT) | (unsigned long)digits[0]));
+                    if (!is_positive) a *= -1;
+                    goto calculate_long;
+                } else if (8 * sizeof(PY_LONG_LONG) - 1 > 2 * PyLong_SHIFT) {
+                    lla = (PY_LONG_LONG) (((((unsigned PY_LONG_LONG)digits[1]) << PyLong_SHIFT) | (unsigned PY_LONG_LONG)digits[0]));
+                    if (!is_positive) lla *= -1;
+                    goto calculate_long_long;
+                }
+                break;
+            case 3:
+                if (8 * sizeof(long) - 1 > 3 * PyLong_SHIFT) {
+                    a = (long) (((((((unsigned long)digits[2]) << PyLong_SHIFT) | (unsigned long)digits[1]) << PyLong_SHIFT) | (unsigned long)digits[0]));
+                    if (!is_positive) a *= -1;
+                    goto calculate_long;
+                } else if (8 * sizeof(PY_LONG_LONG) - 1 > 3 * PyLong_SHIFT) {
+                    lla = (PY_LONG_LONG) (((((((unsigned PY_LONG_LONG)digits[2]) << PyLong_SHIFT) | (unsigned PY_LONG_LONG)digits[1]) << PyLong_SHIFT) | (unsigned PY_LONG_LONG)digits[0]));
+                    if (!is_positive) lla *= -1;
+                    goto calculate_long_long;
+                }
+                break;
+            case 4:
+                if (8 * sizeof(long) - 1 > 4 * PyLong_SHIFT) {
+                    a = (long) (((((((((unsigned long)digits[3]) << PyLong_SHIFT) | (unsigned long)digits[2]) << PyLong_SHIFT) | (unsigned long)digits[1]) << PyLong_SHIFT) | (unsigned long)digits[0]));
+                    if (!is_positive) a *= -1;
+                    goto calculate_long;
+                } else if (8 * sizeof(PY_LONG_LONG) - 1 > 4 * PyLong_SHIFT) {
+                    lla = (PY_LONG_LONG) (((((((((unsigned PY_LONG_LONG)digits[3]) << PyLong_SHIFT) | (unsigned PY_LONG_LONG)digits[2]) << PyLong_SHIFT) | (unsigned PY_LONG_LONG)digits[1]) << PyLong_SHIFT) | (unsigned PY_LONG_LONG)digits[0]));
+                    if (!is_positive) lla *= -1;
+                    goto calculate_long_long;
+                }
+                break;
+        }
+        return PyLong_Type.tp_as_number->nb_add(op1, op2);
+    }
+    calculate_long:
+        {
+            long x;
+            x = a + b;
+            return PyLong_FromLong(x);
+        }
+    calculate_long_long:
+        {
+            PY_LONG_LONG llx;
+            llx = lla + llb;
+            return PyLong_FromLongLong(llx);
+        }
+    
+}
+#endif
+static PyObject* __Pyx_Float___Pyx_PyLong_AddObjC(PyObject *float_val, long intval, int zerodivision_check) {
+    CYTHON_UNUSED_VAR(zerodivision_check);
+    const long b = intval;
+    double a = __Pyx_PyFloat_AS_DOUBLE(float_val);
+        double result;
+        
+        result = ((double)a) + (double)b;
+        return PyFloat_FromDouble(result);
+}
+static CYTHON_INLINE PyObject* __Pyx_PyLong_AddObjC(PyObject *op1, PyObject *op2, long intval, int inplace, int zerodivision_check) {
+    CYTHON_MAYBE_UNUSED_VAR(intval);
+    CYTHON_UNUSED_VAR(zerodivision_check);
+    #if CYTHON_USE_PYLONG_INTERNALS
+    if (likely(PyLong_CheckExact(op1))) {
+        return __Pyx_Unpacked___Pyx_PyLong_AddObjC(op1, op2, intval, inplace, zerodivision_check);
+    }
+    #endif
+    if (PyFloat_CheckExact(op1)) {
+        return __Pyx_Float___Pyx_PyLong_AddObjC(op1, intval, zerodivision_check);
+    }
+    return __Pyx_Fallback___Pyx_PyLong_AddObjC(op1, op2, inplace);
+}
+#endif
 
 /* dict_setdefault (used by FetchCommonType) */
 static CYTHON_INLINE PyObject *__Pyx_PyDict_SetDefault(PyObject *d, PyObject *key, PyObject *default_value) {
