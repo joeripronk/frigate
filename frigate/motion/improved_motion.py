@@ -7,7 +7,7 @@ from scipy.ndimage import gaussian_filter
 from frigate.camera import PTZMetrics
 from frigate.config.config import RuntimeMotionConfig
 from frigate.motion import MotionDetector
-from frigate.util.image import grab_cv2_contours
+from frigate.motion.motion_cython import cython_find_motion_boxes
 
 logger = logging.getLogger(__name__)
 
@@ -132,27 +132,17 @@ class ImprovedMotionDetector(MotionDetector):
         # dilate the thresholded image to fill in holes, then find contours
         # on thresholded image
         thresh_dilated = cv2.dilate(thresh, None, iterations=1)  # type: ignore[call-overload]
-        contours = cv2.findContours(
-            thresh_dilated, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE
-        )
-        contours = grab_cv2_contours(contours)
 
-        # loop over the contours
-        total_contour_area: float = 0
-        for c in contours:
-            # if the contour is big enough, count it as motion
-            contour_area = cv2.contourArea(c)
-            total_contour_area += contour_area
-            if contour_area > (self.config.contour_area or 0):
-                x, y, w, h = cv2.boundingRect(c)
-                motion_boxes.append(
-                    (
-                        int(x * self.resize_factor),
-                        int(y * self.resize_factor),
-                        int((x + w) * self.resize_factor),
-                        int((y + h) * self.resize_factor),
-                    )
-                )
+        # Cython-accelerated motion box detection
+        motion_array, total_contour_area = cython_find_motion_boxes(
+            thresh_dilated,
+            self.config.contour_area or 0,
+            self.resize_factor,
+            self.motion_frame_size,
+        )
+
+        if motion_array.shape[0] > 0:
+            motion_boxes = [tuple(box) for box in motion_array]
 
         pct_motion = total_contour_area / (
             self.motion_frame_size[0] * self.motion_frame_size[1]
@@ -268,5 +258,4 @@ class ImprovedMotionDetector(MotionDetector):
         self.motion_frame_count = 0
 
     def stop(self) -> None:
-        """stop the motion detector."""
-        pass
+        """Stop the motion detector."""

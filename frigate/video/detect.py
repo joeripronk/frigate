@@ -9,6 +9,7 @@ from multiprocessing.synchronize import Event as MpEvent
 from typing import Any
 
 import cv2
+import numpy as np
 
 from frigate.camera import CameraMetrics, PTZMetrics
 from frigate.comms.inter_process import InterProcessRequestor
@@ -22,14 +23,11 @@ from frigate.const import (
     PROCESS_PRIORITY_HIGH,
     REQUEST_REGION_GRID,
 )
+from frigate.detectors.detection_cython import convert_detection_boxes
 from frigate.motion import MotionDetector
 from frigate.motion.improved_motion import ImprovedMotionDetector
+from frigate.motion.motion_cython import cython_filter_motion_boxes
 from frigate.object_detection.base import RemoteObjectDetector
-from frigate.detectors.detection_cython import (
-    convert_detection_boxes,
-    filter_from_shared_memory,
-    cython_standalone_motion_boxes,
-)
 from frigate.ptz.autotrack import ptz_moving_at_frame_time
 from frigate.track import ObjectTracker
 from frigate.track.norfair_tracker import NorfairTracker
@@ -47,7 +45,6 @@ from frigate.util.object import (
     get_cluster_region_from_grid,
     get_min_region_size,
     get_startup_regions,
-    inside_any,
     intersects_any,
     is_object_filtered,
     reduce_detections,
@@ -365,9 +362,16 @@ def process_frames(
                 ptz_metrics.start_time.value,
                 ptz_metrics.stop_time.value,
             ):
-                # find motion boxes that are not inside tracked object regions
+                # Cython-accelerated filtering of standalone motion boxes
+                motion_boxes_array = np.array(motion_boxes, dtype=np.float32).reshape(
+                    -1, 4
+                )
+                regions_array = np.array(regions, dtype=np.float32)
+                standalone_motion_array = cython_filter_motion_boxes(
+                    motion_boxes_array, regions_array
+                )
                 standalone_motion_boxes = [
-                    b for b in motion_boxes if not inside_any(b, regions)
+                    tuple(box) for box in standalone_motion_array
                 ]
 
                 if standalone_motion_boxes:

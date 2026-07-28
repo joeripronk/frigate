@@ -10,7 +10,7 @@ import numpy as np
 # Cythonize all .pyx files with compiler directives
 setup(
     name="frigate-cython",
-    packages=["frigate.util", "frigate.embeddings", "frigate.events"],
+    packages=["frigate.util", "frigate.embeddings", "frigate.events", "frigate.motion"],
     ext_modules=cythonize(
         [
             "frigate/util/image_cython.pyx",
@@ -20,6 +20,7 @@ setup(
             "frigate/events/audio_cython.pyx",
             "frigate/detectors/detection_cython.pyx",
             "frigate/record/record_cython.pyx",
+            "frigate/motion/motion_cython.pyx",
         ],
         language_level=3,
         compiler_directives={
