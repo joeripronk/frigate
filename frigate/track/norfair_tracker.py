@@ -29,6 +29,10 @@ from frigate.util.image import (
     intersection_over_union,
 )
 from frigate.util.object_cython import cython_average_boxes, cython_median_of_boxes
+from frigate.track.tracking_cython import (
+    cython_build_detections_from_raw,
+    cython_update_tracks,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -512,52 +516,20 @@ class NorfairTracker(ObjectTracker):
         frame_time: float,
         detections: list[tuple[Any, Any, Any, Any, Any, Any]],
     ) -> None:
-        # Group detections by object type
-        detections_by_type: dict[str, list[Detection]] = {}
-        yuv_frame: np.ndarray | None = None
-
-        if (
+        # Build Detection objects using Cython (centroid, points, embedding)
+        need_embedding = (
             self.ptz_metrics.autotracker_enabled.value
             or self.detect_config.stationary.classifier
-        ):
-            yuv_frame = self.frame_manager.get(
-                frame_name, self.camera_config.frame_shape_yuv
-            )
-        for obj in detections:
-            label = obj[0]
-            if label not in detections_by_type:
-                detections_by_type[label] = []
-
-            # centroid is used for other things downstream
-            centroid_x = int((obj[2][0] + obj[2][2]) / 2.0)
-            centroid_y = int((obj[2][1] + obj[2][3]) / 2.0)
-
-            # track based on top,left and bottom,right corners instead of centroid
-            points = np.array([[obj[2][0], obj[2][1]], [obj[2][2], obj[2][3]]])
-
-            embedding = None
-            if self.ptz_metrics.autotracker_enabled.value:
-                embedding = get_histogram(
-                    yuv_frame, obj[2][0], obj[2][1], obj[2][2], obj[2][3]
-                )
-
-            detection = Detection(
-                points=points,
-                label=label,
-                # TODO: stationary objects won't have embeddings
-                embedding=embedding,
-                data={
-                    "label": label,
-                    "score": obj[1],
-                    "box": obj[2],
-                    "area": obj[3],
-                    "ratio": obj[4],
-                    "region": obj[5],
-                    "frame_time": frame_time,
-                    "centroid": (centroid_x, centroid_y),
-                },
-            )
-            detections_by_type[label].append(detection)
+        )
+        detections_by_type = cython_build_detections_from_raw(
+            detections,
+            self.frame_manager,
+            get_histogram,
+            frame_name,
+            need_embedding,
+            self.camera_config,
+            frame_time,
+        )
 
         coord_transformations = None
 
@@ -600,6 +572,13 @@ class NorfairTracker(ObjectTracker):
         all_tracked_objects.extend(tracked_objects)
 
         # update or create new tracks
+        # Retrieve yuv_frame for stationary classifier if needed
+        yuv_frame: np.ndarray | None = None
+        if self.detect_config.stationary.classifier:
+            yuv_frame = self.frame_manager.get(
+                frame_name, self.camera_config.frame_shape_yuv
+            )
+
         active_ids = []
         for t in all_tracked_objects:
             estimate = tuple(t.estimate.flatten().astype(int))

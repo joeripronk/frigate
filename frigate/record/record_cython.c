@@ -2510,6 +2510,26 @@ static CYTHON_INLINE int __Pyx_dict_iter_next(PyObject* dict_or_iter, Py_ssize_t
 #define __Pyx_PyObject_Unicode(obj)\
     (likely(PyUnicode_CheckExact(obj)) ? __Pyx_NewRef(obj) : PyObject_Str(obj))
 
+/* ListExtend.proto */
+static CYTHON_INLINE int __Pyx_PyList_Extend(PyObject* L, PyObject* v) {
+#if !CYTHON_COMPILING_IN_LIMITED_API && PY_VERSION_HEX >= 0x030d00a2
+    return PyList_Extend(L, v);
+#elif CYTHON_COMPILING_IN_CPYTHON && PY_VERSION_HEX < 0x030d0000
+    PyObject* none = _PyList_Extend((PyListObject*)L, v);
+    if (unlikely(!none))
+        return -1;
+    Py_DECREF(none);
+    return 0;
+#else
+    return PyList_SetSlice(L, PY_SSIZE_T_MAX, PY_SSIZE_T_MAX, v);
+#endif
+}
+
+/* PyRange_Check.proto */
+#if CYTHON_COMPILING_IN_PYPY && !defined(PyRange_Check)
+  #define PyRange_Check(obj)  __Pyx_TypeCheck((obj), &PyRange_Type)
+#endif
+
 /* AllocateExtensionType.proto */
 static PyObject *__Pyx_AllocateExtensionType(PyTypeObject *t, int is_final);
 
@@ -2810,6 +2830,10 @@ static CYTHON_INLINE __Pyx_memviewslice __Pyx_PyObject_to_MemoryviewSlice_ds_int
 /* ObjectToMemviewSlice.proto */
 static CYTHON_INLINE __Pyx_memviewslice __Pyx_PyObject_to_MemoryviewSlice_ds_unsigned_char(PyObject *, int writable_flag);
 
+/* MemviewDtypeToObject.proto */
+static CYTHON_INLINE PyObject *__pyx_memview_get_double(const char *itemp);
+static CYTHON_INLINE int __pyx_memview_set_double(char *itemp, PyObject *obj);
+
 /* MemviewSliceCopy.proto */
 static __Pyx_memviewslice
 __pyx_memoryview_copy_new_contig(const __Pyx_memviewslice *from_mvs,
@@ -3082,6 +3106,9 @@ static PyObject *__pyx_pf_7frigate_6record_13record_cython_8compute_active_objec
 static PyObject *__pyx_pf_7frigate_6record_13record_cython_10compute_average_audio_cython(CYTHON_UNUSED PyObject *__pyx_self, __Pyx_memviewslice __pyx_v_frame_timestamps, __Pyx_memviewslice __pyx_v_audio_dbfs, Py_ssize_t __pyx_v_start_idx, Py_ssize_t __pyx_v_end_idx, double __pyx_v_segment_start, double __pyx_v_segment_end); /* proto */
 static PyObject *__pyx_pf_7frigate_6record_13record_cython_12compute_active_objects_with_motion_boxes(CYTHON_UNUSED PyObject *__pyx_self, __Pyx_memviewslice __pyx_v_frame_timestamps, __Pyx_memviewslice __pyx_v_obj_false_positives, __Pyx_memviewslice __pyx_v_obj_motionless_counts, Py_ssize_t __pyx_v_obj_start, Py_ssize_t __pyx_v_obj_end, double __pyx_v_segment_start, double __pyx_v_segment_end, CYTHON_UNUSED PyObject *__pyx_v_all_motion_boxes); /* proto */
 static PyObject *__pyx_pf_7frigate_6record_13record_cython_14compute_segment_active_stats(CYTHON_UNUSED PyObject *__pyx_self, __Pyx_memviewslice __pyx_v_frame_timestamps, __Pyx_memviewslice __pyx_v_obj_false_positives, __Pyx_memviewslice __pyx_v_obj_motionless_counts, Py_ssize_t __pyx_v_obj_start, Py_ssize_t __pyx_v_obj_end, double __pyx_v_segment_start, double __pyx_v_segment_end); /* proto */
+static PyObject *__pyx_pf_7frigate_6record_13record_cython_16compute_segment_active_with_motion(CYTHON_UNUSED PyObject *__pyx_self, __Pyx_memviewslice __pyx_v_frame_timestamps, __Pyx_memviewslice __pyx_v_obj_false_positives, __Pyx_memviewslice __pyx_v_obj_motionless_counts, Py_ssize_t __pyx_v_obj_start, Py_ssize_t __pyx_v_obj_end, double __pyx_v_segment_start, double __pyx_v_segment_end, CYTHON_UNUSED PyObject *__pyx_v_motion_boxes_by_frame); /* proto */
+static PyObject *__pyx_pf_7frigate_6record_13record_cython_18compute_active_objects_and_motion(CYTHON_UNUSED PyObject *__pyx_self, __Pyx_memviewslice __pyx_v_frame_timestamps, __Pyx_memviewslice __pyx_v_obj_false_positives, __Pyx_memviewslice __pyx_v_obj_motionless_counts, PyObject *__pyx_v_frame_obj_counts, PyObject *__pyx_v_motion_boxes_by_frame, PyObject *__pyx_v_all_motion_boxes, double __pyx_v_segment_start, double __pyx_v_segment_end); /* proto */
+static PyObject *__pyx_pf_7frigate_6record_13record_cython_20compute_audio_frame_count(CYTHON_UNUSED PyObject *__pyx_self, __Pyx_memviewslice __pyx_v_timestamps, CYTHON_UNUSED PyObject *__pyx_v_audio_frames, Py_ssize_t __pyx_v_start_idx, Py_ssize_t __pyx_v_end_idx, double __pyx_v_segment_start, double __pyx_v_segment_end); /* proto */
 static PyObject *__pyx_tp_new_7frigate_6record_13record_cython_MotionHeatmapAccumulator(PyTypeObject *t, PyObject *a, PyObject *k); /*proto*/
 static PyObject *__pyx_tp_new_array(PyTypeObject *t, PyObject *a, PyObject *k); /*proto*/
 static PyObject *__pyx_tp_new_Enum(PyTypeObject *t, PyObject *a, PyObject *k); /*proto*/
@@ -3122,8 +3149,8 @@ typedef struct {
   __Pyx_CachedCFunction __pyx_umethod_PyDict_Type_values;
   PyObject *__pyx_slice[1];
   PyObject *__pyx_tuple[2];
-  PyObject *__pyx_codeobj_tab[11];
-  PyObject *__pyx_string_tab[182];
+  PyObject *__pyx_codeobj_tab[14];
+  PyObject *__pyx_string_tab[199];
   PyObject *__pyx_number_tab[5];
 /* #### Code section: module_state_contents ### */
 /* CommonTypesMetaclass.module_state_decls */
@@ -3224,129 +3251,146 @@ static __pyx_mstatetype * const __pyx_mstate_global = &__pyx_mstate_global_stati
 #define __pyx_n_u_annotate __pyx_string_tab[56]
 #define __pyx_n_u_asyncio_coroutines __pyx_string_tab[57]
 #define __pyx_n_u_audio_dbfs __pyx_string_tab[58]
-#define __pyx_n_u_base __pyx_string_tab[59]
-#define __pyx_n_u_box __pyx_string_tab[60]
-#define __pyx_n_u_boxes_array __pyx_string_tab[61]
-#define __pyx_n_u_c __pyx_string_tab[62]
-#define __pyx_n_u_check_overlap_with_reviews_cytho __pyx_string_tab[63]
-#define __pyx_n_u_class __pyx_string_tab[64]
-#define __pyx_n_u_class_getitem __pyx_string_tab[65]
-#define __pyx_n_u_cline_in_traceback __pyx_string_tab[66]
-#define __pyx_n_u_compute_active_object_count_cyth __pyx_string_tab[67]
-#define __pyx_n_u_compute_active_objects_with_moti __pyx_string_tab[68]
-#define __pyx_n_u_compute_average_audio_cython __pyx_string_tab[69]
-#define __pyx_n_u_compute_motion_heatmap_cython __pyx_string_tab[70]
-#define __pyx_n_u_compute_motion_heatmap_from_arra __pyx_string_tab[71]
-#define __pyx_n_u_compute_segment_active_stats __pyx_string_tab[72]
-#define __pyx_n_u_compute_segment_stats_cython __pyx_string_tab[73]
-#define __pyx_n_u_count __pyx_string_tab[74]
-#define __pyx_n_u_dict __pyx_string_tab[75]
-#define __pyx_n_u_dtype_is_object __pyx_string_tab[76]
-#define __pyx_n_u_encode __pyx_string_tab[77]
-#define __pyx_n_u_end_idx __pyx_string_tab[78]
-#define __pyx_n_u_enumerate __pyx_string_tab[79]
-#define __pyx_n_u_error __pyx_string_tab[80]
-#define __pyx_n_u_flags __pyx_string_tab[81]
-#define __pyx_n_u_flatten __pyx_string_tab[82]
-#define __pyx_n_u_format __pyx_string_tab[83]
-#define __pyx_n_u_fortran __pyx_string_tab[84]
-#define __pyx_n_u_frame_height __pyx_string_tab[85]
-#define __pyx_n_u_frame_motion_counts __pyx_string_tab[86]
-#define __pyx_n_u_frame_region_counts __pyx_string_tab[87]
-#define __pyx_n_u_frame_timestamps __pyx_string_tab[88]
-#define __pyx_n_u_frame_width __pyx_string_tab[89]
-#define __pyx_n_u_frigate_record_record_cython __pyx_string_tab[90]
-#define __pyx_n_u_func __pyx_string_tab[91]
-#define __pyx_n_u_getLogger __pyx_string_tab[92]
-#define __pyx_n_u_get_result __pyx_string_tab[93]
-#define __pyx_n_u_getstate __pyx_string_tab[94]
-#define __pyx_n_u_heatmap __pyx_string_tab[95]
-#define __pyx_n_u_i __pyx_string_tab[96]
-#define __pyx_n_u_id __pyx_string_tab[97]
-#define __pyx_n_u_import __pyx_string_tab[98]
-#define __pyx_n_u_in_range_count __pyx_string_tab[99]
-#define __pyx_n_u_index __pyx_string_tab[100]
-#define __pyx_n_u_is_coroutine __pyx_string_tab[101]
-#define __pyx_n_u_items __pyx_string_tab[102]
-#define __pyx_n_u_itemsize __pyx_string_tab[103]
-#define __pyx_n_u_k __pyx_string_tab[104]
-#define __pyx_n_u_logger __pyx_string_tab[105]
-#define __pyx_n_u_logging __pyx_string_tab[106]
-#define __pyx_n_u_main __pyx_string_tab[107]
-#define __pyx_n_u_memview __pyx_string_tab[108]
-#define __pyx_n_u_mode __pyx_string_tab[109]
-#define __pyx_n_u_module __pyx_string_tab[110]
-#define __pyx_n_u_motion_boxes __pyx_string_tab[111]
-#define __pyx_n_u_motion_count __pyx_string_tab[112]
-#define __pyx_n_u_n __pyx_string_tab[113]
-#define __pyx_n_u_name __pyx_string_tab[114]
-#define __pyx_n_u_name_2 __pyx_string_tab[115]
-#define __pyx_n_u_ndarray __pyx_string_tab[116]
-#define __pyx_n_u_ndim __pyx_string_tab[117]
-#define __pyx_n_u_new __pyx_string_tab[118]
-#define __pyx_n_u_np __pyx_string_tab[119]
-#define __pyx_n_u_numpy __pyx_string_tab[120]
-#define __pyx_n_u_obj __pyx_string_tab[121]
-#define __pyx_n_u_obj_end __pyx_string_tab[122]
-#define __pyx_n_u_obj_false_positives __pyx_string_tab[123]
-#define __pyx_n_u_obj_motionless_counts __pyx_string_tab[124]
-#define __pyx_n_u_obj_start __pyx_string_tab[125]
-#define __pyx_n_u_pack __pyx_string_tab[126]
-#define __pyx_n_u_pop __pyx_string_tab[127]
-#define __pyx_n_u_pyx_checksum __pyx_string_tab[128]
-#define __pyx_n_u_pyx_state __pyx_string_tab[129]
-#define __pyx_n_u_pyx_type __pyx_string_tab[130]
-#define __pyx_n_u_pyx_unpickle_Enum __pyx_string_tab[131]
-#define __pyx_n_u_pyx_vtable __pyx_string_tab[132]
-#define __pyx_n_u_qualname __pyx_string_tab[133]
-#define __pyx_n_u_recording_end __pyx_string_tab[134]
-#define __pyx_n_u_recording_start __pyx_string_tab[135]
-#define __pyx_n_u_reduce __pyx_string_tab[136]
-#define __pyx_n_u_reduce_cython __pyx_string_tab[137]
-#define __pyx_n_u_reduce_ex __pyx_string_tab[138]
-#define __pyx_n_u_region_count __pyx_string_tab[139]
-#define __pyx_n_u_register __pyx_string_tab[140]
-#define __pyx_n_u_result __pyx_string_tab[141]
-#define __pyx_n_u_review_data __pyx_string_tab[142]
-#define __pyx_n_u_review_end_time __pyx_string_tab[143]
-#define __pyx_n_u_review_post __pyx_string_tab[144]
-#define __pyx_n_u_review_pre __pyx_string_tab[145]
-#define __pyx_n_u_review_start_adj __pyx_string_tab[146]
-#define __pyx_n_u_review_start_time __pyx_string_tab[147]
-#define __pyx_n_u_segment_end __pyx_string_tab[148]
-#define __pyx_n_u_segment_start __pyx_string_tab[149]
-#define __pyx_n_u_self __pyx_string_tab[150]
-#define __pyx_n_u_set_name __pyx_string_tab[151]
-#define __pyx_n_u_setdefault __pyx_string_tab[152]
-#define __pyx_n_u_setstate __pyx_string_tab[153]
-#define __pyx_n_u_setstate_cython __pyx_string_tab[154]
-#define __pyx_n_u_severity __pyx_string_tab[155]
-#define __pyx_n_u_shape __pyx_string_tab[156]
-#define __pyx_n_u_size __pyx_string_tab[157]
-#define __pyx_n_u_start __pyx_string_tab[158]
-#define __pyx_n_u_start_idx __pyx_string_tab[159]
-#define __pyx_n_u_step __pyx_string_tab[160]
-#define __pyx_n_u_stop __pyx_string_tab[161]
-#define __pyx_n_u_struct __pyx_string_tab[162]
-#define __pyx_n_u_test __pyx_string_tab[163]
-#define __pyx_n_u_total __pyx_string_tab[164]
-#define __pyx_n_u_unpack __pyx_string_tab[165]
-#define __pyx_n_u_update __pyx_string_tab[166]
-#define __pyx_n_u_v __pyx_string_tab[167]
-#define __pyx_n_u_values __pyx_string_tab[168]
-#define __pyx_n_u_video_frame_count __pyx_string_tab[169]
-#define __pyx_n_u_x __pyx_string_tab[170]
-#define __pyx_kp_b_iso88591_1A_U_1_Jl_P_Rq_Ba_G1_3e3_6b_Cq __pyx_string_tab[171]
-#define __pyx_kp_b_iso88591_3a_q_wa_HD_6_A_q_a_A_WKq_t1_q_1 __pyx_string_tab[172]
-#define __pyx_kp_b_iso88591_4_1_Q_U_a_1Cr_1Cr_as_Rt_Cq_A_A __pyx_string_tab[173]
-#define __pyx_kp_b_iso88591_4_A_U_a_1Cr_1Cr_as_Rt_Cq_Q_1 __pyx_string_tab[174]
-#define __pyx_kp_b_iso88591_6_q_1_1_U_a_1Cr_1Cr_Q_1A_1A_Q __pyx_string_tab[175]
-#define __pyx_kp_b_iso88591_A_4t_S_F_Q_1_E_at1_t5_Ba_auD_Qa __pyx_string_tab[176]
-#define __pyx_kp_b_iso88591_A_q_U_a_1Cr_1Cr_1A_vS_q_6_1 __pyx_string_tab[177]
-#define __pyx_kp_b_iso88591_Cq_q_a_A_z_vS_1_AQ_A_3a_q_G1_s __pyx_string_tab[178]
-#define __pyx_kp_b_iso88591_Q __pyx_string_tab[179]
-#define __pyx_kp_b_iso88591_R_A_U_a_1Cr_1Cr_as_Rt_Cq_Q_1 __pyx_string_tab[180]
-#define __pyx_n_b_O __pyx_string_tab[181]
+#define __pyx_n_u_audio_frames __pyx_string_tab[59]
+#define __pyx_n_u_base __pyx_string_tab[60]
+#define __pyx_n_u_box __pyx_string_tab[61]
+#define __pyx_n_u_boxes_array __pyx_string_tab[62]
+#define __pyx_n_u_c __pyx_string_tab[63]
+#define __pyx_n_u_check_overlap_with_reviews_cytho __pyx_string_tab[64]
+#define __pyx_n_u_class __pyx_string_tab[65]
+#define __pyx_n_u_class_getitem __pyx_string_tab[66]
+#define __pyx_n_u_cline_in_traceback __pyx_string_tab[67]
+#define __pyx_n_u_compute_active_object_count_cyth __pyx_string_tab[68]
+#define __pyx_n_u_compute_active_objects_and_motio __pyx_string_tab[69]
+#define __pyx_n_u_compute_active_objects_with_moti __pyx_string_tab[70]
+#define __pyx_n_u_compute_audio_frame_count __pyx_string_tab[71]
+#define __pyx_n_u_compute_average_audio_cython __pyx_string_tab[72]
+#define __pyx_n_u_compute_motion_heatmap_cython __pyx_string_tab[73]
+#define __pyx_n_u_compute_motion_heatmap_from_arra __pyx_string_tab[74]
+#define __pyx_n_u_compute_segment_active_stats __pyx_string_tab[75]
+#define __pyx_n_u_compute_segment_active_with_moti __pyx_string_tab[76]
+#define __pyx_n_u_compute_segment_stats_cython __pyx_string_tab[77]
+#define __pyx_n_u_count __pyx_string_tab[78]
+#define __pyx_n_u_dict __pyx_string_tab[79]
+#define __pyx_n_u_dtype_is_object __pyx_string_tab[80]
+#define __pyx_n_u_encode __pyx_string_tab[81]
+#define __pyx_n_u_end __pyx_string_tab[82]
+#define __pyx_n_u_end_idx __pyx_string_tab[83]
+#define __pyx_n_u_enumerate __pyx_string_tab[84]
+#define __pyx_n_u_error __pyx_string_tab[85]
+#define __pyx_n_u_flags __pyx_string_tab[86]
+#define __pyx_n_u_flatten __pyx_string_tab[87]
+#define __pyx_n_u_format __pyx_string_tab[88]
+#define __pyx_n_u_fortran __pyx_string_tab[89]
+#define __pyx_n_u_fp __pyx_string_tab[90]
+#define __pyx_n_u_frame_boxes __pyx_string_tab[91]
+#define __pyx_n_u_frame_height __pyx_string_tab[92]
+#define __pyx_n_u_frame_motion_counts __pyx_string_tab[93]
+#define __pyx_n_u_frame_obj_counts __pyx_string_tab[94]
+#define __pyx_n_u_frame_region_counts __pyx_string_tab[95]
+#define __pyx_n_u_frame_size __pyx_string_tab[96]
+#define __pyx_n_u_frame_timestamps __pyx_string_tab[97]
+#define __pyx_n_u_frame_width __pyx_string_tab[98]
+#define __pyx_n_u_frigate_record_record_cython __pyx_string_tab[99]
+#define __pyx_n_u_func __pyx_string_tab[100]
+#define __pyx_n_u_getLogger __pyx_string_tab[101]
+#define __pyx_n_u_get_result __pyx_string_tab[102]
+#define __pyx_n_u_getstate __pyx_string_tab[103]
+#define __pyx_n_u_heatmap __pyx_string_tab[104]
+#define __pyx_n_u_i __pyx_string_tab[105]
+#define __pyx_n_u_id __pyx_string_tab[106]
+#define __pyx_n_u_import __pyx_string_tab[107]
+#define __pyx_n_u_in_range_count __pyx_string_tab[108]
+#define __pyx_n_u_index __pyx_string_tab[109]
+#define __pyx_n_u_is_coroutine __pyx_string_tab[110]
+#define __pyx_n_u_items __pyx_string_tab[111]
+#define __pyx_n_u_itemsize __pyx_string_tab[112]
+#define __pyx_n_u_j __pyx_string_tab[113]
+#define __pyx_n_u_k __pyx_string_tab[114]
+#define __pyx_n_u_logger __pyx_string_tab[115]
+#define __pyx_n_u_logging __pyx_string_tab[116]
+#define __pyx_n_u_main __pyx_string_tab[117]
+#define __pyx_n_u_mc __pyx_string_tab[118]
+#define __pyx_n_u_memview __pyx_string_tab[119]
+#define __pyx_n_u_mode __pyx_string_tab[120]
+#define __pyx_n_u_module __pyx_string_tab[121]
+#define __pyx_n_u_motion_boxes __pyx_string_tab[122]
+#define __pyx_n_u_motion_boxes_by_frame __pyx_string_tab[123]
+#define __pyx_n_u_motion_count __pyx_string_tab[124]
+#define __pyx_n_u_n __pyx_string_tab[125]
+#define __pyx_n_u_name __pyx_string_tab[126]
+#define __pyx_n_u_name_2 __pyx_string_tab[127]
+#define __pyx_n_u_ndarray __pyx_string_tab[128]
+#define __pyx_n_u_ndim __pyx_string_tab[129]
+#define __pyx_n_u_new __pyx_string_tab[130]
+#define __pyx_n_u_np __pyx_string_tab[131]
+#define __pyx_n_u_numpy __pyx_string_tab[132]
+#define __pyx_n_u_obj __pyx_string_tab[133]
+#define __pyx_n_u_obj_end __pyx_string_tab[134]
+#define __pyx_n_u_obj_false_positives __pyx_string_tab[135]
+#define __pyx_n_u_obj_idx __pyx_string_tab[136]
+#define __pyx_n_u_obj_motionless_counts __pyx_string_tab[137]
+#define __pyx_n_u_obj_start __pyx_string_tab[138]
+#define __pyx_n_u_pack __pyx_string_tab[139]
+#define __pyx_n_u_pop __pyx_string_tab[140]
+#define __pyx_n_u_pyx_checksum __pyx_string_tab[141]
+#define __pyx_n_u_pyx_state __pyx_string_tab[142]
+#define __pyx_n_u_pyx_type __pyx_string_tab[143]
+#define __pyx_n_u_pyx_unpickle_Enum __pyx_string_tab[144]
+#define __pyx_n_u_pyx_vtable __pyx_string_tab[145]
+#define __pyx_n_u_qualname __pyx_string_tab[146]
+#define __pyx_n_u_recording_end __pyx_string_tab[147]
+#define __pyx_n_u_recording_start __pyx_string_tab[148]
+#define __pyx_n_u_reduce __pyx_string_tab[149]
+#define __pyx_n_u_reduce_cython __pyx_string_tab[150]
+#define __pyx_n_u_reduce_ex __pyx_string_tab[151]
+#define __pyx_n_u_region_count __pyx_string_tab[152]
+#define __pyx_n_u_register __pyx_string_tab[153]
+#define __pyx_n_u_result __pyx_string_tab[154]
+#define __pyx_n_u_review_data __pyx_string_tab[155]
+#define __pyx_n_u_review_end_time __pyx_string_tab[156]
+#define __pyx_n_u_review_post __pyx_string_tab[157]
+#define __pyx_n_u_review_pre __pyx_string_tab[158]
+#define __pyx_n_u_review_start_adj __pyx_string_tab[159]
+#define __pyx_n_u_review_start_time __pyx_string_tab[160]
+#define __pyx_n_u_segment_end __pyx_string_tab[161]
+#define __pyx_n_u_segment_start __pyx_string_tab[162]
+#define __pyx_n_u_self __pyx_string_tab[163]
+#define __pyx_n_u_set_name __pyx_string_tab[164]
+#define __pyx_n_u_setdefault __pyx_string_tab[165]
+#define __pyx_n_u_setstate __pyx_string_tab[166]
+#define __pyx_n_u_setstate_cython __pyx_string_tab[167]
+#define __pyx_n_u_severity __pyx_string_tab[168]
+#define __pyx_n_u_shape __pyx_string_tab[169]
+#define __pyx_n_u_size __pyx_string_tab[170]
+#define __pyx_n_u_start __pyx_string_tab[171]
+#define __pyx_n_u_start_idx __pyx_string_tab[172]
+#define __pyx_n_u_step __pyx_string_tab[173]
+#define __pyx_n_u_stop __pyx_string_tab[174]
+#define __pyx_n_u_struct __pyx_string_tab[175]
+#define __pyx_n_u_test __pyx_string_tab[176]
+#define __pyx_n_u_timestamps __pyx_string_tab[177]
+#define __pyx_n_u_total __pyx_string_tab[178]
+#define __pyx_n_u_unpack __pyx_string_tab[179]
+#define __pyx_n_u_update __pyx_string_tab[180]
+#define __pyx_n_u_v __pyx_string_tab[181]
+#define __pyx_n_u_values __pyx_string_tab[182]
+#define __pyx_n_u_video_frame_count __pyx_string_tab[183]
+#define __pyx_n_u_x __pyx_string_tab[184]
+#define __pyx_kp_b_iso88591_1A_U_1_Jl_P_Rq_Ba_G1_3e3_6b_Cq __pyx_string_tab[185]
+#define __pyx_kp_b_iso88591_2_A_U_a_Qc_1_Qc_1_1 __pyx_string_tab[186]
+#define __pyx_kp_b_iso88591_3a_q_wa_HD_6_A_q_a_A_WKq_t1_q_1 __pyx_string_tab[187]
+#define __pyx_kp_b_iso88591_4_1_Q_U_a_1Cr_1Cr_as_Rt_Cq_A_A __pyx_string_tab[188]
+#define __pyx_kp_b_iso88591_4_A_U_a_1Cr_1Cr_as_Rt_Cq_Q_1 __pyx_string_tab[189]
+#define __pyx_kp_b_iso88591_6_q_1_1_U_a_1Cr_1Cr_Q_1A_1A_Q __pyx_string_tab[190]
+#define __pyx_kp_b_iso88591_A_4t_S_F_Q_1_E_at1_t5_Ba_auD_Qa __pyx_string_tab[191]
+#define __pyx_kp_b_iso88591_A_q_U_a_1Cr_1Cr_1A_vS_q_6_1 __pyx_string_tab[192]
+#define __pyx_kp_b_iso88591_Cq_q_a_A_z_vS_1_AQ_A_3a_q_G1_s __pyx_string_tab[193]
+#define __pyx_kp_b_iso88591_D_1_a_U_3aq_1Cr_1Cr_Qa_Rr_AQ_q __pyx_string_tab[194]
+#define __pyx_kp_b_iso88591_H_1_U_a_1Cr_1Cr_1_3c_4s_Q_A_1 __pyx_string_tab[195]
+#define __pyx_kp_b_iso88591_Q __pyx_string_tab[196]
+#define __pyx_kp_b_iso88591_R_A_U_a_1Cr_1Cr_as_Rt_Cq_Q_1 __pyx_string_tab[197]
+#define __pyx_n_b_O __pyx_string_tab[198]
 #define __pyx_float_0_0 __pyx_number_tab[0]
 #define __pyx_int_0 __pyx_number_tab[1]
 #define __pyx_int_neg_1 __pyx_number_tab[2]
@@ -3378,8 +3422,8 @@ static CYTHON_SMALL_CODE int __pyx_m_clear(PyObject *m) {
   Py_CLEAR(clear_module_state->__pyx_type___pyx_memoryviewslice);
   for (int i=0; i<1; ++i) { Py_CLEAR(clear_module_state->__pyx_slice[i]); }
   for (int i=0; i<2; ++i) { Py_CLEAR(clear_module_state->__pyx_tuple[i]); }
-  for (int i=0; i<11; ++i) { Py_CLEAR(clear_module_state->__pyx_codeobj_tab[i]); }
-  for (int i=0; i<182; ++i) { Py_CLEAR(clear_module_state->__pyx_string_tab[i]); }
+  for (int i=0; i<14; ++i) { Py_CLEAR(clear_module_state->__pyx_codeobj_tab[i]); }
+  for (int i=0; i<199; ++i) { Py_CLEAR(clear_module_state->__pyx_string_tab[i]); }
   for (int i=0; i<5; ++i) { Py_CLEAR(clear_module_state->__pyx_number_tab[i]); }
 /* #### Code section: module_state_clear_contents ### */
 /* CommonTypesMetaclass.module_state_clear */
@@ -3415,8 +3459,8 @@ static CYTHON_SMALL_CODE int __pyx_m_traverse(PyObject *m, visitproc visit, void
   Py_VISIT(traverse_module_state->__pyx_type___pyx_memoryviewslice);
   for (int i=0; i<1; ++i) { __Pyx_VISIT_CONST(traverse_module_state->__pyx_slice[i]); }
   for (int i=0; i<2; ++i) { __Pyx_VISIT_CONST(traverse_module_state->__pyx_tuple[i]); }
-  for (int i=0; i<11; ++i) { __Pyx_VISIT_CONST(traverse_module_state->__pyx_codeobj_tab[i]); }
-  for (int i=0; i<182; ++i) { __Pyx_VISIT_CONST(traverse_module_state->__pyx_string_tab[i]); }
+  for (int i=0; i<14; ++i) { __Pyx_VISIT_CONST(traverse_module_state->__pyx_codeobj_tab[i]); }
+  for (int i=0; i<199; ++i) { __Pyx_VISIT_CONST(traverse_module_state->__pyx_string_tab[i]); }
   for (int i=0; i<5; ++i) { __Pyx_VISIT_CONST(traverse_module_state->__pyx_number_tab[i]); }
 /* #### Code section: module_state_traverse_contents ### */
 /* CommonTypesMetaclass.module_state_traverse */
@@ -20189,6 +20233,8 @@ static PyObject *__pyx_pf_7frigate_6record_13record_cython_14compute_segment_act
  *             active_count += 1
  * 
  *     return (in_range_count, active_count)             # <<<<<<<<<<<<<<
+ * 
+ * 
 */
   __Pyx_XDECREF(__pyx_r);
   __pyx_t_7 = __Pyx_PyLong_From_int(__pyx_v_in_range_count); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 546, __pyx_L1_error)
@@ -20221,6 +20267,1176 @@ static PyObject *__pyx_pf_7frigate_6record_13record_cython_14compute_segment_act
   __Pyx_XDECREF(__pyx_t_8);
   __Pyx_XDECREF(__pyx_t_9);
   __Pyx_AddTraceback("frigate.record.record_cython.compute_segment_active_stats", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __pyx_r = NULL;
+  __pyx_L0:;
+  __Pyx_XGIVEREF(__pyx_r);
+  __Pyx_RefNannyFinishContext();
+  return __pyx_r;
+}
+
+/* "frigate/record/record_cython.pyx":549
+ * 
+ * 
+ * def compute_segment_active_with_motion(             # <<<<<<<<<<<<<<
+ *     double[:] frame_timestamps,
+ *     int[:] obj_false_positives,
+*/
+
+/* Python wrapper */
+static PyObject *__pyx_pw_7frigate_6record_13record_cython_17compute_segment_active_with_motion(PyObject *__pyx_self, 
+#if CYTHON_METH_FASTCALL
+PyObject *const *__pyx_args, Py_ssize_t __pyx_nargs, PyObject *__pyx_kwds
+#else
+PyObject *__pyx_args, PyObject *__pyx_kwds
+#endif
+); /*proto*/
+PyDoc_STRVAR(__pyx_doc_7frigate_6record_13record_cython_16compute_segment_active_with_motion, "Count active objects and collect motion boxes from in-range frames.\n\n    Enhanced version that replaces the Python loop in\n    RecordingMaintainer.segment_stats() that iterates over object_frames\n    with nested list comprehensions for creating numpy arrays.\n\n    This function processes all object frames in a single Cython pass,\n    counting active objects (not false_positive AND motionless_count == 0)\n    and collecting motion boxes from in-range frames.\n\n    Args:\n        frame_timestamps: Sorted timestamps of object frames\n        obj_false_positives: 0 or 1 per object entry (flat across all frames)\n        obj_motionless_counts: motionless_count per object entry (flat across all frames)\n        obj_start: Start index in object arrays\n        obj_end: End index in object arrays\n        segment_start: Segment start time\n        segment_end: Segment end time\n        motion_boxes_by_frame: List of lists, where each inner list contains\n                               motion boxes (x1, y1, x2, y2) for one frame.\n                               Only motion boxes from in-range frames are collected.\n\n    Returns:\n        Count of active objects within window\n    ");
+static PyMethodDef __pyx_mdef_7frigate_6record_13record_cython_17compute_segment_active_with_motion = {"compute_segment_active_with_motion", (PyCFunction)(void(*)(void))(__Pyx_PyCFunction_FastCallWithKeywords)__pyx_pw_7frigate_6record_13record_cython_17compute_segment_active_with_motion, __Pyx_METH_FASTCALL|METH_KEYWORDS, __pyx_doc_7frigate_6record_13record_cython_16compute_segment_active_with_motion};
+static PyObject *__pyx_pw_7frigate_6record_13record_cython_17compute_segment_active_with_motion(PyObject *__pyx_self, 
+#if CYTHON_METH_FASTCALL
+PyObject *const *__pyx_args, Py_ssize_t __pyx_nargs, PyObject *__pyx_kwds
+#else
+PyObject *__pyx_args, PyObject *__pyx_kwds
+#endif
+) {
+  __Pyx_memviewslice __pyx_v_frame_timestamps = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_v_obj_false_positives = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_v_obj_motionless_counts = { 0, 0, { 0 }, { 0 }, { 0 } };
+  Py_ssize_t __pyx_v_obj_start;
+  Py_ssize_t __pyx_v_obj_end;
+  double __pyx_v_segment_start;
+  double __pyx_v_segment_end;
+  CYTHON_UNUSED PyObject *__pyx_v_motion_boxes_by_frame = 0;
+  #if !CYTHON_METH_FASTCALL
+  CYTHON_UNUSED Py_ssize_t __pyx_nargs;
+  #endif
+  CYTHON_UNUSED PyObject *const *__pyx_kwvalues;
+  PyObject* values[8] = {0,0,0,0,0,0,0,0};
+  int __pyx_lineno = 0;
+  const char *__pyx_filename = NULL;
+  int __pyx_clineno = 0;
+  PyObject *__pyx_r = 0;
+  __Pyx_RefNannyDeclarations
+  __Pyx_RefNannySetupContext("compute_segment_active_with_motion (wrapper)", 0);
+  #if !CYTHON_METH_FASTCALL
+  #if CYTHON_ASSUME_SAFE_SIZE
+  __pyx_nargs = PyTuple_GET_SIZE(__pyx_args);
+  #else
+  __pyx_nargs = PyTuple_Size(__pyx_args); if (unlikely(__pyx_nargs < 0)) return NULL;
+  #endif
+  #endif
+  __pyx_kwvalues = __Pyx_KwValues_FASTCALL(__pyx_args, __pyx_nargs);
+  {
+    PyObject ** const __pyx_pyargnames[] = {&__pyx_mstate_global->__pyx_n_u_frame_timestamps,&__pyx_mstate_global->__pyx_n_u_obj_false_positives,&__pyx_mstate_global->__pyx_n_u_obj_motionless_counts,&__pyx_mstate_global->__pyx_n_u_obj_start,&__pyx_mstate_global->__pyx_n_u_obj_end,&__pyx_mstate_global->__pyx_n_u_segment_start,&__pyx_mstate_global->__pyx_n_u_segment_end,&__pyx_mstate_global->__pyx_n_u_motion_boxes_by_frame,0};
+    const Py_ssize_t __pyx_kwds_len = (__pyx_kwds) ? __Pyx_NumKwargs_FASTCALL(__pyx_kwds) : 0;
+    if (unlikely(__pyx_kwds_len < 0)) __PYX_ERR(0, 549, __pyx_L3_error)
+    if (__pyx_kwds_len > 0) {
+      switch (__pyx_nargs) {
+        case  8:
+        values[7] = __Pyx_ArgRef_FASTCALL(__pyx_args, 7);
+        if (!CYTHON_ASSUME_SAFE_MACROS && unlikely(!values[7])) __PYX_ERR(0, 549, __pyx_L3_error)
+        CYTHON_FALLTHROUGH;
+        case  7:
+        values[6] = __Pyx_ArgRef_FASTCALL(__pyx_args, 6);
+        if (!CYTHON_ASSUME_SAFE_MACROS && unlikely(!values[6])) __PYX_ERR(0, 549, __pyx_L3_error)
+        CYTHON_FALLTHROUGH;
+        case  6:
+        values[5] = __Pyx_ArgRef_FASTCALL(__pyx_args, 5);
+        if (!CYTHON_ASSUME_SAFE_MACROS && unlikely(!values[5])) __PYX_ERR(0, 549, __pyx_L3_error)
+        CYTHON_FALLTHROUGH;
+        case  5:
+        values[4] = __Pyx_ArgRef_FASTCALL(__pyx_args, 4);
+        if (!CYTHON_ASSUME_SAFE_MACROS && unlikely(!values[4])) __PYX_ERR(0, 549, __pyx_L3_error)
+        CYTHON_FALLTHROUGH;
+        case  4:
+        values[3] = __Pyx_ArgRef_FASTCALL(__pyx_args, 3);
+        if (!CYTHON_ASSUME_SAFE_MACROS && unlikely(!values[3])) __PYX_ERR(0, 549, __pyx_L3_error)
+        CYTHON_FALLTHROUGH;
+        case  3:
+        values[2] = __Pyx_ArgRef_FASTCALL(__pyx_args, 2);
+        if (!CYTHON_ASSUME_SAFE_MACROS && unlikely(!values[2])) __PYX_ERR(0, 549, __pyx_L3_error)
+        CYTHON_FALLTHROUGH;
+        case  2:
+        values[1] = __Pyx_ArgRef_FASTCALL(__pyx_args, 1);
+        if (!CYTHON_ASSUME_SAFE_MACROS && unlikely(!values[1])) __PYX_ERR(0, 549, __pyx_L3_error)
+        CYTHON_FALLTHROUGH;
+        case  1:
+        values[0] = __Pyx_ArgRef_FASTCALL(__pyx_args, 0);
+        if (!CYTHON_ASSUME_SAFE_MACROS && unlikely(!values[0])) __PYX_ERR(0, 549, __pyx_L3_error)
+        CYTHON_FALLTHROUGH;
+        case  0: break;
+        default: goto __pyx_L5_argtuple_error;
+      }
+      const Py_ssize_t kwd_pos_args = __pyx_nargs;
+      if (__Pyx_ParseKeywords(__pyx_kwds, __pyx_kwvalues, __pyx_pyargnames, 0, values, kwd_pos_args, __pyx_kwds_len, "compute_segment_active_with_motion", 0) < (0)) __PYX_ERR(0, 549, __pyx_L3_error)
+      for (Py_ssize_t i = __pyx_nargs; i < 8; i++) {
+        if (unlikely(!values[i])) { __Pyx_RaiseArgtupleInvalid("compute_segment_active_with_motion", 1, 8, 8, i); __PYX_ERR(0, 549, __pyx_L3_error) }
+      }
+    } else if (unlikely(__pyx_nargs != 8)) {
+      goto __pyx_L5_argtuple_error;
+    } else {
+      values[0] = __Pyx_ArgRef_FASTCALL(__pyx_args, 0);
+      if (!CYTHON_ASSUME_SAFE_MACROS && unlikely(!values[0])) __PYX_ERR(0, 549, __pyx_L3_error)
+      values[1] = __Pyx_ArgRef_FASTCALL(__pyx_args, 1);
+      if (!CYTHON_ASSUME_SAFE_MACROS && unlikely(!values[1])) __PYX_ERR(0, 549, __pyx_L3_error)
+      values[2] = __Pyx_ArgRef_FASTCALL(__pyx_args, 2);
+      if (!CYTHON_ASSUME_SAFE_MACROS && unlikely(!values[2])) __PYX_ERR(0, 549, __pyx_L3_error)
+      values[3] = __Pyx_ArgRef_FASTCALL(__pyx_args, 3);
+      if (!CYTHON_ASSUME_SAFE_MACROS && unlikely(!values[3])) __PYX_ERR(0, 549, __pyx_L3_error)
+      values[4] = __Pyx_ArgRef_FASTCALL(__pyx_args, 4);
+      if (!CYTHON_ASSUME_SAFE_MACROS && unlikely(!values[4])) __PYX_ERR(0, 549, __pyx_L3_error)
+      values[5] = __Pyx_ArgRef_FASTCALL(__pyx_args, 5);
+      if (!CYTHON_ASSUME_SAFE_MACROS && unlikely(!values[5])) __PYX_ERR(0, 549, __pyx_L3_error)
+      values[6] = __Pyx_ArgRef_FASTCALL(__pyx_args, 6);
+      if (!CYTHON_ASSUME_SAFE_MACROS && unlikely(!values[6])) __PYX_ERR(0, 549, __pyx_L3_error)
+      values[7] = __Pyx_ArgRef_FASTCALL(__pyx_args, 7);
+      if (!CYTHON_ASSUME_SAFE_MACROS && unlikely(!values[7])) __PYX_ERR(0, 549, __pyx_L3_error)
+    }
+    __pyx_v_frame_timestamps = __Pyx_PyObject_to_MemoryviewSlice_ds_double(values[0], PyBUF_WRITABLE); if (unlikely(!__pyx_v_frame_timestamps.memview)) __PYX_ERR(0, 550, __pyx_L3_error)
+    __pyx_v_obj_false_positives = __Pyx_PyObject_to_MemoryviewSlice_ds_int(values[1], PyBUF_WRITABLE); if (unlikely(!__pyx_v_obj_false_positives.memview)) __PYX_ERR(0, 551, __pyx_L3_error)
+    __pyx_v_obj_motionless_counts = __Pyx_PyObject_to_MemoryviewSlice_ds_int(values[2], PyBUF_WRITABLE); if (unlikely(!__pyx_v_obj_motionless_counts.memview)) __PYX_ERR(0, 552, __pyx_L3_error)
+    __pyx_v_obj_start = __Pyx_PyIndex_AsSsize_t(values[3]); if (unlikely((__pyx_v_obj_start == (Py_ssize_t)-1) && PyErr_Occurred())) __PYX_ERR(0, 553, __pyx_L3_error)
+    __pyx_v_obj_end = __Pyx_PyIndex_AsSsize_t(values[4]); if (unlikely((__pyx_v_obj_end == (Py_ssize_t)-1) && PyErr_Occurred())) __PYX_ERR(0, 554, __pyx_L3_error)
+    __pyx_v_segment_start = __Pyx_PyFloat_AsDouble(values[5]); if (unlikely((__pyx_v_segment_start == (double)-1) && PyErr_Occurred())) __PYX_ERR(0, 555, __pyx_L3_error)
+    __pyx_v_segment_end = __Pyx_PyFloat_AsDouble(values[6]); if (unlikely((__pyx_v_segment_end == (double)-1) && PyErr_Occurred())) __PYX_ERR(0, 556, __pyx_L3_error)
+    __pyx_v_motion_boxes_by_frame = values[7];
+  }
+  goto __pyx_L6_skip;
+  __pyx_L5_argtuple_error:;
+  __Pyx_RaiseArgtupleInvalid("compute_segment_active_with_motion", 1, 8, 8, __pyx_nargs); __PYX_ERR(0, 549, __pyx_L3_error)
+  __pyx_L6_skip:;
+  goto __pyx_L4_argument_unpacking_done;
+  __pyx_L3_error:;
+  for (Py_ssize_t __pyx_temp=0; __pyx_temp < (Py_ssize_t)(sizeof(values)/sizeof(values[0])); ++__pyx_temp) {
+    Py_XDECREF(values[__pyx_temp]);
+  }
+  __PYX_XCLEAR_MEMVIEW(&__pyx_v_frame_timestamps, 1);
+  __PYX_XCLEAR_MEMVIEW(&__pyx_v_obj_false_positives, 1);
+  __PYX_XCLEAR_MEMVIEW(&__pyx_v_obj_motionless_counts, 1);
+  __Pyx_AddTraceback("frigate.record.record_cython.compute_segment_active_with_motion", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_RefNannyFinishContext();
+  return NULL;
+  __pyx_L4_argument_unpacking_done:;
+  __pyx_r = __pyx_pf_7frigate_6record_13record_cython_16compute_segment_active_with_motion(__pyx_self, __pyx_v_frame_timestamps, __pyx_v_obj_false_positives, __pyx_v_obj_motionless_counts, __pyx_v_obj_start, __pyx_v_obj_end, __pyx_v_segment_start, __pyx_v_segment_end, __pyx_v_motion_boxes_by_frame);
+
+  /* function exit code */
+  for (Py_ssize_t __pyx_temp=0; __pyx_temp < (Py_ssize_t)(sizeof(values)/sizeof(values[0])); ++__pyx_temp) {
+    Py_XDECREF(values[__pyx_temp]);
+  }
+  __PYX_XCLEAR_MEMVIEW(&__pyx_v_frame_timestamps, 1);
+  __PYX_XCLEAR_MEMVIEW(&__pyx_v_obj_false_positives, 1);
+  __PYX_XCLEAR_MEMVIEW(&__pyx_v_obj_motionless_counts, 1);
+  __Pyx_RefNannyFinishContext();
+  return __pyx_r;
+}
+
+static PyObject *__pyx_pf_7frigate_6record_13record_cython_16compute_segment_active_with_motion(CYTHON_UNUSED PyObject *__pyx_self, __Pyx_memviewslice __pyx_v_frame_timestamps, __Pyx_memviewslice __pyx_v_obj_false_positives, __Pyx_memviewslice __pyx_v_obj_motionless_counts, Py_ssize_t __pyx_v_obj_start, Py_ssize_t __pyx_v_obj_end, double __pyx_v_segment_start, double __pyx_v_segment_end, CYTHON_UNUSED PyObject *__pyx_v_motion_boxes_by_frame) {
+  int __pyx_v_active_count;
+  Py_ssize_t __pyx_v_i;
+  int __pyx_v_fp;
+  int __pyx_v_mc;
+  PyObject *__pyx_r = NULL;
+  __Pyx_RefNannyDeclarations
+  Py_ssize_t __pyx_t_1;
+  Py_ssize_t __pyx_t_2;
+  Py_ssize_t __pyx_t_3;
+  Py_ssize_t __pyx_t_4;
+  int __pyx_t_5;
+  int __pyx_t_6;
+  PyObject *__pyx_t_7 = NULL;
+  int __pyx_lineno = 0;
+  const char *__pyx_filename = NULL;
+  int __pyx_clineno = 0;
+  __Pyx_RefNannySetupContext("compute_segment_active_with_motion", 0);
+
+  /* "frigate/record/record_cython.pyx":585
+ *     """
+ *     cdef:
+ *         int active_count = 0             # <<<<<<<<<<<<<<
+ *         Py_ssize_t i
+ *         int fp
+*/
+  __pyx_v_active_count = 0;
+
+  /* "frigate/record/record_cython.pyx":590
+ *         int mc
+ * 
+ *     for i in range(obj_start, obj_end):             # <<<<<<<<<<<<<<
+ *         if frame_timestamps[i] > segment_end:
+ *             break
+*/
+  __pyx_t_1 = __pyx_v_obj_end;
+  __pyx_t_2 = __pyx_t_1;
+  for (__pyx_t_3 = __pyx_v_obj_start; __pyx_t_3 < __pyx_t_2; __pyx_t_3+=1) {
+    __pyx_v_i = __pyx_t_3;
+
+    /* "frigate/record/record_cython.pyx":591
+ * 
+ *     for i in range(obj_start, obj_end):
+ *         if frame_timestamps[i] > segment_end:             # <<<<<<<<<<<<<<
+ *             break
+ *         if frame_timestamps[i] < segment_start:
+*/
+    __pyx_t_4 = __pyx_v_i;
+    __pyx_t_5 = ((*((double *) ( /* dim=0 */ (__pyx_v_frame_timestamps.data + __pyx_t_4 * __pyx_v_frame_timestamps.strides[0]) ))) > __pyx_v_segment_end);
+    if (__pyx_t_5) {
+
+      /* "frigate/record/record_cython.pyx":592
+ *     for i in range(obj_start, obj_end):
+ *         if frame_timestamps[i] > segment_end:
+ *             break             # <<<<<<<<<<<<<<
+ *         if frame_timestamps[i] < segment_start:
+ *             continue
+*/
+      goto __pyx_L4_break;
+
+      /* "frigate/record/record_cython.pyx":591
+ * 
+ *     for i in range(obj_start, obj_end):
+ *         if frame_timestamps[i] > segment_end:             # <<<<<<<<<<<<<<
+ *             break
+ *         if frame_timestamps[i] < segment_start:
+*/
+    }
+
+    /* "frigate/record/record_cython.pyx":593
+ *         if frame_timestamps[i] > segment_end:
+ *             break
+ *         if frame_timestamps[i] < segment_start:             # <<<<<<<<<<<<<<
+ *             continue
+ * 
+*/
+    __pyx_t_4 = __pyx_v_i;
+    __pyx_t_5 = ((*((double *) ( /* dim=0 */ (__pyx_v_frame_timestamps.data + __pyx_t_4 * __pyx_v_frame_timestamps.strides[0]) ))) < __pyx_v_segment_start);
+    if (__pyx_t_5) {
+
+      /* "frigate/record/record_cython.pyx":594
+ *             break
+ *         if frame_timestamps[i] < segment_start:
+ *             continue             # <<<<<<<<<<<<<<
+ * 
+ *         fp = obj_false_positives[i]
+*/
+      goto __pyx_L3_continue;
+
+      /* "frigate/record/record_cython.pyx":593
+ *         if frame_timestamps[i] > segment_end:
+ *             break
+ *         if frame_timestamps[i] < segment_start:             # <<<<<<<<<<<<<<
+ *             continue
+ * 
+*/
+    }
+
+    /* "frigate/record/record_cython.pyx":596
+ *             continue
+ * 
+ *         fp = obj_false_positives[i]             # <<<<<<<<<<<<<<
+ *         mc = obj_motionless_counts[i]
+ * 
+*/
+    __pyx_t_4 = __pyx_v_i;
+    __pyx_v_fp = (*((int *) ( /* dim=0 */ (__pyx_v_obj_false_positives.data + __pyx_t_4 * __pyx_v_obj_false_positives.strides[0]) )));
+
+    /* "frigate/record/record_cython.pyx":597
+ * 
+ *         fp = obj_false_positives[i]
+ *         mc = obj_motionless_counts[i]             # <<<<<<<<<<<<<<
+ * 
+ *         if fp == 0 and mc == 0:
+*/
+    __pyx_t_4 = __pyx_v_i;
+    __pyx_v_mc = (*((int *) ( /* dim=0 */ (__pyx_v_obj_motionless_counts.data + __pyx_t_4 * __pyx_v_obj_motionless_counts.strides[0]) )));
+
+    /* "frigate/record/record_cython.pyx":599
+ *         mc = obj_motionless_counts[i]
+ * 
+ *         if fp == 0 and mc == 0:             # <<<<<<<<<<<<<<
+ *             active_count += 1
+ * 
+*/
+    __pyx_t_6 = (__pyx_v_fp == 0);
+    if (__pyx_t_6) {
+    } else {
+      __pyx_t_5 = __pyx_t_6;
+      goto __pyx_L8_bool_binop_done;
+    }
+    __pyx_t_6 = (__pyx_v_mc == 0);
+    __pyx_t_5 = __pyx_t_6;
+    __pyx_L8_bool_binop_done:;
+    if (__pyx_t_5) {
+
+      /* "frigate/record/record_cython.pyx":600
+ * 
+ *         if fp == 0 and mc == 0:
+ *             active_count += 1             # <<<<<<<<<<<<<<
+ * 
+ *     return active_count
+*/
+      __pyx_v_active_count = (__pyx_v_active_count + 1);
+
+      /* "frigate/record/record_cython.pyx":599
+ *         mc = obj_motionless_counts[i]
+ * 
+ *         if fp == 0 and mc == 0:             # <<<<<<<<<<<<<<
+ *             active_count += 1
+ * 
+*/
+    }
+    __pyx_L3_continue:;
+  }
+  __pyx_L4_break:;
+
+  /* "frigate/record/record_cython.pyx":602
+ *             active_count += 1
+ * 
+ *     return active_count             # <<<<<<<<<<<<<<
+ * 
+ * 
+*/
+  __Pyx_XDECREF(__pyx_r);
+  __pyx_t_7 = __Pyx_PyLong_From_int(__pyx_v_active_count); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 602, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_7);
+  __pyx_r = __pyx_t_7;
+  __pyx_t_7 = 0;
+  goto __pyx_L0;
+
+  /* "frigate/record/record_cython.pyx":549
+ * 
+ * 
+ * def compute_segment_active_with_motion(             # <<<<<<<<<<<<<<
+ *     double[:] frame_timestamps,
+ *     int[:] obj_false_positives,
+*/
+
+  /* function exit code */
+  __pyx_L1_error:;
+  __Pyx_XDECREF(__pyx_t_7);
+  __Pyx_AddTraceback("frigate.record.record_cython.compute_segment_active_with_motion", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __pyx_r = NULL;
+  __pyx_L0:;
+  __Pyx_XGIVEREF(__pyx_r);
+  __Pyx_RefNannyFinishContext();
+  return __pyx_r;
+}
+
+/* "frigate/record/record_cython.pyx":605
+ * 
+ * 
+ * def compute_active_objects_and_motion(             # <<<<<<<<<<<<<<
+ *     double[:] frame_timestamps,
+ *     unsigned char[:] obj_false_positives,
+*/
+
+/* Python wrapper */
+static PyObject *__pyx_pw_7frigate_6record_13record_cython_19compute_active_objects_and_motion(PyObject *__pyx_self, 
+#if CYTHON_METH_FASTCALL
+PyObject *const *__pyx_args, Py_ssize_t __pyx_nargs, PyObject *__pyx_kwds
+#else
+PyObject *__pyx_args, PyObject *__pyx_kwds
+#endif
+); /*proto*/
+PyDoc_STRVAR(__pyx_doc_7frigate_6record_13record_cython_18compute_active_objects_and_motion, "Count active objects and collect motion boxes in a single Cython pass.\n\n    Replaces the Python loop in RecordingMaintainer.segment_stats() that\n    iterates over object_frames with nested list comprehensions to build\n    numpy arrays per frame.\n\n    The caller should pre-extract flat arrays for all object frames and\n    provide the object counts per frame. Only frames within\n    the segment range are processed.\n\n    Args:\n        frame_timestamps: Sorted timestamps of object frames\n        obj_false_positives: 0 or 1 per object entry (flat across all frames)\n        obj_motionless_counts: motionless_count per object entry (flat across all frames)\n        frame_obj_counts: Number of objects per frame (same length as timestamps)\n        motion_boxes_by_frame: List of lists of motion box tuples per frame\n        all_motion_boxes: List to extend with motion boxes from in-range frames\n        segment_start: Segment start time\n        segment_end: Segment end time\n\n    Returns:\n        Count of active objects within window\n    ");
+static PyMethodDef __pyx_mdef_7frigate_6record_13record_cython_19compute_active_objects_and_motion = {"compute_active_objects_and_motion", (PyCFunction)(void(*)(void))(__Pyx_PyCFunction_FastCallWithKeywords)__pyx_pw_7frigate_6record_13record_cython_19compute_active_objects_and_motion, __Pyx_METH_FASTCALL|METH_KEYWORDS, __pyx_doc_7frigate_6record_13record_cython_18compute_active_objects_and_motion};
+static PyObject *__pyx_pw_7frigate_6record_13record_cython_19compute_active_objects_and_motion(PyObject *__pyx_self, 
+#if CYTHON_METH_FASTCALL
+PyObject *const *__pyx_args, Py_ssize_t __pyx_nargs, PyObject *__pyx_kwds
+#else
+PyObject *__pyx_args, PyObject *__pyx_kwds
+#endif
+) {
+  __Pyx_memviewslice __pyx_v_frame_timestamps = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_v_obj_false_positives = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_v_obj_motionless_counts = { 0, 0, { 0 }, { 0 }, { 0 } };
+  PyObject *__pyx_v_frame_obj_counts = 0;
+  PyObject *__pyx_v_motion_boxes_by_frame = 0;
+  PyObject *__pyx_v_all_motion_boxes = 0;
+  double __pyx_v_segment_start;
+  double __pyx_v_segment_end;
+  #if !CYTHON_METH_FASTCALL
+  CYTHON_UNUSED Py_ssize_t __pyx_nargs;
+  #endif
+  CYTHON_UNUSED PyObject *const *__pyx_kwvalues;
+  PyObject* values[8] = {0,0,0,0,0,0,0,0};
+  int __pyx_lineno = 0;
+  const char *__pyx_filename = NULL;
+  int __pyx_clineno = 0;
+  PyObject *__pyx_r = 0;
+  __Pyx_RefNannyDeclarations
+  __Pyx_RefNannySetupContext("compute_active_objects_and_motion (wrapper)", 0);
+  #if !CYTHON_METH_FASTCALL
+  #if CYTHON_ASSUME_SAFE_SIZE
+  __pyx_nargs = PyTuple_GET_SIZE(__pyx_args);
+  #else
+  __pyx_nargs = PyTuple_Size(__pyx_args); if (unlikely(__pyx_nargs < 0)) return NULL;
+  #endif
+  #endif
+  __pyx_kwvalues = __Pyx_KwValues_FASTCALL(__pyx_args, __pyx_nargs);
+  {
+    PyObject ** const __pyx_pyargnames[] = {&__pyx_mstate_global->__pyx_n_u_frame_timestamps,&__pyx_mstate_global->__pyx_n_u_obj_false_positives,&__pyx_mstate_global->__pyx_n_u_obj_motionless_counts,&__pyx_mstate_global->__pyx_n_u_frame_obj_counts,&__pyx_mstate_global->__pyx_n_u_motion_boxes_by_frame,&__pyx_mstate_global->__pyx_n_u_all_motion_boxes,&__pyx_mstate_global->__pyx_n_u_segment_start,&__pyx_mstate_global->__pyx_n_u_segment_end,0};
+    const Py_ssize_t __pyx_kwds_len = (__pyx_kwds) ? __Pyx_NumKwargs_FASTCALL(__pyx_kwds) : 0;
+    if (unlikely(__pyx_kwds_len < 0)) __PYX_ERR(0, 605, __pyx_L3_error)
+    if (__pyx_kwds_len > 0) {
+      switch (__pyx_nargs) {
+        case  8:
+        values[7] = __Pyx_ArgRef_FASTCALL(__pyx_args, 7);
+        if (!CYTHON_ASSUME_SAFE_MACROS && unlikely(!values[7])) __PYX_ERR(0, 605, __pyx_L3_error)
+        CYTHON_FALLTHROUGH;
+        case  7:
+        values[6] = __Pyx_ArgRef_FASTCALL(__pyx_args, 6);
+        if (!CYTHON_ASSUME_SAFE_MACROS && unlikely(!values[6])) __PYX_ERR(0, 605, __pyx_L3_error)
+        CYTHON_FALLTHROUGH;
+        case  6:
+        values[5] = __Pyx_ArgRef_FASTCALL(__pyx_args, 5);
+        if (!CYTHON_ASSUME_SAFE_MACROS && unlikely(!values[5])) __PYX_ERR(0, 605, __pyx_L3_error)
+        CYTHON_FALLTHROUGH;
+        case  5:
+        values[4] = __Pyx_ArgRef_FASTCALL(__pyx_args, 4);
+        if (!CYTHON_ASSUME_SAFE_MACROS && unlikely(!values[4])) __PYX_ERR(0, 605, __pyx_L3_error)
+        CYTHON_FALLTHROUGH;
+        case  4:
+        values[3] = __Pyx_ArgRef_FASTCALL(__pyx_args, 3);
+        if (!CYTHON_ASSUME_SAFE_MACROS && unlikely(!values[3])) __PYX_ERR(0, 605, __pyx_L3_error)
+        CYTHON_FALLTHROUGH;
+        case  3:
+        values[2] = __Pyx_ArgRef_FASTCALL(__pyx_args, 2);
+        if (!CYTHON_ASSUME_SAFE_MACROS && unlikely(!values[2])) __PYX_ERR(0, 605, __pyx_L3_error)
+        CYTHON_FALLTHROUGH;
+        case  2:
+        values[1] = __Pyx_ArgRef_FASTCALL(__pyx_args, 1);
+        if (!CYTHON_ASSUME_SAFE_MACROS && unlikely(!values[1])) __PYX_ERR(0, 605, __pyx_L3_error)
+        CYTHON_FALLTHROUGH;
+        case  1:
+        values[0] = __Pyx_ArgRef_FASTCALL(__pyx_args, 0);
+        if (!CYTHON_ASSUME_SAFE_MACROS && unlikely(!values[0])) __PYX_ERR(0, 605, __pyx_L3_error)
+        CYTHON_FALLTHROUGH;
+        case  0: break;
+        default: goto __pyx_L5_argtuple_error;
+      }
+      const Py_ssize_t kwd_pos_args = __pyx_nargs;
+      if (__Pyx_ParseKeywords(__pyx_kwds, __pyx_kwvalues, __pyx_pyargnames, 0, values, kwd_pos_args, __pyx_kwds_len, "compute_active_objects_and_motion", 0) < (0)) __PYX_ERR(0, 605, __pyx_L3_error)
+      for (Py_ssize_t i = __pyx_nargs; i < 8; i++) {
+        if (unlikely(!values[i])) { __Pyx_RaiseArgtupleInvalid("compute_active_objects_and_motion", 1, 8, 8, i); __PYX_ERR(0, 605, __pyx_L3_error) }
+      }
+    } else if (unlikely(__pyx_nargs != 8)) {
+      goto __pyx_L5_argtuple_error;
+    } else {
+      values[0] = __Pyx_ArgRef_FASTCALL(__pyx_args, 0);
+      if (!CYTHON_ASSUME_SAFE_MACROS && unlikely(!values[0])) __PYX_ERR(0, 605, __pyx_L3_error)
+      values[1] = __Pyx_ArgRef_FASTCALL(__pyx_args, 1);
+      if (!CYTHON_ASSUME_SAFE_MACROS && unlikely(!values[1])) __PYX_ERR(0, 605, __pyx_L3_error)
+      values[2] = __Pyx_ArgRef_FASTCALL(__pyx_args, 2);
+      if (!CYTHON_ASSUME_SAFE_MACROS && unlikely(!values[2])) __PYX_ERR(0, 605, __pyx_L3_error)
+      values[3] = __Pyx_ArgRef_FASTCALL(__pyx_args, 3);
+      if (!CYTHON_ASSUME_SAFE_MACROS && unlikely(!values[3])) __PYX_ERR(0, 605, __pyx_L3_error)
+      values[4] = __Pyx_ArgRef_FASTCALL(__pyx_args, 4);
+      if (!CYTHON_ASSUME_SAFE_MACROS && unlikely(!values[4])) __PYX_ERR(0, 605, __pyx_L3_error)
+      values[5] = __Pyx_ArgRef_FASTCALL(__pyx_args, 5);
+      if (!CYTHON_ASSUME_SAFE_MACROS && unlikely(!values[5])) __PYX_ERR(0, 605, __pyx_L3_error)
+      values[6] = __Pyx_ArgRef_FASTCALL(__pyx_args, 6);
+      if (!CYTHON_ASSUME_SAFE_MACROS && unlikely(!values[6])) __PYX_ERR(0, 605, __pyx_L3_error)
+      values[7] = __Pyx_ArgRef_FASTCALL(__pyx_args, 7);
+      if (!CYTHON_ASSUME_SAFE_MACROS && unlikely(!values[7])) __PYX_ERR(0, 605, __pyx_L3_error)
+    }
+    __pyx_v_frame_timestamps = __Pyx_PyObject_to_MemoryviewSlice_ds_double(values[0], PyBUF_WRITABLE); if (unlikely(!__pyx_v_frame_timestamps.memview)) __PYX_ERR(0, 606, __pyx_L3_error)
+    __pyx_v_obj_false_positives = __Pyx_PyObject_to_MemoryviewSlice_ds_unsigned_char(values[1], PyBUF_WRITABLE); if (unlikely(!__pyx_v_obj_false_positives.memview)) __PYX_ERR(0, 607, __pyx_L3_error)
+    __pyx_v_obj_motionless_counts = __Pyx_PyObject_to_MemoryviewSlice_ds_int(values[2], PyBUF_WRITABLE); if (unlikely(!__pyx_v_obj_motionless_counts.memview)) __PYX_ERR(0, 608, __pyx_L3_error)
+    __pyx_v_frame_obj_counts = values[3];
+    __pyx_v_motion_boxes_by_frame = values[4];
+    __pyx_v_all_motion_boxes = ((PyObject*)values[5]);
+    __pyx_v_segment_start = __Pyx_PyFloat_AsDouble(values[6]); if (unlikely((__pyx_v_segment_start == (double)-1) && PyErr_Occurred())) __PYX_ERR(0, 612, __pyx_L3_error)
+    __pyx_v_segment_end = __Pyx_PyFloat_AsDouble(values[7]); if (unlikely((__pyx_v_segment_end == (double)-1) && PyErr_Occurred())) __PYX_ERR(0, 613, __pyx_L3_error)
+  }
+  goto __pyx_L6_skip;
+  __pyx_L5_argtuple_error:;
+  __Pyx_RaiseArgtupleInvalid("compute_active_objects_and_motion", 1, 8, 8, __pyx_nargs); __PYX_ERR(0, 605, __pyx_L3_error)
+  __pyx_L6_skip:;
+  goto __pyx_L4_argument_unpacking_done;
+  __pyx_L3_error:;
+  for (Py_ssize_t __pyx_temp=0; __pyx_temp < (Py_ssize_t)(sizeof(values)/sizeof(values[0])); ++__pyx_temp) {
+    Py_XDECREF(values[__pyx_temp]);
+  }
+  __PYX_XCLEAR_MEMVIEW(&__pyx_v_frame_timestamps, 1);
+  __PYX_XCLEAR_MEMVIEW(&__pyx_v_obj_false_positives, 1);
+  __PYX_XCLEAR_MEMVIEW(&__pyx_v_obj_motionless_counts, 1);
+  __Pyx_AddTraceback("frigate.record.record_cython.compute_active_objects_and_motion", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_RefNannyFinishContext();
+  return NULL;
+  __pyx_L4_argument_unpacking_done:;
+  if (unlikely(!__Pyx_ArgTypeTest(((PyObject *)__pyx_v_all_motion_boxes), (&PyList_Type), 1, "all_motion_boxes", 1))) __PYX_ERR(0, 611, __pyx_L1_error)
+  __pyx_r = __pyx_pf_7frigate_6record_13record_cython_18compute_active_objects_and_motion(__pyx_self, __pyx_v_frame_timestamps, __pyx_v_obj_false_positives, __pyx_v_obj_motionless_counts, __pyx_v_frame_obj_counts, __pyx_v_motion_boxes_by_frame, __pyx_v_all_motion_boxes, __pyx_v_segment_start, __pyx_v_segment_end);
+
+  /* function exit code */
+  goto __pyx_L0;
+  __pyx_L1_error:;
+  __pyx_r = NULL;
+  for (Py_ssize_t __pyx_temp=0; __pyx_temp < (Py_ssize_t)(sizeof(values)/sizeof(values[0])); ++__pyx_temp) {
+    Py_XDECREF(values[__pyx_temp]);
+  }
+  goto __pyx_L7_cleaned_up;
+  __pyx_L0:;
+  for (Py_ssize_t __pyx_temp=0; __pyx_temp < (Py_ssize_t)(sizeof(values)/sizeof(values[0])); ++__pyx_temp) {
+    Py_XDECREF(values[__pyx_temp]);
+  }
+  __pyx_L7_cleaned_up:;
+  __PYX_XCLEAR_MEMVIEW(&__pyx_v_frame_timestamps, 1);
+  __PYX_XCLEAR_MEMVIEW(&__pyx_v_obj_false_positives, 1);
+  __PYX_XCLEAR_MEMVIEW(&__pyx_v_obj_motionless_counts, 1);
+  __Pyx_RefNannyFinishContext();
+  return __pyx_r;
+}
+
+static PyObject *__pyx_pf_7frigate_6record_13record_cython_18compute_active_objects_and_motion(CYTHON_UNUSED PyObject *__pyx_self, __Pyx_memviewslice __pyx_v_frame_timestamps, __Pyx_memviewslice __pyx_v_obj_false_positives, __Pyx_memviewslice __pyx_v_obj_motionless_counts, PyObject *__pyx_v_frame_obj_counts, PyObject *__pyx_v_motion_boxes_by_frame, PyObject *__pyx_v_all_motion_boxes, double __pyx_v_segment_start, double __pyx_v_segment_end) {
+  int __pyx_v_active_count;
+  Py_ssize_t __pyx_v_i;
+  int __pyx_v_fp;
+  int __pyx_v_mc;
+  PyObject *__pyx_v_frame_boxes = 0;
+  Py_ssize_t __pyx_v_obj_idx;
+  PyObject *__pyx_v_frame_size = NULL;
+  PyObject *__pyx_v_end = NULL;
+  PyObject *__pyx_v_j = NULL;
+  PyObject *__pyx_r = NULL;
+  __Pyx_RefNannyDeclarations
+  Py_ssize_t __pyx_t_1;
+  Py_ssize_t __pyx_t_2;
+  Py_ssize_t __pyx_t_3;
+  Py_ssize_t __pyx_t_4;
+  int __pyx_t_5;
+  PyObject *__pyx_t_6 = NULL;
+  int __pyx_t_7;
+  Py_ssize_t __pyx_t_8;
+  int __pyx_t_9;
+  PyObject *__pyx_t_10 = NULL;
+  PyObject *__pyx_t_11 = NULL;
+  size_t __pyx_t_12;
+  PyObject *(*__pyx_t_13)(PyObject *);
+  int __pyx_lineno = 0;
+  const char *__pyx_filename = NULL;
+  int __pyx_clineno = 0;
+  __Pyx_RefNannySetupContext("compute_active_objects_and_motion", 0);
+
+  /* "frigate/record/record_cython.pyx":639
+ *     """
+ *     cdef:
+ *         int active_count = 0             # <<<<<<<<<<<<<<
+ *         Py_ssize_t i
+ *         int fp
+*/
+  __pyx_v_active_count = 0;
+
+  /* "frigate/record/record_cython.pyx":646
+ *         Py_ssize_t obj_idx
+ * 
+ *     obj_idx = 0             # <<<<<<<<<<<<<<
+ *     for i in range(len(frame_timestamps)):
+ *         if frame_timestamps[i] > segment_end:
+*/
+  __pyx_v_obj_idx = 0;
+
+  /* "frigate/record/record_cython.pyx":647
+ * 
+ *     obj_idx = 0
+ *     for i in range(len(frame_timestamps)):             # <<<<<<<<<<<<<<
+ *         if frame_timestamps[i] > segment_end:
+ *             break
+*/
+  __pyx_t_1 = __Pyx_MemoryView_Len(__pyx_v_frame_timestamps); 
+  __pyx_t_2 = __pyx_t_1;
+  for (__pyx_t_3 = 0; __pyx_t_3 < __pyx_t_2; __pyx_t_3+=1) {
+    __pyx_v_i = __pyx_t_3;
+
+    /* "frigate/record/record_cython.pyx":648
+ *     obj_idx = 0
+ *     for i in range(len(frame_timestamps)):
+ *         if frame_timestamps[i] > segment_end:             # <<<<<<<<<<<<<<
+ *             break
+ *         if frame_timestamps[i] < segment_start:
+*/
+    __pyx_t_4 = __pyx_v_i;
+    __pyx_t_5 = ((*((double *) ( /* dim=0 */ (__pyx_v_frame_timestamps.data + __pyx_t_4 * __pyx_v_frame_timestamps.strides[0]) ))) > __pyx_v_segment_end);
+    if (__pyx_t_5) {
+
+      /* "frigate/record/record_cython.pyx":649
+ *     for i in range(len(frame_timestamps)):
+ *         if frame_timestamps[i] > segment_end:
+ *             break             # <<<<<<<<<<<<<<
+ *         if frame_timestamps[i] < segment_start:
+ *             continue
+*/
+      goto __pyx_L4_break;
+
+      /* "frigate/record/record_cython.pyx":648
+ *     obj_idx = 0
+ *     for i in range(len(frame_timestamps)):
+ *         if frame_timestamps[i] > segment_end:             # <<<<<<<<<<<<<<
+ *             break
+ *         if frame_timestamps[i] < segment_start:
+*/
+    }
+
+    /* "frigate/record/record_cython.pyx":650
+ *         if frame_timestamps[i] > segment_end:
+ *             break
+ *         if frame_timestamps[i] < segment_start:             # <<<<<<<<<<<<<<
+ *             continue
+ * 
+*/
+    __pyx_t_4 = __pyx_v_i;
+    __pyx_t_5 = ((*((double *) ( /* dim=0 */ (__pyx_v_frame_timestamps.data + __pyx_t_4 * __pyx_v_frame_timestamps.strides[0]) ))) < __pyx_v_segment_start);
+    if (__pyx_t_5) {
+
+      /* "frigate/record/record_cython.pyx":651
+ *             break
+ *         if frame_timestamps[i] < segment_start:
+ *             continue             # <<<<<<<<<<<<<<
+ * 
+ *         # Get object count for this frame
+*/
+      goto __pyx_L3_continue;
+
+      /* "frigate/record/record_cython.pyx":650
+ *         if frame_timestamps[i] > segment_end:
+ *             break
+ *         if frame_timestamps[i] < segment_start:             # <<<<<<<<<<<<<<
+ *             continue
+ * 
+*/
+    }
+
+    /* "frigate/record/record_cython.pyx":654
+ * 
+ *         # Get object count for this frame
+ *         frame_size = frame_obj_counts[i]             # <<<<<<<<<<<<<<
+ * 
+ *         # Collect motion boxes from this frame if in range
+*/
+    __pyx_t_6 = __Pyx_GetItemInt(__pyx_v_frame_obj_counts, __pyx_v_i, Py_ssize_t, 1, PyLong_FromSsize_t, 0, 0, 0, 1, __Pyx_ReferenceSharing_FunctionArgument); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 654, __pyx_L1_error)
+    __Pyx_GOTREF(__pyx_t_6);
+    __Pyx_XDECREF_SET(__pyx_v_frame_size, __pyx_t_6);
+    __pyx_t_6 = 0;
+
+    /* "frigate/record/record_cython.pyx":657
+ * 
+ *         # Collect motion boxes from this frame if in range
+ *         if motion_boxes_by_frame and i < len(motion_boxes_by_frame):             # <<<<<<<<<<<<<<
+ *             frame_boxes = motion_boxes_by_frame[i]
+ *             if frame_boxes:
+*/
+    __pyx_t_7 = __Pyx_PyObject_IsTrue(__pyx_v_motion_boxes_by_frame); if (unlikely((__pyx_t_7 < 0))) __PYX_ERR(0, 657, __pyx_L1_error)
+    if (__pyx_t_7) {
+    } else {
+      __pyx_t_5 = __pyx_t_7;
+      goto __pyx_L8_bool_binop_done;
+    }
+    __pyx_t_8 = PyObject_Length(__pyx_v_motion_boxes_by_frame); if (unlikely(__pyx_t_8 == ((Py_ssize_t)-1))) __PYX_ERR(0, 657, __pyx_L1_error)
+    __pyx_t_7 = (__pyx_v_i < __pyx_t_8);
+    __pyx_t_5 = __pyx_t_7;
+    __pyx_L8_bool_binop_done:;
+    if (__pyx_t_5) {
+
+      /* "frigate/record/record_cython.pyx":658
+ *         # Collect motion boxes from this frame if in range
+ *         if motion_boxes_by_frame and i < len(motion_boxes_by_frame):
+ *             frame_boxes = motion_boxes_by_frame[i]             # <<<<<<<<<<<<<<
+ *             if frame_boxes:
+ *                 all_motion_boxes.extend(frame_boxes)
+*/
+      __pyx_t_6 = __Pyx_GetItemInt(__pyx_v_motion_boxes_by_frame, __pyx_v_i, Py_ssize_t, 1, PyLong_FromSsize_t, 0, 0, 0, 1, __Pyx_ReferenceSharing_FunctionArgument); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 658, __pyx_L1_error)
+      __Pyx_GOTREF(__pyx_t_6);
+      if (!(likely(PyList_CheckExact(__pyx_t_6))||((__pyx_t_6) == Py_None) || __Pyx_RaiseUnexpectedTypeError("list", __pyx_t_6))) __PYX_ERR(0, 658, __pyx_L1_error)
+      __Pyx_XDECREF_SET(__pyx_v_frame_boxes, ((PyObject*)__pyx_t_6));
+      __pyx_t_6 = 0;
+
+      /* "frigate/record/record_cython.pyx":659
+ *         if motion_boxes_by_frame and i < len(motion_boxes_by_frame):
+ *             frame_boxes = motion_boxes_by_frame[i]
+ *             if frame_boxes:             # <<<<<<<<<<<<<<
+ *                 all_motion_boxes.extend(frame_boxes)
+ * 
+*/
+      if (__pyx_v_frame_boxes == Py_None) __pyx_t_5 = 0;
+      else
+      {
+        Py_ssize_t __pyx_temp = __Pyx_PyList_GET_SIZE(__pyx_v_frame_boxes);
+        if (unlikely(((!CYTHON_ASSUME_SAFE_SIZE) && __pyx_temp < 0))) __PYX_ERR(0, 659, __pyx_L1_error)
+        __pyx_t_5 = (__pyx_temp != 0);
+      }
+
+      if (__pyx_t_5) {
+
+        /* "frigate/record/record_cython.pyx":660
+ *             frame_boxes = motion_boxes_by_frame[i]
+ *             if frame_boxes:
+ *                 all_motion_boxes.extend(frame_boxes)             # <<<<<<<<<<<<<<
+ * 
+ *         # Count active objects for this frame's objects
+*/
+        if (unlikely(__pyx_v_all_motion_boxes == Py_None)) {
+          PyErr_Format(PyExc_AttributeError, "'NoneType' object has no attribute '%.30s'", "extend");
+          __PYX_ERR(0, 660, __pyx_L1_error)
+        }
+        __pyx_t_9 = __Pyx_PyList_Extend(__pyx_v_all_motion_boxes, __pyx_v_frame_boxes); if (unlikely(__pyx_t_9 == ((int)-1))) __PYX_ERR(0, 660, __pyx_L1_error)
+
+        /* "frigate/record/record_cython.pyx":659
+ *         if motion_boxes_by_frame and i < len(motion_boxes_by_frame):
+ *             frame_boxes = motion_boxes_by_frame[i]
+ *             if frame_boxes:             # <<<<<<<<<<<<<<
+ *                 all_motion_boxes.extend(frame_boxes)
+ * 
+*/
+      }
+
+      /* "frigate/record/record_cython.pyx":657
+ * 
+ *         # Collect motion boxes from this frame if in range
+ *         if motion_boxes_by_frame and i < len(motion_boxes_by_frame):             # <<<<<<<<<<<<<<
+ *             frame_boxes = motion_boxes_by_frame[i]
+ *             if frame_boxes:
+*/
+    }
+
+    /* "frigate/record/record_cython.pyx":663
+ * 
+ *         # Count active objects for this frame's objects
+ *         end = obj_idx + frame_size             # <<<<<<<<<<<<<<
+ *         for j in range(obj_idx, end):
+ *             fp = obj_false_positives[j]
+*/
+    __pyx_t_6 = PyLong_FromSsize_t(__pyx_v_obj_idx); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 663, __pyx_L1_error)
+    __Pyx_GOTREF(__pyx_t_6);
+    __pyx_t_10 = PyNumber_Add(__pyx_t_6, __pyx_v_frame_size); if (unlikely(!__pyx_t_10)) __PYX_ERR(0, 663, __pyx_L1_error)
+    __Pyx_GOTREF(__pyx_t_10);
+    __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
+    __Pyx_XDECREF_SET(__pyx_v_end, __pyx_t_10);
+    __pyx_t_10 = 0;
+
+    /* "frigate/record/record_cython.pyx":664
+ *         # Count active objects for this frame's objects
+ *         end = obj_idx + frame_size
+ *         for j in range(obj_idx, end):             # <<<<<<<<<<<<<<
+ *             fp = obj_false_positives[j]
+ *             mc = obj_motionless_counts[j]
+*/
+    __pyx_t_6 = NULL;
+    __pyx_t_11 = PyLong_FromSsize_t(__pyx_v_obj_idx); if (unlikely(!__pyx_t_11)) __PYX_ERR(0, 664, __pyx_L1_error)
+    __Pyx_GOTREF(__pyx_t_11);
+    __pyx_t_12 = 1;
+    {
+      PyObject *__pyx_callargs[3] = {__pyx_t_6, __pyx_t_11, __pyx_v_end};
+      __pyx_t_10 = __Pyx_PyObject_FastCall((PyObject*)(&PyRange_Type), __pyx_callargs+__pyx_t_12, (3-__pyx_t_12) | (__pyx_t_12*__Pyx_PY_VECTORCALL_ARGUMENTS_OFFSET));
+      __Pyx_XDECREF(__pyx_t_6); __pyx_t_6 = 0;
+      __Pyx_DECREF(__pyx_t_11); __pyx_t_11 = 0;
+      if (unlikely(!__pyx_t_10)) __PYX_ERR(0, 664, __pyx_L1_error)
+      __Pyx_GOTREF(__pyx_t_10);
+    }
+    __pyx_t_11 = PyObject_GetIter(__pyx_t_10); if (unlikely(!__pyx_t_11)) __PYX_ERR(0, 664, __pyx_L1_error)
+    __Pyx_GOTREF(__pyx_t_11);
+    __pyx_t_13 = (CYTHON_COMPILING_IN_LIMITED_API) ? PyIter_Next : __Pyx_PyObject_GetIterNextFunc(__pyx_t_11); if (unlikely(!__pyx_t_13)) __PYX_ERR(0, 664, __pyx_L1_error)
+    __Pyx_DECREF(__pyx_t_10); __pyx_t_10 = 0;
+    for (;;) {
+      {
+        __pyx_t_10 = __pyx_t_13(__pyx_t_11);
+        if (unlikely(!__pyx_t_10)) {
+          PyObject* exc_type = PyErr_Occurred();
+          if (exc_type) {
+            if (unlikely(!__Pyx_PyErr_GivenExceptionMatches(exc_type, PyExc_StopIteration))) __PYX_ERR(0, 664, __pyx_L1_error)
+            PyErr_Clear();
+          }
+          break;
+        }
+      }
+      __Pyx_GOTREF(__pyx_t_10);
+      __Pyx_XDECREF_SET(__pyx_v_j, __pyx_t_10);
+      __pyx_t_10 = 0;
+
+      /* "frigate/record/record_cython.pyx":665
+ *         end = obj_idx + frame_size
+ *         for j in range(obj_idx, end):
+ *             fp = obj_false_positives[j]             # <<<<<<<<<<<<<<
+ *             mc = obj_motionless_counts[j]
+ *             if fp == 0 and mc == 0:
+*/
+      __pyx_t_8 = __Pyx_PyIndex_AsSsize_t(__pyx_v_j); if (unlikely((__pyx_t_8 == (Py_ssize_t)-1) && PyErr_Occurred())) __PYX_ERR(0, 665, __pyx_L1_error)
+      __pyx_t_4 = __pyx_t_8;
+      __pyx_v_fp = (*((unsigned char *) ( /* dim=0 */ (__pyx_v_obj_false_positives.data + __pyx_t_4 * __pyx_v_obj_false_positives.strides[0]) )));
+
+      /* "frigate/record/record_cython.pyx":666
+ *         for j in range(obj_idx, end):
+ *             fp = obj_false_positives[j]
+ *             mc = obj_motionless_counts[j]             # <<<<<<<<<<<<<<
+ *             if fp == 0 and mc == 0:
+ *                 active_count += 1
+*/
+      __pyx_t_8 = __Pyx_PyIndex_AsSsize_t(__pyx_v_j); if (unlikely((__pyx_t_8 == (Py_ssize_t)-1) && PyErr_Occurred())) __PYX_ERR(0, 666, __pyx_L1_error)
+      __pyx_t_4 = __pyx_t_8;
+      __pyx_v_mc = (*((int *) ( /* dim=0 */ (__pyx_v_obj_motionless_counts.data + __pyx_t_4 * __pyx_v_obj_motionless_counts.strides[0]) )));
+
+      /* "frigate/record/record_cython.pyx":667
+ *             fp = obj_false_positives[j]
+ *             mc = obj_motionless_counts[j]
+ *             if fp == 0 and mc == 0:             # <<<<<<<<<<<<<<
+ *                 active_count += 1
+ *         obj_idx = end
+*/
+      __pyx_t_7 = (__pyx_v_fp == 0);
+      if (__pyx_t_7) {
+      } else {
+        __pyx_t_5 = __pyx_t_7;
+        goto __pyx_L14_bool_binop_done;
+      }
+      __pyx_t_7 = (__pyx_v_mc == 0);
+      __pyx_t_5 = __pyx_t_7;
+      __pyx_L14_bool_binop_done:;
+      if (__pyx_t_5) {
+
+        /* "frigate/record/record_cython.pyx":668
+ *             mc = obj_motionless_counts[j]
+ *             if fp == 0 and mc == 0:
+ *                 active_count += 1             # <<<<<<<<<<<<<<
+ *         obj_idx = end
+ * 
+*/
+        __pyx_v_active_count = (__pyx_v_active_count + 1);
+
+        /* "frigate/record/record_cython.pyx":667
+ *             fp = obj_false_positives[j]
+ *             mc = obj_motionless_counts[j]
+ *             if fp == 0 and mc == 0:             # <<<<<<<<<<<<<<
+ *                 active_count += 1
+ *         obj_idx = end
+*/
+      }
+
+      /* "frigate/record/record_cython.pyx":664
+ *         # Count active objects for this frame's objects
+ *         end = obj_idx + frame_size
+ *         for j in range(obj_idx, end):             # <<<<<<<<<<<<<<
+ *             fp = obj_false_positives[j]
+ *             mc = obj_motionless_counts[j]
+*/
+    }
+    __Pyx_DECREF(__pyx_t_11); __pyx_t_11 = 0;
+
+    /* "frigate/record/record_cython.pyx":669
+ *             if fp == 0 and mc == 0:
+ *                 active_count += 1
+ *         obj_idx = end             # <<<<<<<<<<<<<<
+ * 
+ *     return active_count
+*/
+    __pyx_t_8 = __Pyx_PyIndex_AsSsize_t(__pyx_v_end); if (unlikely((__pyx_t_8 == (Py_ssize_t)-1) && PyErr_Occurred())) __PYX_ERR(0, 669, __pyx_L1_error)
+    __pyx_v_obj_idx = __pyx_t_8;
+    __pyx_L3_continue:;
+  }
+  __pyx_L4_break:;
+
+  /* "frigate/record/record_cython.pyx":671
+ *         obj_idx = end
+ * 
+ *     return active_count             # <<<<<<<<<<<<<<
+ * 
+ * 
+*/
+  __Pyx_XDECREF(__pyx_r);
+  __pyx_t_11 = __Pyx_PyLong_From_int(__pyx_v_active_count); if (unlikely(!__pyx_t_11)) __PYX_ERR(0, 671, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_11);
+  __pyx_r = __pyx_t_11;
+  __pyx_t_11 = 0;
+  goto __pyx_L0;
+
+  /* "frigate/record/record_cython.pyx":605
+ * 
+ * 
+ * def compute_active_objects_and_motion(             # <<<<<<<<<<<<<<
+ *     double[:] frame_timestamps,
+ *     unsigned char[:] obj_false_positives,
+*/
+
+  /* function exit code */
+  __pyx_L1_error:;
+  __Pyx_XDECREF(__pyx_t_6);
+  __Pyx_XDECREF(__pyx_t_10);
+  __Pyx_XDECREF(__pyx_t_11);
+  __Pyx_AddTraceback("frigate.record.record_cython.compute_active_objects_and_motion", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __pyx_r = NULL;
+  __pyx_L0:;
+  __Pyx_XDECREF(__pyx_v_frame_boxes);
+  __Pyx_XDECREF(__pyx_v_frame_size);
+  __Pyx_XDECREF(__pyx_v_end);
+  __Pyx_XDECREF(__pyx_v_j);
+  __Pyx_XGIVEREF(__pyx_r);
+  __Pyx_RefNannyFinishContext();
+  return __pyx_r;
+}
+
+/* "frigate/record/record_cython.pyx":674
+ * 
+ * 
+ * def compute_audio_frame_count(             # <<<<<<<<<<<<<<
+ *     double[:] timestamps,
+ *     object audio_frames,
+*/
+
+/* Python wrapper */
+static PyObject *__pyx_pw_7frigate_6record_13record_cython_21compute_audio_frame_count(PyObject *__pyx_self, 
+#if CYTHON_METH_FASTCALL
+PyObject *const *__pyx_args, Py_ssize_t __pyx_nargs, PyObject *__pyx_kwds
+#else
+PyObject *__pyx_args, PyObject *__pyx_kwds
+#endif
+); /*proto*/
+PyDoc_STRVAR(__pyx_doc_7frigate_6record_13record_cython_20compute_audio_frame_count, "Count audio frames within a time window.\n\n    Replaces the Python list comprehension in RecordingMaintainer.segment_stats()\n    that counts audio frames within a time range.\n\n    Args:\n        timestamps: Sorted array of audio frame timestamps\n        audio_frames: List of (timestamp, dbfs) tuples (used for iteration)\n        start_idx: Start index in arrays\n        end_idx: End index in arrays\n        segment_start: Segment start time\n        segment_end: Segment end time\n\n    Returns:\n        Count of audio frames within window\n    ");
+static PyMethodDef __pyx_mdef_7frigate_6record_13record_cython_21compute_audio_frame_count = {"compute_audio_frame_count", (PyCFunction)(void(*)(void))(__Pyx_PyCFunction_FastCallWithKeywords)__pyx_pw_7frigate_6record_13record_cython_21compute_audio_frame_count, __Pyx_METH_FASTCALL|METH_KEYWORDS, __pyx_doc_7frigate_6record_13record_cython_20compute_audio_frame_count};
+static PyObject *__pyx_pw_7frigate_6record_13record_cython_21compute_audio_frame_count(PyObject *__pyx_self, 
+#if CYTHON_METH_FASTCALL
+PyObject *const *__pyx_args, Py_ssize_t __pyx_nargs, PyObject *__pyx_kwds
+#else
+PyObject *__pyx_args, PyObject *__pyx_kwds
+#endif
+) {
+  __Pyx_memviewslice __pyx_v_timestamps = { 0, 0, { 0 }, { 0 }, { 0 } };
+  CYTHON_UNUSED PyObject *__pyx_v_audio_frames = 0;
+  Py_ssize_t __pyx_v_start_idx;
+  Py_ssize_t __pyx_v_end_idx;
+  double __pyx_v_segment_start;
+  double __pyx_v_segment_end;
+  #if !CYTHON_METH_FASTCALL
+  CYTHON_UNUSED Py_ssize_t __pyx_nargs;
+  #endif
+  CYTHON_UNUSED PyObject *const *__pyx_kwvalues;
+  PyObject* values[6] = {0,0,0,0,0,0};
+  int __pyx_lineno = 0;
+  const char *__pyx_filename = NULL;
+  int __pyx_clineno = 0;
+  PyObject *__pyx_r = 0;
+  __Pyx_RefNannyDeclarations
+  __Pyx_RefNannySetupContext("compute_audio_frame_count (wrapper)", 0);
+  #if !CYTHON_METH_FASTCALL
+  #if CYTHON_ASSUME_SAFE_SIZE
+  __pyx_nargs = PyTuple_GET_SIZE(__pyx_args);
+  #else
+  __pyx_nargs = PyTuple_Size(__pyx_args); if (unlikely(__pyx_nargs < 0)) return NULL;
+  #endif
+  #endif
+  __pyx_kwvalues = __Pyx_KwValues_FASTCALL(__pyx_args, __pyx_nargs);
+  {
+    PyObject ** const __pyx_pyargnames[] = {&__pyx_mstate_global->__pyx_n_u_timestamps,&__pyx_mstate_global->__pyx_n_u_audio_frames,&__pyx_mstate_global->__pyx_n_u_start_idx,&__pyx_mstate_global->__pyx_n_u_end_idx,&__pyx_mstate_global->__pyx_n_u_segment_start,&__pyx_mstate_global->__pyx_n_u_segment_end,0};
+    const Py_ssize_t __pyx_kwds_len = (__pyx_kwds) ? __Pyx_NumKwargs_FASTCALL(__pyx_kwds) : 0;
+    if (unlikely(__pyx_kwds_len < 0)) __PYX_ERR(0, 674, __pyx_L3_error)
+    if (__pyx_kwds_len > 0) {
+      switch (__pyx_nargs) {
+        case  6:
+        values[5] = __Pyx_ArgRef_FASTCALL(__pyx_args, 5);
+        if (!CYTHON_ASSUME_SAFE_MACROS && unlikely(!values[5])) __PYX_ERR(0, 674, __pyx_L3_error)
+        CYTHON_FALLTHROUGH;
+        case  5:
+        values[4] = __Pyx_ArgRef_FASTCALL(__pyx_args, 4);
+        if (!CYTHON_ASSUME_SAFE_MACROS && unlikely(!values[4])) __PYX_ERR(0, 674, __pyx_L3_error)
+        CYTHON_FALLTHROUGH;
+        case  4:
+        values[3] = __Pyx_ArgRef_FASTCALL(__pyx_args, 3);
+        if (!CYTHON_ASSUME_SAFE_MACROS && unlikely(!values[3])) __PYX_ERR(0, 674, __pyx_L3_error)
+        CYTHON_FALLTHROUGH;
+        case  3:
+        values[2] = __Pyx_ArgRef_FASTCALL(__pyx_args, 2);
+        if (!CYTHON_ASSUME_SAFE_MACROS && unlikely(!values[2])) __PYX_ERR(0, 674, __pyx_L3_error)
+        CYTHON_FALLTHROUGH;
+        case  2:
+        values[1] = __Pyx_ArgRef_FASTCALL(__pyx_args, 1);
+        if (!CYTHON_ASSUME_SAFE_MACROS && unlikely(!values[1])) __PYX_ERR(0, 674, __pyx_L3_error)
+        CYTHON_FALLTHROUGH;
+        case  1:
+        values[0] = __Pyx_ArgRef_FASTCALL(__pyx_args, 0);
+        if (!CYTHON_ASSUME_SAFE_MACROS && unlikely(!values[0])) __PYX_ERR(0, 674, __pyx_L3_error)
+        CYTHON_FALLTHROUGH;
+        case  0: break;
+        default: goto __pyx_L5_argtuple_error;
+      }
+      const Py_ssize_t kwd_pos_args = __pyx_nargs;
+      if (__Pyx_ParseKeywords(__pyx_kwds, __pyx_kwvalues, __pyx_pyargnames, 0, values, kwd_pos_args, __pyx_kwds_len, "compute_audio_frame_count", 0) < (0)) __PYX_ERR(0, 674, __pyx_L3_error)
+      for (Py_ssize_t i = __pyx_nargs; i < 6; i++) {
+        if (unlikely(!values[i])) { __Pyx_RaiseArgtupleInvalid("compute_audio_frame_count", 1, 6, 6, i); __PYX_ERR(0, 674, __pyx_L3_error) }
+      }
+    } else if (unlikely(__pyx_nargs != 6)) {
+      goto __pyx_L5_argtuple_error;
+    } else {
+      values[0] = __Pyx_ArgRef_FASTCALL(__pyx_args, 0);
+      if (!CYTHON_ASSUME_SAFE_MACROS && unlikely(!values[0])) __PYX_ERR(0, 674, __pyx_L3_error)
+      values[1] = __Pyx_ArgRef_FASTCALL(__pyx_args, 1);
+      if (!CYTHON_ASSUME_SAFE_MACROS && unlikely(!values[1])) __PYX_ERR(0, 674, __pyx_L3_error)
+      values[2] = __Pyx_ArgRef_FASTCALL(__pyx_args, 2);
+      if (!CYTHON_ASSUME_SAFE_MACROS && unlikely(!values[2])) __PYX_ERR(0, 674, __pyx_L3_error)
+      values[3] = __Pyx_ArgRef_FASTCALL(__pyx_args, 3);
+      if (!CYTHON_ASSUME_SAFE_MACROS && unlikely(!values[3])) __PYX_ERR(0, 674, __pyx_L3_error)
+      values[4] = __Pyx_ArgRef_FASTCALL(__pyx_args, 4);
+      if (!CYTHON_ASSUME_SAFE_MACROS && unlikely(!values[4])) __PYX_ERR(0, 674, __pyx_L3_error)
+      values[5] = __Pyx_ArgRef_FASTCALL(__pyx_args, 5);
+      if (!CYTHON_ASSUME_SAFE_MACROS && unlikely(!values[5])) __PYX_ERR(0, 674, __pyx_L3_error)
+    }
+    __pyx_v_timestamps = __Pyx_PyObject_to_MemoryviewSlice_ds_double(values[0], PyBUF_WRITABLE); if (unlikely(!__pyx_v_timestamps.memview)) __PYX_ERR(0, 675, __pyx_L3_error)
+    __pyx_v_audio_frames = values[1];
+    __pyx_v_start_idx = __Pyx_PyIndex_AsSsize_t(values[2]); if (unlikely((__pyx_v_start_idx == (Py_ssize_t)-1) && PyErr_Occurred())) __PYX_ERR(0, 677, __pyx_L3_error)
+    __pyx_v_end_idx = __Pyx_PyIndex_AsSsize_t(values[3]); if (unlikely((__pyx_v_end_idx == (Py_ssize_t)-1) && PyErr_Occurred())) __PYX_ERR(0, 678, __pyx_L3_error)
+    __pyx_v_segment_start = __Pyx_PyFloat_AsDouble(values[4]); if (unlikely((__pyx_v_segment_start == (double)-1) && PyErr_Occurred())) __PYX_ERR(0, 679, __pyx_L3_error)
+    __pyx_v_segment_end = __Pyx_PyFloat_AsDouble(values[5]); if (unlikely((__pyx_v_segment_end == (double)-1) && PyErr_Occurred())) __PYX_ERR(0, 680, __pyx_L3_error)
+  }
+  goto __pyx_L6_skip;
+  __pyx_L5_argtuple_error:;
+  __Pyx_RaiseArgtupleInvalid("compute_audio_frame_count", 1, 6, 6, __pyx_nargs); __PYX_ERR(0, 674, __pyx_L3_error)
+  __pyx_L6_skip:;
+  goto __pyx_L4_argument_unpacking_done;
+  __pyx_L3_error:;
+  for (Py_ssize_t __pyx_temp=0; __pyx_temp < (Py_ssize_t)(sizeof(values)/sizeof(values[0])); ++__pyx_temp) {
+    Py_XDECREF(values[__pyx_temp]);
+  }
+  __PYX_XCLEAR_MEMVIEW(&__pyx_v_timestamps, 1);
+  __Pyx_AddTraceback("frigate.record.record_cython.compute_audio_frame_count", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_RefNannyFinishContext();
+  return NULL;
+  __pyx_L4_argument_unpacking_done:;
+  __pyx_r = __pyx_pf_7frigate_6record_13record_cython_20compute_audio_frame_count(__pyx_self, __pyx_v_timestamps, __pyx_v_audio_frames, __pyx_v_start_idx, __pyx_v_end_idx, __pyx_v_segment_start, __pyx_v_segment_end);
+
+  /* function exit code */
+  for (Py_ssize_t __pyx_temp=0; __pyx_temp < (Py_ssize_t)(sizeof(values)/sizeof(values[0])); ++__pyx_temp) {
+    Py_XDECREF(values[__pyx_temp]);
+  }
+  __PYX_XCLEAR_MEMVIEW(&__pyx_v_timestamps, 1);
+  __Pyx_RefNannyFinishContext();
+  return __pyx_r;
+}
+
+static PyObject *__pyx_pf_7frigate_6record_13record_cython_20compute_audio_frame_count(CYTHON_UNUSED PyObject *__pyx_self, __Pyx_memviewslice __pyx_v_timestamps, CYTHON_UNUSED PyObject *__pyx_v_audio_frames, Py_ssize_t __pyx_v_start_idx, Py_ssize_t __pyx_v_end_idx, double __pyx_v_segment_start, double __pyx_v_segment_end) {
+  int __pyx_v_count;
+  Py_ssize_t __pyx_v_i;
+  PyObject *__pyx_r = NULL;
+  __Pyx_RefNannyDeclarations
+  Py_ssize_t __pyx_t_1;
+  Py_ssize_t __pyx_t_2;
+  Py_ssize_t __pyx_t_3;
+  Py_ssize_t __pyx_t_4;
+  int __pyx_t_5;
+  PyObject *__pyx_t_6 = NULL;
+  int __pyx_lineno = 0;
+  const char *__pyx_filename = NULL;
+  int __pyx_clineno = 0;
+  __Pyx_RefNannySetupContext("compute_audio_frame_count", 0);
+
+  /* "frigate/record/record_cython.pyx":699
+ *     """
+ *     cdef:
+ *         int count = 0             # <<<<<<<<<<<<<<
+ *         Py_ssize_t i
+ * 
+*/
+  __pyx_v_count = 0;
+
+  /* "frigate/record/record_cython.pyx":702
+ *         Py_ssize_t i
+ * 
+ *     for i in range(start_idx, end_idx):             # <<<<<<<<<<<<<<
+ *         if timestamps[i] > segment_end:
+ *             break
+*/
+  __pyx_t_1 = __pyx_v_end_idx;
+  __pyx_t_2 = __pyx_t_1;
+  for (__pyx_t_3 = __pyx_v_start_idx; __pyx_t_3 < __pyx_t_2; __pyx_t_3+=1) {
+    __pyx_v_i = __pyx_t_3;
+
+    /* "frigate/record/record_cython.pyx":703
+ * 
+ *     for i in range(start_idx, end_idx):
+ *         if timestamps[i] > segment_end:             # <<<<<<<<<<<<<<
+ *             break
+ *         if timestamps[i] < segment_start:
+*/
+    __pyx_t_4 = __pyx_v_i;
+    __pyx_t_5 = ((*((double *) ( /* dim=0 */ (__pyx_v_timestamps.data + __pyx_t_4 * __pyx_v_timestamps.strides[0]) ))) > __pyx_v_segment_end);
+    if (__pyx_t_5) {
+
+      /* "frigate/record/record_cython.pyx":704
+ *     for i in range(start_idx, end_idx):
+ *         if timestamps[i] > segment_end:
+ *             break             # <<<<<<<<<<<<<<
+ *         if timestamps[i] < segment_start:
+ *             continue
+*/
+      goto __pyx_L4_break;
+
+      /* "frigate/record/record_cython.pyx":703
+ * 
+ *     for i in range(start_idx, end_idx):
+ *         if timestamps[i] > segment_end:             # <<<<<<<<<<<<<<
+ *             break
+ *         if timestamps[i] < segment_start:
+*/
+    }
+
+    /* "frigate/record/record_cython.pyx":705
+ *         if timestamps[i] > segment_end:
+ *             break
+ *         if timestamps[i] < segment_start:             # <<<<<<<<<<<<<<
+ *             continue
+ *         count += 1
+*/
+    __pyx_t_4 = __pyx_v_i;
+    __pyx_t_5 = ((*((double *) ( /* dim=0 */ (__pyx_v_timestamps.data + __pyx_t_4 * __pyx_v_timestamps.strides[0]) ))) < __pyx_v_segment_start);
+    if (__pyx_t_5) {
+
+      /* "frigate/record/record_cython.pyx":706
+ *             break
+ *         if timestamps[i] < segment_start:
+ *             continue             # <<<<<<<<<<<<<<
+ *         count += 1
+ * 
+*/
+      goto __pyx_L3_continue;
+
+      /* "frigate/record/record_cython.pyx":705
+ *         if timestamps[i] > segment_end:
+ *             break
+ *         if timestamps[i] < segment_start:             # <<<<<<<<<<<<<<
+ *             continue
+ *         count += 1
+*/
+    }
+
+    /* "frigate/record/record_cython.pyx":707
+ *         if timestamps[i] < segment_start:
+ *             continue
+ *         count += 1             # <<<<<<<<<<<<<<
+ * 
+ *     return count
+*/
+    __pyx_v_count = (__pyx_v_count + 1);
+    __pyx_L3_continue:;
+  }
+  __pyx_L4_break:;
+
+  /* "frigate/record/record_cython.pyx":709
+ *         count += 1
+ * 
+ *     return count             # <<<<<<<<<<<<<<
+*/
+  __Pyx_XDECREF(__pyx_r);
+  __pyx_t_6 = __Pyx_PyLong_From_int(__pyx_v_count); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 709, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_6);
+  __pyx_r = __pyx_t_6;
+  __pyx_t_6 = 0;
+  goto __pyx_L0;
+
+  /* "frigate/record/record_cython.pyx":674
+ * 
+ * 
+ * def compute_audio_frame_count(             # <<<<<<<<<<<<<<
+ *     double[:] timestamps,
+ *     object audio_frames,
+*/
+
+  /* function exit code */
+  __pyx_L1_error:;
+  __Pyx_XDECREF(__pyx_t_6);
+  __Pyx_AddTraceback("frigate.record.record_cython.compute_audio_frame_count", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = NULL;
   __pyx_L0:;
   __Pyx_XGIVEREF(__pyx_r);
@@ -22446,6 +23662,51 @@ __Pyx_RefNannySetupContext("PyInit_record_cython", 0);
   if (PyDict_SetItem(__pyx_mstate_global->__pyx_d, __pyx_mstate_global->__pyx_n_u_compute_segment_active_stats, __pyx_t_4) < (0)) __PYX_ERR(0, 505, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
 
+  /* "frigate/record/record_cython.pyx":549
+ * 
+ * 
+ * def compute_segment_active_with_motion(             # <<<<<<<<<<<<<<
+ *     double[:] frame_timestamps,
+ *     int[:] obj_false_positives,
+*/
+  __pyx_t_4 = __Pyx_CyFunction_New(&__pyx_mdef_7frigate_6record_13record_cython_17compute_segment_active_with_motion, 0, __pyx_mstate_global->__pyx_n_u_compute_segment_active_with_moti, NULL, __pyx_mstate_global->__pyx_n_u_frigate_record_record_cython, __pyx_mstate_global->__pyx_d, ((PyObject *)__pyx_mstate_global->__pyx_codeobj_tab[11])); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 549, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_4);
+  #if CYTHON_COMPILING_IN_CPYTHON && PY_VERSION_HEX >= 0x030E0000
+  PyUnstable_Object_EnableDeferredRefcount(__pyx_t_4);
+  #endif
+  if (PyDict_SetItem(__pyx_mstate_global->__pyx_d, __pyx_mstate_global->__pyx_n_u_compute_segment_active_with_moti, __pyx_t_4) < (0)) __PYX_ERR(0, 549, __pyx_L1_error)
+  __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
+
+  /* "frigate/record/record_cython.pyx":605
+ * 
+ * 
+ * def compute_active_objects_and_motion(             # <<<<<<<<<<<<<<
+ *     double[:] frame_timestamps,
+ *     unsigned char[:] obj_false_positives,
+*/
+  __pyx_t_4 = __Pyx_CyFunction_New(&__pyx_mdef_7frigate_6record_13record_cython_19compute_active_objects_and_motion, 0, __pyx_mstate_global->__pyx_n_u_compute_active_objects_and_motio, NULL, __pyx_mstate_global->__pyx_n_u_frigate_record_record_cython, __pyx_mstate_global->__pyx_d, ((PyObject *)__pyx_mstate_global->__pyx_codeobj_tab[12])); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 605, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_4);
+  #if CYTHON_COMPILING_IN_CPYTHON && PY_VERSION_HEX >= 0x030E0000
+  PyUnstable_Object_EnableDeferredRefcount(__pyx_t_4);
+  #endif
+  if (PyDict_SetItem(__pyx_mstate_global->__pyx_d, __pyx_mstate_global->__pyx_n_u_compute_active_objects_and_motio, __pyx_t_4) < (0)) __PYX_ERR(0, 605, __pyx_L1_error)
+  __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
+
+  /* "frigate/record/record_cython.pyx":674
+ * 
+ * 
+ * def compute_audio_frame_count(             # <<<<<<<<<<<<<<
+ *     double[:] timestamps,
+ *     object audio_frames,
+*/
+  __pyx_t_4 = __Pyx_CyFunction_New(&__pyx_mdef_7frigate_6record_13record_cython_21compute_audio_frame_count, 0, __pyx_mstate_global->__pyx_n_u_compute_audio_frame_count, NULL, __pyx_mstate_global->__pyx_n_u_frigate_record_record_cython, __pyx_mstate_global->__pyx_d, ((PyObject *)__pyx_mstate_global->__pyx_codeobj_tab[13])); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 674, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_4);
+  #if CYTHON_COMPILING_IN_CPYTHON && PY_VERSION_HEX >= 0x030E0000
+  PyUnstable_Object_EnableDeferredRefcount(__pyx_t_4);
+  #endif
+  if (PyDict_SetItem(__pyx_mstate_global->__pyx_d, __pyx_mstate_global->__pyx_n_u_compute_audio_frame_count, __pyx_t_4) < (0)) __PYX_ERR(0, 674, __pyx_L1_error)
+  __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
+
   /* "frigate/record/record_cython.pyx":1
  * """             # <<<<<<<<<<<<<<
  * Cython-accelerated recording segment operations.
@@ -22610,31 +23871,31 @@ static int __Pyx_InitCachedConstants(__pyx_mstatetype *__pyx_mstate) {
 static int __Pyx_InitConstants(__pyx_mstatetype *__pyx_mstate) {
   CYTHON_UNUSED_VAR(__pyx_mstate);
   {
-    const struct { const unsigned int length: 8; } index[] = {{2},{35},{54},{37},{60},{24},{52},{26},{34},{33},{45},{22},{15},{179},{37},{32},{1},{1},{1},{1},{1},{8},{5},{6},{15},{23},{25},{7},{6},{32},{2},{6},{35},{9},{30},{50},{8},{20},{32},{22},{14},{30},{37},{5},{8},{24},{42},{44},{35},{20},{8},{15},{3},{12},{16},{15},{12},{18},{10},{4},{3},{11},{1},{33},{9},{17},{18},{34},{40},{28},{29},{33},{28},{28},{5},{8},{15},{6},{7},{9},{5},{5},{7},{6},{7},{12},{19},{19},{16},{11},{28},{8},{9},{10},{12},{7},{1},{2},{10},{14},{5},{13},{5},{8},{1},{6},{7},{8},{7},{4},{10},{12},{12},{1},{4},{8},{7},{4},{7},{2},{5},{3},{7},{19},{21},{9},{4},{3},{14},{11},{10},{19},{14},{12},{13},{15},{10},{17},{13},{12},{8},{6},{11},{15},{11},{10},{16},{17},{11},{13},{4},{12},{10},{12},{19},{8},{5},{4},{5},{9},{4},{4},{6},{8},{5},{6},{6},{1},{6},{17},{1},{115},{112},{108},{95},{103},{83},{100},{182},{9},{96},{1}};
-    #if (CYTHON_COMPRESS_STRINGS) == 2 /* compression: bz2 (1933 bytes) */
-const char* const cstring = "BZh91AY&SY\326\031\231\372\000\001)\377\377\377\377\377\337\357\377\357_\377\377\373\217\277\377\377\367@@@@@@@@@\000@@@\000@\000`\007O\233yVat\260\306\245)V\246\316\350\020J!OSQ\223A\2214\374Ty'\243SL\232z&\206\203\020\323OI\240\000\310\321\240\007\2424i\223h\323\021\250\022\204\023F\215\004i&h\247\224\366\205<\210\310\003@\000\000\000\000\003@\000\r\000\004\030\000\000\000\000\000\000\000\000L\000\000\000\004`\000&\000\006\231\020\020I\225?M&\247\265\010=L\206CA\352\000\000\000\000\320\000\000\000h\0314\004\030\000\000\000\000\000\000\000\000L\000\000\000\004`\000&\000\004\211\021\246\222i\352jz\247\264\323Jz\236\215\023\320\206\201\240\3042d\304h42\001\210\006\200\0310\207\250\017R\226-\365\300\024\261\244\345\031o\324C\307\301^\322pp\265\200+\034\313\026mq\226\321TQUA\262\205\272\240\177\242\215\340*hE\311\027\t\240m6\230\366\013\241\201\002\236\360\003G\205F\205\026\210&\336\3219\274r$\\\315\261\026\2208\200\341fH\251\305.D\024\211\204\362G\025\"\220\316K1\221\314l\330 \361T\223$kEFU\334\331\031[\177\363\342\340{\274-\255\244\317\334\247\357:\tP\014\226\365\026\223G\366\355s\370*[\247L\002x\212\021\203\037/\372\354{(\3754zS\224\242\341t3\300>(\251\243\230\216\226\2131\317\033@\266\207\230\376m,\026\000\252\212b\345;\260\244\251(\311\351\\:s\325\267\t\022\225$\0251\363\241\306\245\234<\216\216\264\330\002\0059\2616\3452\252\r\233#\275\265\031)\274\276R\305\025\266\210\240\344\272\213p\360vq\032\306\251\002\307k0\337\332\334\\\351\211\314\222A \221=\207\263\324\367\216fm\306>\323\304\272(PB\017u8\304\235\251\252\216\260\023\240\235y~\353\274\0075\216rg\342\304\017\273~\336\003\212\253\211HCx8ku\345/\342\3725vV\335un\033`N]J\251\261\251\"\335zx\3572Y{\260\371]\320\201d\364b\254\341\334t\202C\251\331\352\250\233\010\306\216\025qw\030\364?X\334f\241\031\361 \316\374\000\273\r\220 \357\034\337\272\240]z\227\002\355\345\000O\254\345'\004\332\233s\331(\213 \340\215\032,\240I\215]\2458\022\001\326E\222Q\316\306Y=B\350\350\245^u\240\251\2703\275\\>\0057\177\336'l\024""\310\241\213\036\221\314C\014\013\007\240\262\016\3039\213\317\0239\340\356\366\221!\360\313U4\340\252\304\314\313_FFv\244\317\235\243\243?\343\372)iN\377\355\334\214q\t\210\334\356{\254\001F\nt]A/\240E\327f\270\317\023K6j\205(\352\\j\346\036\202\360\2231\226c\225\251^\020-\231\350\032\337N\3019\r\376c\2219EA\225\032\351\367f\351\275\226\301\007\201J\272\334\021\302\257Kkw_X\266%\234\334\360\325\034\020\206\351p\373\337\212\262\277\314\264h\343\3276\225(\335#I\210Wm\322\020L\232F3\010P\3150f\001ajE&\r\037m!\227\240\322\024!\033\304V\275i\256\350\253\031ue\332\202n\213Xd\034;\026#\273\306\361\005\253Y0\213\300\343\214x\177\274\303\236\024w\\\236[\266\344\243T\320\326&IM\017\312\0174\020\344\221d\364\202J\3255\002b\316\341\320\335\003\363\0036\265\020\206\003\232A \033\034]\013\344\332\324\244\303%(\365Py5\300\275\037LN\255\230\375\201fE\224'\224\033h\032 .\375m\323\3502\246q\341[\366\241\001\2437nP\325iq\241m{U\265\234\343\235\351\242\333\325EUUG\"Gq\022\345@\246\225\326uW\233Bt\363\306LjC\000\235/\231N\\,sA7'Tv\326\244,9\334\016\314\206\3121\241%\t\2424\3165\367\315`\214\001\253\326\201\300\005\373\032\276\017sc$\314P\255g\227y#u\266\002\251T\014\251r[\267\033\225\036\226hF\311\303\234\241{\023\257\t\016\304b\322 A\266\020\335&#1U;\311\312\231o\225p\266\355\360;l\023\205\254\005\254\267\032\223Xi\350\272a\276\td\250x\216t\205\205\345\345l\214\374\230\t*\351H\2743\270,K:61\030\216\317$J\353\020\322\203\352\014\302L\217\316\026\"*f\241\tajU\242`\342vCc\211_)M\n\030\206;\r\333L+\221\331>3\240T\010,\251f\376\002e\034`\313eI!\262\340\311!V\230\2066\325\325\026\244\254*{*\242\271\025\031B\215\252\322\023\n\324-H\362\355\344P\242_\202q\231\335-_\305\205\232\303KJ\315\270\302\024\003\023\020\301\313\240B\2602\344\263dp\023\025g\005\204\030\322\200\327\30466\250\326\347\024-\003&\325\342<\r\013\031\234\020\326\033j\227]\214\247\004S\201Z\n\317w\0052\244\256*Xi\327G =\016>\306\316:\342\246x\374~XI\022\363qQ\246\230<\317dPi9\032\342\324\264Y\315\006\247\336-{4\2102h\024\266[N-""~\2722\361B\216x\230\014\334\254\312=\344\230\220\320\311\000I\004I3o\006\035Nc\250\004I*m:e7h&N\351c$\346W\226\253\2548\213i\t\264eY\213\303%\341\211\242\t\277V\000\375\353\324\271%\\]@H\004`$Y \210#\221\235\357\227\023\020]\n\267T\225\371\033\314\205u\226\332\010\017\277\277\021R\200\0135\235t\272\250+\\C\240\250\310+\323\233\027\254\210\0010l\244\244\306\322\304\232aZ\310\252%\227J\262ym7(\031\021\257\234J\364\2511j\027\242\026-\270*\023z$f\005\316\0130U\037\t\304\016EurU\251\310\266\003\244\375Me\354\326\370\006\243\207\2111\376\360,B\372\014\374\271\016\252\233\341\010\310U/\222pfbQ\231.s\0049\211\205>S\202\244(\2140&\030P\241{\033\3448\270\214\236\223\r\260\356\036>)\231\236`\204\214\031\222H\027\3658\310\007\310HA\032o\256D5c4\034\301K\265&\314\222&tH$\224\201\342MK\324\241@\304\227\211\242Q\317sl\037D5O(\237_H_\236\266\013\000\251G\\Mb\353/V!P<\367\265>\323\215&|t\031\334\303T\031^\255]\215\3273\216\027*\241\264\220\375\313\177\243\210\367\2756\353\350\221\356Di\263\204\333\327\376\354g\214b!\275\201\013a\266\311\030*D\301\017''|\310\333\341+\245\224!\204^\267\031\030\204ig\273O\321\222\317\234\372\202\026rS$\237\340\265\036\315<\336\304I\272h\354~\023\004\233 \\\214\262\362bo\377\245\374-\022\356`\251\214\\\366\255\277\344\3314\337m(&\247~Bb\205\320\203E\005,\032v\014\302\237]9\365\253t\013\2650\374\317+\205\207\242\303`T\235\036\034r\314;=C\004&\3612\306$\363\220UvB\241\346\364\201\377\031\210\244\350^\005\200\037\370\273\222)\302\204\206\260\314\317\320";
-    PyObject *data = __Pyx_DecompressString(cstring, 1933, 2);
+    const struct { const unsigned int length: 8; } index[] = {{2},{35},{54},{37},{60},{24},{52},{26},{34},{33},{45},{22},{15},{179},{37},{32},{1},{1},{1},{1},{1},{8},{5},{6},{15},{23},{25},{7},{6},{32},{2},{6},{35},{9},{30},{50},{8},{20},{32},{22},{14},{30},{37},{5},{8},{24},{42},{44},{35},{20},{8},{15},{3},{12},{16},{15},{12},{18},{10},{12},{4},{3},{11},{1},{33},{9},{17},{18},{34},{33},{40},{25},{28},{29},{33},{28},{34},{28},{5},{8},{15},{6},{3},{7},{9},{5},{5},{7},{6},{7},{2},{11},{12},{19},{16},{19},{10},{16},{11},{28},{8},{9},{10},{12},{7},{1},{2},{10},{14},{5},{13},{5},{8},{1},{1},{6},{7},{8},{2},{7},{4},{10},{12},{21},{12},{1},{4},{8},{7},{4},{7},{2},{5},{3},{7},{19},{7},{21},{9},{4},{3},{14},{11},{10},{19},{14},{12},{13},{15},{10},{17},{13},{12},{8},{6},{11},{15},{11},{10},{16},{17},{11},{13},{4},{12},{10},{12},{19},{8},{5},{4},{5},{9},{4},{4},{6},{8},{10},{5},{6},{6},{1},{6},{17},{1},{115},{66},{112},{108},{95},{103},{83},{100},{182},{198},{106},{9},{96},{1}};
+    #if (CYTHON_COMPRESS_STRINGS) == 2 /* compression: bz2 (2141 bytes) */
+const char* const cstring = "BZh91AY&SYmz\013\371\000\001}\177\377\377\377\377\337\377\377\377_\377\377\373\217\277\377\377\367@@@@@@@@@\000@@@\000@\000`\010/\215\244\314\220\200\225J\224QT\243\334\017{\014\223E54\324\365\031\251\223Cd\332h\246\365\023A\243\324\321\221\352\032=#\324\3656\241\2654\007\2504d\017\024\032='\243MO)\265\002P@M\004\023\021\251\031\244zj4h2\006\200\006\200\000\000\000\006\2004\000\332\232\001\337\2412Q\211\220\323#A\204bhddd\001\204d\030\230\023\023#L\004\014\215\006A\200\004MThb\r\030\023\023\002a\014\010\300\002`#\000@\300\232h\302\r\032`\201\200\230\203\000&\000\000\0010\000\230\000\000\004\300\t\241\200\000\000\000\000\002D\232 \201\242i\222zi4\302h\246\214\023j\032\031\000\000\000hh\006\2004\000\031\001\246\220\346\310\212c\241\305B!\316\350a\317r0hE\364\021\255KR\346\370\276n-\326\336Ay\304\2065\314\232\377\317h\377\311\215\014m\246\325\305\270${H#\333\005\201\322\212]z\001\203clC`\332c\360\023}\030\225\000\272}\264!\245\330\332\301\240\"\344%,}\244\222\364QP\302\244\025;\2000\222G\215\326VhTY\025\t\021\202c#\004\001\207S1\001p\303B@\235j\016P\330\3671\301\201\021\256Q\014 \227\004@\361qU\010Y^\325\220\315\335\357\265[\221\033\254\273\272\254\333\215/\326\024\265\006\276J/-\311t+r\376\r:\365'a\236\020\232\226E\363\177\256g6\037\236^\244\243\030\\7\351\215\207\275\225\244\313\211\016,\252\213\215\365\201\\\236G\363X\331\254+P\235\356\254\252C\316y\315\216\257aF\277\022D\231p\010\001\01342\022\3460\251\207O\265+\271\314\315m\001\204\037\207\333\221\206\004T\031\322\3261\237L.C\265~\357\210\313\004\304\227.+\341\257\t\252\306\305\314\225\236\326\324\307\034\212\303\007\322\222\341\322\275\037B\305\254\332l\264@o\232\024S'\337\373\226\262\230\370\370y\337\272K\001\240\352\352D\376/'@\271}_\272\247\375\006\333\366\233\265\356\256S4\"d>.\270\"t\267\357\344\234\251\340R\202'\0346\365\267C1\226nW\327\263\271\300\307\032\270\330p\005\365\350\323.\006\312\246\035V\256\034\306\225\247\305\037\245\371\221.\262\233\206u\034g\027N/\020\217G\272\327B\314\201\007'[\241\243\231""\377_\3559%s5|\010\025)\316:#t\222\367\2754\364\256#\307\025\347\217%d-\327\335\024\033\302\356:wVg\010(\232\323\251\341\022\252\233s|\250\264\252\247M`\370\25234y\330G\027\250\325\312ty\033\026\264*\266\026v\245`B\365d\360\374\006t\233\316\023R\013\022\252q.D\020\262\240\363*\310\350.R.\225\353\031Y\335\353\025Q\354\270i\236\2135\021Vk\035]:\032\357B\307\330\322\323\257\213\250cy\217C\245\306\224\263\205\201\030\335\354\036\3401a\301\2737\304L\246\rJk\241\272\320D\327\256\2419\256\005\347.\341\3601\n3A]\024\262X\204\017\036V\371\010\317\352\342.\343\301\343\016\345\343T\204\250\325\r\031\275#\211\321\263\261\n@\323wVH\240\333\317\346\357\343\317\337y\226o\017\224\033\255\255\025\342h')\330\341\317\324\316GE\334\236(7w\340\312\221\346\233\315\002\307\256\260\221$\244j5\302\206d&\265\205K$q\357\034q\270\032=|a\272bn\"`\223\2133f\354w\360/N\273]\322\231jCX\031\005\n&\231\350\347\306e\253\357\252'\031Z\214\375\277\367IG\341\207\276\215\370\250\262\254\354\264\033\2136\341M8\224\264\020\272\231\017\010\243\272[q\262\321#\262\302(\235\030\371C\354\206\225\205\320J\0071EPZ\255\356\311v\t\270\321\212\0304a\353\261\236\022K!j<a*&G\354(2-#m\021\236\310*<\320\027\223\026\347\366,\251\252\\\013\226\310\304iY\366\342k\274\320\2713\303r\356\337\313\232\307.\245\311\237Scm\265D\255\301-\r\006\235\257\234\366\036\376\224\347\352\317F5\241\230-\216V1\345\346m\226%\005K+\233^\217\274\264B\306\366\373\353+\333\252\r\252\372\346\0023\036^8\312\324-@\326+\234p\001\217\207\243~\337\267\307d\227\262INu\221\316\232\252\200\252N&\234\261K\366\313\005H\005\333\210\332\\wP\311\213W=\007\3200^I\002*\252#*\316\002\033\n\244. \363\334\271\353\224\251\261\016\325\001\300s\010\263\033\266\205\332\326Z\270\341!\310\024\331\200{\2277B\312\362\342\261m\275\333\003\245or\340\336V.K\273K\230\224\207\327\245\022\255Q\023R\013\246\360\334\214\"Z\256\353\263%\272\0241V\306\275\0020\262`\342k\r\216)\215)(P\322\030\352\177\233\031a\261\326|\307p\260\002\033\253\300\257\\\005\013\225\262RO7AT\240hq+;\n*""\252R\242\315*\023\203\n\250\243\246\241\243Ln\316W0`\3038Y\343\315\336\331\301\352*\031k]\306\347}\227\370\251^a\210\317^\310\312\024\003\023Hm\215\272|\222\025Cn\312\367\307\001\"\302`\251\006\204\2408f\033\033W5\342\362\202\311\032\374\030\202\333\316\264\034\265K\210mT\303\014\364\264QM\325m\022g\213\357\345\247*\342Mc\271\306l\224\022\010p\363c\302\234\277C\311\005\0178\223\341\005\005J\346\271\246\230=\357p(3\272\035\341eas\034\014\277\220\360\354\332\"\027 \314\367\357\241\236y\364\303\355\256\232H\262\"<q\014\231/\202\361J\210\006\330\312\302[\304\267\360\324m\031h\213\370\275\225\265\024\267ZL\216\370A\235\226\006\n=\216\003\014\210\331\245J\232 \032W\254\244\323rI\310\246`\207W\222\342\360Xcu4\215\203V*\324A\014g\177N&:=\342c\244\027\257\004F='#y\034\256\245N8\240\374m\260\205U\200l\233*hv\240\255\252\004\035\206\2321\030\335\356\247\033\312\260!\203e.\231cifCM\030aC\004Sn|h\366\330\356\271\033\021\303\274%\251\\\032\343I\250\026-g\311\245\232R\266`4P\0275\224\204m\0208U\352QVn\013p=!\261\256\311\232\377\010\330l9\t\237\373\314b\215ZB'gq\3543\244+k\306\315\213h{\357\017f\234\373`\027Z\352\351\315!\362\270\010\203v\223\253\202Z\370\332\262a\304\351V\026\347\223\350\317\t*Xj!\313\263m\206>\2474\n\232\nTl\327\216\332\262\217\211\361\246\016x2f\335W\213\323\342\205z-\256\004\3316\000d\211R\202\230J\2048E\356\366\240\2160\364 S\t\242$%\211\344!\320\036\361\000\022\241\000\235\260@\254#\317\255m\004\240\204\215y\024\253c\216\363\006\324\024B\352\014\264&\303\025\233\366~\273\212\306p:J\242\023\262\004\237\240\301\266?\243b\270x\\\224\313H\312y\302\220\312\231\2711k%F\262\355\004\230?;\025\354M\242\025I6\337\017\316l\347\014\016j\300\207\224\300N\274\335\347\323\245\002\213\206\3610>\020u\370\004\000\234\243\374\246jt\374\335Fm:\001P\023:}\353\331gDNv\265\360\375\215*6h\212\023\r\243\2425l\345i\000\202NK\3019\032\035\201\306\347c\035\357\366$\215\233\303\345\213\211\304\341xg\210\364\360D\323W\261b`9\207\327U\307<\010\340\225\010\002\032\242\350\253\342\036\013""\242\225\021\326\324:6\355\344\214\314f\005\271\007d\356\r\000\024\200\006.r\002\220\363\020\342\030\243d#\024\010#\300\004 \002\214\341\014\341\010\207\250\302\264\"\352\262\212\273R\013\004b4 \316\363S\376Y$')\253\316\263\2011I\037\361w$S\205\t\006\327\240\277\220";
+    PyObject *data = __Pyx_DecompressString(cstring, 2141, 2);
     if (unlikely(!data)) __PYX_ERR(0, 1, __pyx_L1_error)
     const char* const bytes = __Pyx_PyBytes_AsString(data);
     #if !CYTHON_ASSUME_SAFE_MACROS
     if (likely(bytes)); else { Py_DECREF(data); __PYX_ERR(0, 1, __pyx_L1_error) }
     #endif
-    #elif (CYTHON_COMPRESS_STRINGS) != 0 /* compression: zlib (1777 bytes) */
-const char* const cstring = "x\332\265V\317s\333\306\025\226*9\245*9\266\352\272\311Dn\273\036\267\226[\333l8v<\235TUKKr\242\266I,{\334\036\222vg\t,\301\215\301]\020\273\240\310L\335\361\021G\034q\304\221G\035u\324\237\300#\217\372\023\374'\344\333\005HI\226\353\251;\323\031\t\330\037o\337{\337\367\276}\340\247\344a\322n\363\230\364\005\337'\276\342\232He\010\037DJs\242M,|\256\267\230$J\206C\342\305\234\031N\030i\225\207L\207\031\"4\361\2244\"HT\242\211\220\244\313\273*\036\326q\312\272bZ\213@\022\243\010\016\373w\235\237\322\302\206\254\214*\307\373\2610\254\025\362\312\240L\252\035\253\356\333\316\n\351\363\001\331\027\246C\3140\342d\275Z71\223\332\30189R\232\341\204\210\271g\210/\272\\j\241\244\336\236\216\310\257|\213\310:(\215v\272\221\031\022\335apm\222\010\311\265UL\274\241\351(Ygq\314\206\273\347\335\271\363:\211\"\025\033\356\357\312>\013\205O\272\312\347w,\2670\346>Y\367\326\t\\\255\303\237\315u\375\016\tpjj\\F\004\235l\200|6\276p\030\376f1\2506\371R\201-\307\376\226K\304\246\354\363P\264x\014\036\301\222\255\034\202\270\022I\362x\347\361\335\373\277\273O\230\364\301\344\267\010\257\221]\313\013Q\034T\034\016[\211\010\r\202Y\006u\235\354\266\311P%Dr\244\211\312E\260;}\300t\270$\232\033; \353\216nf\200\233\342\270\220\301zE\235\350s{\372\021\0135\257\177\225\030\027H%\322GH9\325\020\363<\016\357\267\034\314g\322\225\037\207 \251>\217Q]\303\273v\256Z6\355\372\346\372\257\377\310|\237JK\200\205C\300\301\307\003O\205\241\r\010\352\353\254\345m\234\022\2445*\323\331|}y\252\203M_h\033\227\273\350\355X\004 \361\267\330Q\261_\275hU\360h8\010<r\313\026*p\022\261\030\000\031U5\\\032\247\377\231\014P\225\322\245oQh\361\035'\033\177 \037\237\023\220T(^\233%\241!\224\306\334O<N)\361\023G\204T\362.\212\331\027,\304\256'\2440\330,\351\330\334(o\250\177\006\345\3715+\263\031\3303\373gWe\240U\022{|3\231\325\201\205\241\362\334\245\267\231\022\237\031V\177\303n\251V\353\261\352\031\365\346\323\255\335\335\2350\024\221\026\372\013ek\3639.y\227EM\317K\272I\310\214\212\377\323z}\306C\311\023\245o\261\204""\0205\364\367_\330\006\334\300\257\006\321\224>\036\016\360\277\215[B\277D\361\236\360\366S\336K\270\364\270\275d\365\223\373\006=1\247e\352A\273\006\220i\327\005\240-5\340zJ\001-\365Liu\035PB\246\207\322\023\252\016\001\251\004\267\013\306\211/\024\365[m\335b\232\343\274sA\035\267\236\327\341\336s\252 \373\220E\324v*$k\273\226\236!s\027\220\322\351\000x\254\262\354\024\336\251\300\005\214\231\307[\314{\356\251n\224 \211*\365R/%\202\312\333\033-t\031\3674\300\231\035\022c\001\336\016\303Y\037\225}\247\244\374\355\233\266\237W\210+\003\315\003\334\0303\315\304\026S\277\276\347\026g\216-\n\352\333\332Q\337\266,*t\005\000\005D\227\345\322\247\302\037p\231t]G\344q\254\342v\310\002\215\207\201\021\256`\227\231\252\363\266c\326\345\310O\004\035S\216\253\224] ].\305<x}\311\340\242#\257nT\315\367\205o:U\373\250\227}\243~\246}P\332N\244Gm\335\376\252\202\200\307\247\005\031Le<eJ\010\237R\321\265\337\020jk\213L\203J\204\356\233gA\317\244Uv\230\252\315<\017\235w\373\304\235\246\264\313p\234\3423h\325d\277B\230(?\t\335\373\244\322\247QKi\021\321\352\351\227}\n\235\r\023\276\217G\004j\243!8\307\037\005\335\366\325\266\215\236\342\223+l\035\265]*]\206\350\360\025sv\0210c\023A\244\221\212(EK\245N\372:\351\226\263\212\006;t\305u\243DF\302{\216\224w\344\324\256\357~,\330\353\320KXX\246Z\362mQ#\251\223\211\013y\322\\\317\265\227\331\002h=Sj;\326\370\220\226U*\357#\265]\260\032Z\245Y\035TS\200\237\032E\361t\261\014\316\374o\317\314\235z*u\303\313)\241\307F\363\260\355\032[U\000\214\252/\304\251vG\337\320\3724\307-\025f\350\372\261\225B\351\316\005\304\205\000\222H\033\205\3778\261\227\307`\037O\364\253\020\374\242\"I\004l\274\217\237 \t\327}4rEKm;2\006/\347_\335\234[Z\315\026\262F\326|uy\356\302Rz!}\226]\317\032\223\332\332x\355\316\350\317\007\341Q}\374\370\353\361\327\337\214\277\371\307\261]\274;z2\352\275zonie\274|-\177\230\263\311\312O\262\317\362F\265\264\226\337\313yqo|\363\301A\353p\345h\353\250g\367\037\345\327\217\027W\322\317\262\006B\336\232\273P{\371\257\354^\306&\265Ki""\357x\361\207/\367S\226\276\310?/\266G\313\007\017\016\257\0346\253\235\367\307\357\337,X\361\342\2409Y\\\036/\223b\276X\235,^L\377\236\375%\357Mp\320\244\rg\212\355\264\221n\245\275l1{\230\371\371\215\374Yqs\364\336\210!\336\375\271\245k9\314~\226\357!\311\031\306\337#\365\332\262\315\270\221o\3451\034\257\\<\267p\\\373\010\251\333\325\237\347,\327\305\215\342Ia\306\267\377t4\177t\245\004w-o\002\332\330\276\313XWA\345\273\207yK\204\253\331\336\261\205\007\367\017\346\226n\025=\024\307\342Ys\244\277k \2600\251}8\376\360\366\2501j\236\214\034\206_\344\377\036\355\275\264J\270\270\226_w\025M\357\247&\3734\177Z,\026\217F7F{\223\225+Y\343\270\266\222\356dW3\226\031$\262r\t&\237\344\363\371\025'\207\313?\305z\222o\027\027\212\275\202\035\333\352 \363;\216\230I\355\203\254\367?$\275\232}\2049\216\257f\253V/\375\364i6_id9}\220\375\330\t\3537VX/\262\255\254wN>\366\320w\331jV/~P\\G\200t#\353\003\324\274\203\003\353\361\245_\026\315bo\002\300\315\364\237\320p\245\315\232\023\255\205\250\221\355'\371\002\360^\376 \033\344\275b\241h@\257\013 o\373`\341\240q\260}\270p\3308D\244w\223\347d\361G\351\355l\017\351?\231\377?\212\347\253\357\001/\342y\353";
-    PyObject *data = __Pyx_DecompressString(cstring, 1777, 1);
+    #elif (CYTHON_COMPRESS_STRINGS) != 0 /* compression: zlib (1984 bytes) */
+const char* const cstring = "x\332\265VKs\033\307\021&BR\002MR\024E\313v\211J2\214lQ\211$\330\010iUJa\230@$e1~\211T)9\37015\330\035\000#\355\013;\263 \340\212R<\356q\217{\334#\216<\362\310\237\200#\216\374\t\372\t\356\236\035\200\200(\311V\252r\0000\217~~\375u\017\356\223\007Q\255\306C\322\022\374\200\330>\227\304\363\025\341\355\300\227\234H\025\n\233\313-\346\021\337s:\304\n9S\2340R\315\225T\203)\"$\261|O\211z\344G\222\010\217\270\334\365\303N\t\264\320\024\223R\324=\242|\002\312\366]m'\227@\227F\310\030>\010\205bU\207\033\201<\250Z\350\273o\323\025\236\315\333\344@\250\006Q\235\200\223Us\256B\346I\235\306\231J.\006\032\"\344\226\"\266p\271'\205\357\311\355\301\212|bcFh \027\332q\003\325!\262\301\300\264\212\002\010\256\346\207\304\352\250\206\357\225X\030\262\316\356ysZ_FA\340\207\212\333\273^\2139\302&\256o\363;\210-\010s\233\254Z\253\004L\255\202=\214u\365\016\251\203\326@8\367\010p\2626\304\263\361\265\316\341_\230\203_#\337\370\200\226F\177K\007\202!\333\334\021U\036\002\216\200\022V\016\234\350\022y\344\361\316\343\273\353\177Y'\314\263\001\311g\340^BtU\313\201\342@\305\301`5\022\216\002g\210\240,\221\335\032\351\370\021\3618\204\t\225\013@nTA5\270G$W\270 \253\032n\246 o\n\352\302\253\257\032\350D\213\243\366C\346H^\3726R\332\221\037y6\270\364\006\034b\226\305\301\372-\235\346SO\227\037\224\200R-\036Bu\025wq\357W1\354\322\346\352\037\377\316l\233z\010\000\246C\000\203\317\332\226\3578\350\020\240/\261\252\2651BH\024\312\303\331|\365x\300\203M[H\364\313\265\367Z(\352\000\342\247p\343\207\266\371\241\246\340A\247]\267\310-,T]S\004s\200\224\241\252\212{J\363\177H\003\250Jn\322\306,\244\370\211\223\215\277\221\317\316\021\310\363\241x5\0269\212P\032r;\2628\245\304\2164\020\236\357\335\205b\266\004s\340\326\022\236Pp\231\303\261\271\221w\250=\226\345\3713\244\3310\331\261\373\361S\257.\375(\264\370f4\254\003s\034\337\322M\217\221\022\233)Vz\315m\316V\264hfF\251\362dkww\307qD \205\374\332\307\332<\202&wYP\261\254\310\215\034\246\374\360M\347\245!\0169N\224\276E\022\210(\201\177\277B\266\316""\025\330\225\0004\245\217;m\370lC\227\320o\240x\373\274\366\2047#\356Y\034\233\254t\326o\300'\246\271L-\340\256\202\224\251\253\035\320\252\337\346r\000\001\315\371L\251i\007(!\223\035\317\022~\t\010\344G\320] \034\331\302\247v\265fV\265\220\271\\V\231\344`K\233\243\032g\313jp\3539\365\241\005\034\026P\234Z\0208N09\314R7#\245\203\005\344\206,\303-x\242\002\2321d\026\2572\353\271\345\273A\004\001\2314r\356\344\331\030k\257\225\200X<\333\344\372\006\001\035\330(\032C\271\263\364rG\303\013H\211\325\007\002\343\336\215\241F^\270\267_\342\253`\2602\002\222\327\241\357\324 D\244\204|\303\335H\330\257Jh\265\241kD\210\332\310\021j\343h\244B\232\334\201(0\3159\274=\200\221\260\333\334\213\\=|y\030\372a\315au\t_\n\344\240\333]\246\314\220\257\0059&\032\254|\331\340\242\336P\371\332$\251\035\233kp7\266\017y\375U\021\234,\371J\301\350\201\014\334\300\334\034\010[5\314@+\345\223\25446\320(\255E\236E\221=_\371\365:\017G[\244>h\254\001\352B\330\224\n\027_5\212\014\203\204\352\246\276\372\025Fx\206d\317g\236\031|\317\236;\332<~\303\230\241\324e\240O]\013\336f\2445>\215\260\365\355\310\321\277g\214\032]\323j'\347\324(N\236\207\231R\363m\347\023\025f0l\370\001|\005P\231\240\0030\"\222P-\374\251\341\223D\341\317\201@>H<\202\032\342On\331\201'\311@\214\207\200B\250\002\350\244\300\017(\2057\200\352\376\224\221\233\357\014J\270\324,\321\253\310\013\204\365\034\322\331\361\006r-\375\357\006{\266\0311'\2178/\007b\002\261\235m\264\313\263\327\340\334<\034\036\000\352c\234\300\265\204\227?/b>4(\216m\263D\276\"M\314\0260\030\010\005\341\3400w\316\354gc{M.\323&`e\244cB%\271S\323\223\330\324\001V\346I\033\231\317\3645\263Zr\030\010Bu\364\003\202L\311\315i\207P\022\310$\220\312\207O\030a\027*\270\247#4W0j\035@\032j\023\005\220%o\301\277\247\210\313\026\274Ac\363\247}Xxysbf1\231L\312I\345\345\345\211\351\231x:~\232\254$\345~q\271\267|\247\373\317#\347\244\324{\374]\357\273\357{\337\377p\212\207w\273\373\335\346\313\013\0233s\275\331\353\351\203\224\365\347\336O\276H\313\346h9]Ky\266\326\273y""\357\250z<w\262u\322\304\373\207\351\312\351\324\\\374ER\006\227\177\236\230\271\n\356.\234\271\373+X)\316\306\367\223\275\304J\257\244\345\376\334\374\371\375b\262x:5\033\243\205[\023\323\305\303\377$k\t\250-\304\315\323\251\213\207\0071\213_\244\217\262\355\356\354\321\275\343\245\343\212\271\271\324\273t3c\331\213\243J\177j\2667K\262B\266\330\237\232\217\377\235|\2316\373\240\250\342\262\026\355\243\355x+n&S\311\203\304No\244O\263\233\335\013]\006\376\326'f\256C\024\305\337\246{\347\303\306\234\313\351V\032\202a\035\367\370\301i\361\032$\217\247\277KY*\263\033\331~\246z\267\377qR8Y\312\341\271\236V\000\234\036\376\346\276^\213\316/\272y\213\207\253\311\336\000\272{\0233\267\262&\224\027\363Y\326e{WG\200B\277\370Q\357\243\333\335r\267r\266\3229\374>\375ow\357\020\2714\277\234\256hN\304\353\261J\356\247O\262\251\354a\367Fw\257?\267\224\224O\213s\361Nr5a\211\302\362.\200\310\347i!]\322\204\272\374\001\234G\351v6\235\355e\354\024\253\003\221\337\321\300\364\213\037&\315\377!\350\305\344\032\354+\206F\027\017[\361\223\244`82\033\337K\256hj\376\t\211\365\"\331J\232\347\350\203J?%\213I)\373M\266\202\354\334HZ\220TA\247\003\322\275\205\217\263J\266\327\207\204+\361\217\320\005\206\233EM{LQB\264\237\247\223\220\357\345\017\223v\332\314&\2632\360u\022\300\333>\232<*\037m\037O\036\227\217\301\323;\322s\273\240\371\371\362\322\304\364B\314\372SE\003\r\364\007&\362K\340`\225>\350]\375\004\3016]\274\222\275\017$\n\273K\335\n\026\354Z\357\332\247\335\346Q\001\263h\366/\223\354b\326\354\026Pv!n$\325\024\200\034\224\263\203\210,\366\026s0p\205\3705\363\374o$\373P\357\265\324\002\277`\005\324\256$+\003f>2Y\274\367\316\265\235\357\315\347}\215\253?d+\031\320k6^\213-\250\352z\"\001\253=\323e\332S\177\352\275\370v\262\007.\367\013\377\307f\373\366gR\231J\233";
+    PyObject *data = __Pyx_DecompressString(cstring, 1984, 1);
     if (unlikely(!data)) __PYX_ERR(0, 1, __pyx_L1_error)
     const char* const bytes = __Pyx_PyBytes_AsString(data);
     #if !CYTHON_ASSUME_SAFE_MACROS
     if (likely(bytes)); else { Py_DECREF(data); __PYX_ERR(0, 1, __pyx_L1_error) }
     #endif
-    #else /* compression: none (3611 bytes) */
-const char* const bytes = ": Buffer view does not expose stridesCan only create a buffer that is contiguous in memory.Cannot assign to read-only memoryviewCannot create writable memory view from read-only memoryviewCannot index with type 'Cannot transpose memoryview with indirect dimensionsDimension %d is not directEmpty shape tuple for cython.arrayIndirect dimensions not supportedInvalid mode, expected 'c' or 'fortran', got Invalid shape in axis <MemoryView of Note that Cython is deliberately stricter than PEP-484 and rejects subclasses of builtin types. If you need to pass subclasses then set the 'annotation_typing' directive to False.Out of bounds on buffer access (axis Unable to convert item to object.>')?add_note and  at 0xcollections.abc<contiguous and direct><contiguous and indirect>disableenablefrigate/record/record_cython.pyxgc (got got differing extents in dimension isenableditemsize <= 0 for cython.arrayno default __reduce__ due to non-trivial __cinit__ object><strided and direct><strided and direct or indirect><strided and indirect><stringsource>unable to allocate array data.unable to allocate shape and strides.ASCIIEllipsisMotionHeatmapAccumulatorMotionHeatmapAccumulator.__reduce_cython__MotionHeatmapAccumulator.__setstate_cython__MotionHeatmapAccumulator.get_result__Pyx_PyDict_NextRefSequenceView.MemoryViewabcactive_countall_motion_boxesallocate_buffer__annotate__asyncio.coroutinesaudio_dbfsbaseboxboxes_arrayccheck_overlap_with_reviews_cython__class____class_getitem__cline_in_tracebackcompute_active_object_count_cythoncompute_active_objects_with_motion_boxescompute_average_audio_cythoncompute_motion_heatmap_cythoncompute_motion_heatmap_from_arraycompute_segment_active_statscompute_segment_stats_cythoncount__dict__dtype_is_objectencodeend_idxenumerateerrorflagsflattenformatfortranframe_heightframe_motion_countsframe_region_countsframe_timestampsframe_widthfrigate.record.record_cython__func__getLoggerget_result__getstate__heatmapiid__import__in_range_countindex_is_coroutineitemsit""emsizekloggerlogging__main__memviewmode__module__motion_boxesmotion_countnname__name__ndarrayndim__new__npnumpyobjobj_endobj_false_positivesobj_motionless_countsobj_startpackpop__pyx_checksum__pyx_state__pyx_type__pyx_unpickle_Enum__pyx_vtable____qualname__recording_endrecording_start__reduce____reduce_cython____reduce_ex__region_countregisterresultreview_datareview_end_timereview_postreview_prereview_start_adjreview_start_timesegment_endsegment_startself__set_name__setdefault__setstate____setstate_cython__severityshapesizestartstart_idxstepstopstruct__test__totalunpackupdatevvaluesvideo_frame_countx\200\001\360&\000\t\021\220\003\2201\220A\360\020\000\005\t\210\005\210U\220!\2201\330\010\033\320\033,\250J\260l\300.\320P[\320[\\\320\\]\340\010\033\320\033-\250R\250q\360\006\000\t\014\320\013\034\230B\230a\330\014\024\220G\2301\360\006\000\t\014\320\013\033\2303\230e\2403\320&6\260b\270\014\300C\300q\330\014\024\220F\230!\340\004\014\210G\2201\200\001\360(\000\005\010\200|\2203\220a\330\010\017\210q\340\004\007\200w\210a\210}\230H\240D\250\013\2606\270\023\270A\330\010\017\210q\340\004\016\320\016&\240a\240}\260A\330\004\013\320\013 \240\001\240\021\330\004\r\210W\220K\230q\330\004\007\200t\2101\330\010\017\210q\330\004\013\2101\210C\210q\220\004\220B\220d\230#\230U\240&\250\006\250a\200\001\3604\000\t\034\2301\330\010\035\230Q\360\006\000\005\t\210\005\210U\220!\220;\230a\330\010\013\320\013\033\2301\230C\230r\240\021\330\014\r\330\010\013\320\013\033\2301\230C\230r\240\021\330\014\r\340\010\032\230!\340\010\013\320\013\036\230a\230s\240#\240R\240t\320+@\300\001\300\023\300C\300q\330\014\034\230A\340\004\014\320\014\034\230A\200\001\3604\000\t\025\220A\360\006\000\005\t\210\005\210U\220!\220;\230a\330\010\013\320\013\033\2301\230C\230r\240\021\330\014\r\330\010\013\320\013\033\2301\230C\230r\240\021\330\014\r\340\010\013\320\013\036\230a\230s\240#\240R\240t\320+@\300\001\300\023\300C\300q\330\014\025\220Q\340\004\013\2101\200\001\3606\000\t(\240q\330\010\033\2301""\330\010\033\2301\360\006\000\005\t\210\005\210U\220!\220;\230a\330\010\013\320\013\033\2301\230C\230r\240\021\330\014\r\330\010\013\320\013\033\2301\230C\230r\240\021\330\014\r\340\010\035\230Q\330\010\030\320\030+\2501\250A\330\010\030\320\030+\2501\250A\340\004\014\320\014\037\230~\250Q\200A\360\020\000\r\033\230!\360\006\000\t\014\2104\210t\220:\230S\240\004\240F\250#\250Q\330\014\023\2201\340\010\014\210E\220\025\220a\220t\2301\330\014\017\210t\2205\230\001\230\023\230B\230a\330\020\026\220a\220u\230D\240\005\240Q\240a\340\010\017\210q\200\001\360,\000\t\025\220A\330\010\027\220q\360\006\000\005\t\210\005\210U\220!\220;\230a\330\010\013\320\013\033\2301\230C\230r\240\021\330\014\r\330\010\013\320\013\033\2301\230C\230r\240\021\330\014\r\340\010\021\220\032\2301\230A\330\010\021\220\021\340\004\007\200v\210S\220\001\330\010\017\210q\340\004\013\2106\220\022\2201\200\001\360*\000\005\010\200}\220C\220q\330\010\017\210q\340\004\016\320\016&\240a\240}\260A\340\004\007\200z\220\021\220.\240\002\240!\330\010\013\210<\220v\230S\240\001\330\014\023\2201\330\010\017\320\017$\240A\240Q\330\t\014\210A\210^\2303\230a\330\010\017\210q\340\010\014\210G\2201\330\014\017\210s\220!\2205\230\003\2301\330\020\027\220x\230q\240\003\2401\240D\250\003\2501\250D\260\003\2601\260D\270\003\2701\270A\340\004\r\210W\220K\230q\330\004\007\200t\2101\330\010\017\210q\330\004\013\2101\210C\210q\220\004\220B\220d\230#\230U\240&\250\006\250a\200\001\330\004\n\210+\220Q\200\001\360R\001\000\t\025\220A\360\006\000\005\t\210\005\210U\220!\220;\230a\330\010\013\320\013\033\2301\230C\230r\240\021\330\014\r\330\010\013\320\013\033\2301\230C\230r\240\021\330\014\r\340\010\013\320\013\036\230a\230s\240#\240R\240t\320+@\300\001\300\023\300C\300q\330\014\025\220Q\340\004\013\2101O";
+    #else /* compression: none (4168 bytes) */
+const char* const bytes = ": Buffer view does not expose stridesCan only create a buffer that is contiguous in memory.Cannot assign to read-only memoryviewCannot create writable memory view from read-only memoryviewCannot index with type 'Cannot transpose memoryview with indirect dimensionsDimension %d is not directEmpty shape tuple for cython.arrayIndirect dimensions not supportedInvalid mode, expected 'c' or 'fortran', got Invalid shape in axis <MemoryView of Note that Cython is deliberately stricter than PEP-484 and rejects subclasses of builtin types. If you need to pass subclasses then set the 'annotation_typing' directive to False.Out of bounds on buffer access (axis Unable to convert item to object.>')?add_note and  at 0xcollections.abc<contiguous and direct><contiguous and indirect>disableenablefrigate/record/record_cython.pyxgc (got got differing extents in dimension isenableditemsize <= 0 for cython.arrayno default __reduce__ due to non-trivial __cinit__ object><strided and direct><strided and direct or indirect><strided and indirect><stringsource>unable to allocate array data.unable to allocate shape and strides.ASCIIEllipsisMotionHeatmapAccumulatorMotionHeatmapAccumulator.__reduce_cython__MotionHeatmapAccumulator.__setstate_cython__MotionHeatmapAccumulator.get_result__Pyx_PyDict_NextRefSequenceView.MemoryViewabcactive_countall_motion_boxesallocate_buffer__annotate__asyncio.coroutinesaudio_dbfsaudio_framesbaseboxboxes_arrayccheck_overlap_with_reviews_cython__class____class_getitem__cline_in_tracebackcompute_active_object_count_cythoncompute_active_objects_and_motioncompute_active_objects_with_motion_boxescompute_audio_frame_countcompute_average_audio_cythoncompute_motion_heatmap_cythoncompute_motion_heatmap_from_arraycompute_segment_active_statscompute_segment_active_with_motioncompute_segment_stats_cythoncount__dict__dtype_is_objectencodeendend_idxenumerateerrorflagsflattenformatfortranfpframe_boxesframe_heightframe_motion_countsframe_obj_countsframe_region_countsframe_sizeframe_t""imestampsframe_widthfrigate.record.record_cython__func__getLoggerget_result__getstate__heatmapiid__import__in_range_countindex_is_coroutineitemsitemsizejkloggerlogging__main__mcmemviewmode__module__motion_boxesmotion_boxes_by_framemotion_countnname__name__ndarrayndim__new__npnumpyobjobj_endobj_false_positivesobj_idxobj_motionless_countsobj_startpackpop__pyx_checksum__pyx_state__pyx_type__pyx_unpickle_Enum__pyx_vtable____qualname__recording_endrecording_start__reduce____reduce_cython____reduce_ex__region_countregisterresultreview_datareview_end_timereview_postreview_prereview_start_adjreview_start_timesegment_endsegment_startself__set_name__setdefault__setstate____setstate_cython__severityshapesizestartstart_idxstepstopstruct__test__timestampstotalunpackupdatevvaluesvideo_frame_countx\200\001\360&\000\t\021\220\003\2201\220A\360\020\000\005\t\210\005\210U\220!\2201\330\010\033\320\033,\250J\260l\300.\320P[\320[\\\320\\]\340\010\033\320\033-\250R\250q\360\006\000\t\014\320\013\034\230B\230a\330\014\024\220G\2301\360\006\000\t\014\320\013\033\2303\230e\2403\320&6\260b\270\014\300C\300q\330\014\024\220F\230!\340\004\014\210G\2201\200\001\3602\000\t\025\220A\360\006\000\005\t\210\005\210U\220!\220;\230a\330\010\013\210:\220Q\220c\230\022\2301\330\014\r\330\010\013\210:\220Q\220c\230\022\2301\330\014\r\330\010\021\220\021\340\004\013\2101\200\001\360(\000\005\010\200|\2203\220a\330\010\017\210q\340\004\007\200w\210a\210}\230H\240D\250\013\2606\270\023\270A\330\010\017\210q\340\004\016\320\016&\240a\240}\260A\330\004\013\320\013 \240\001\240\021\330\004\r\210W\220K\230q\330\004\007\200t\2101\330\010\017\210q\330\004\013\2101\210C\210q\220\004\220B\220d\230#\230U\240&\250\006\250a\200\001\3604\000\t\034\2301\330\010\035\230Q\360\006\000\005\t\210\005\210U\220!\220;\230a\330\010\013\320\013\033\2301\230C\230r\240\021\330\014\r\330\010\013\320\013\033\2301\230C\230r\240\021\330\014\r\340\010\032\230!\340\010\013\320\013\036\230a\230s\240#\240R\240t\320+@\300\001\300\023\300C""\300q\330\014\034\230A\340\004\014\320\014\034\230A\200\001\3604\000\t\025\220A\360\006\000\005\t\210\005\210U\220!\220;\230a\330\010\013\320\013\033\2301\230C\230r\240\021\330\014\r\330\010\013\320\013\033\2301\230C\230r\240\021\330\014\r\340\010\013\320\013\036\230a\230s\240#\240R\240t\320+@\300\001\300\023\300C\300q\330\014\025\220Q\340\004\013\2101\200\001\3606\000\t(\240q\330\010\033\2301\330\010\033\2301\360\006\000\005\t\210\005\210U\220!\220;\230a\330\010\013\320\013\033\2301\230C\230r\240\021\330\014\r\330\010\013\320\013\033\2301\230C\230r\240\021\330\014\r\340\010\035\230Q\330\010\030\320\030+\2501\250A\330\010\030\320\030+\2501\250A\340\004\014\320\014\037\230~\250Q\200A\360\020\000\r\033\230!\360\006\000\t\014\2104\210t\220:\230S\240\004\240F\250#\250Q\330\014\023\2201\340\010\014\210E\220\025\220a\220t\2301\330\014\017\210t\2205\230\001\230\023\230B\230a\330\020\026\220a\220u\230D\240\005\240Q\240a\340\010\017\210q\200\001\360,\000\t\025\220A\330\010\027\220q\360\006\000\005\t\210\005\210U\220!\220;\230a\330\010\013\320\013\033\2301\230C\230r\240\021\330\014\r\330\010\013\320\013\033\2301\230C\230r\240\021\330\014\r\340\010\021\220\032\2301\230A\330\010\021\220\021\340\004\007\200v\210S\220\001\330\010\017\210q\340\004\013\2106\220\022\2201\200\001\360*\000\005\010\200}\220C\220q\330\010\017\210q\340\004\016\320\016&\240a\240}\260A\340\004\007\200z\220\021\220.\240\002\240!\330\010\013\210<\220v\230S\240\001\330\014\023\2201\330\010\017\320\017$\240A\240Q\330\t\014\210A\210^\2303\230a\330\010\017\210q\340\010\014\210G\2201\330\014\017\210s\220!\2205\230\003\2301\330\020\027\220x\230q\240\003\2401\240D\250\003\2501\250D\260\003\2601\260D\270\003\2701\270A\340\004\r\210W\220K\230q\330\004\007\200t\2101\330\010\017\210q\330\004\013\2101\210C\210q\220\004\220B\220d\230#\230U\240&\250\006\250a\200\001\360D\001\000\t\034\2301\360\016\000\005\017\210a\330\004\010\210\005\210U\220!\2203\220a\220q\330\010\013\320\013\033\2301\230C\230r\240\021\330\014\r\330""\010\013\320\013\033\2301\230C\230r\240\021\330\014\r\360\006\000\t\026\320\025%\240Q\240a\360\006\000\t\014\320\013!\240\024\240R\240r\250\023\250A\250Q\330\014\032\320\032/\250q\260\001\330\014\017\210q\330\020 \240\007\240q\250\001\360\006\000\t\017\210h\220b\230\001\330\010\014\210E\220\025\220a\220y\240\001\330\014\021\320\021$\240A\240Q\330\014\021\320\021&\240a\240q\330\014\017\210s\220#\220R\220t\2303\230c\240\021\330\020 \240\001\330\010\022\220!\340\004\013\2101\200\001\360H\001\000\t\034\2301\360\n\000\005\t\210\005\210U\220!\220;\230a\330\010\013\320\013\033\2301\230C\230r\240\021\330\014\r\330\010\013\320\013\033\2301\230C\230r\240\021\330\014\r\340\010\r\320\r \240\001\240\021\330\010\r\320\r\"\240!\2401\340\010\013\2103\210c\220\022\2204\220s\230#\230Q\330\014\034\230A\340\004\013\2101\200\001\330\004\n\210+\220Q\200\001\360R\001\000\t\025\220A\360\006\000\005\t\210\005\210U\220!\220;\230a\330\010\013\320\013\033\2301\230C\230r\240\021\330\014\r\330\010\013\320\013\033\2301\230C\230r\240\021\330\014\r\340\010\013\320\013\036\230a\230s\240#\240R\240t\320+@\300\001\300\023\300C\300q\330\014\025\220Q\340\004\013\2101O";
     PyObject *data = NULL;
     CYTHON_UNUSED_VAR(__Pyx_DecompressString);
     #endif
     PyObject **stringtab = __pyx_mstate->__pyx_string_tab;
     Py_ssize_t pos = 0;
-    for (int i = 0; i < 171; i++) {
+    for (int i = 0; i < 185; i++) {
       Py_ssize_t bytes_length = index[i].length;
       PyObject *string = PyUnicode_DecodeUTF8(bytes + pos, bytes_length, NULL);
       if (likely(string) && i >= 43) PyUnicode_InternInPlace(&string);
@@ -22645,7 +23906,7 @@ const char* const bytes = ": Buffer view does not expose stridesCan only create 
       stringtab[i] = string;
       pos += bytes_length;
     }
-    for (int i = 171; i < 182; i++) {
+    for (int i = 185; i < 199; i++) {
       Py_ssize_t bytes_length = index[i].length;
       PyObject *string = PyBytes_FromStringAndSize(bytes + pos, bytes_length);
       stringtab[i] = string;
@@ -22656,15 +23917,15 @@ const char* const bytes = ": Buffer view does not expose stridesCan only create 
       }
     }
     Py_XDECREF(data);
-    for (Py_ssize_t i = 0; i < 182; i++) {
+    for (Py_ssize_t i = 0; i < 199; i++) {
       if (unlikely(PyObject_Hash(stringtab[i]) == -1)) {
         __PYX_ERR(0, 1, __pyx_L1_error)
       }
     }
     #if CYTHON_IMMORTAL_CONSTANTS
     {
-      PyObject **table = stringtab + 171;
-      for (Py_ssize_t i=0; i<11; ++i) {
+      PyObject **table = stringtab + 185;
+      for (Py_ssize_t i=0; i<14; ++i) {
         #if PY_VERSION_HEX >= 0x030F0000
         PyUnstable_SetImmortal(table[i]);
         #elif CYTHON_COMPILING_IN_CPYTHON_FREETHREADING
@@ -22734,9 +23995,9 @@ typedef struct {
     unsigned int argcount : 4;
     unsigned int num_posonly_args : 1;
     unsigned int num_kwonly_args : 1;
-    unsigned int nlocals : 4;
+    unsigned int nlocals : 5;
     unsigned int flags : 10;
-    unsigned int first_line : 9;
+    unsigned int first_line : 10;
 } __Pyx_PyCode_New_function_description;
 /* NewCodeObj.proto */
 static PyObject* __Pyx_PyCode_New(
@@ -22806,6 +24067,21 @@ static int __Pyx_CreateCodeObjects(__pyx_mstatetype *__pyx_mstate) {
     const __Pyx_PyCode_New_function_description descr = {7, 0, 0, 10, (unsigned int)(CO_OPTIMIZED|CO_NEWLOCALS), 505};
     PyObject* const varnames[] = {__pyx_mstate->__pyx_n_u_frame_timestamps, __pyx_mstate->__pyx_n_u_obj_false_positives, __pyx_mstate->__pyx_n_u_obj_motionless_counts, __pyx_mstate->__pyx_n_u_obj_start, __pyx_mstate->__pyx_n_u_obj_end, __pyx_mstate->__pyx_n_u_segment_start, __pyx_mstate->__pyx_n_u_segment_end, __pyx_mstate->__pyx_n_u_active_count, __pyx_mstate->__pyx_n_u_in_range_count, __pyx_mstate->__pyx_n_u_i};
     __pyx_mstate_global->__pyx_codeobj_tab[10] = __Pyx_PyCode_New(descr, varnames, __pyx_mstate->__pyx_kp_u_frigate_record_record_cython_pyx, __pyx_mstate->__pyx_n_u_compute_segment_active_stats, __pyx_mstate->__pyx_kp_b_iso88591_4_1_Q_U_a_1Cr_1Cr_as_Rt_Cq_A_A, tuple_dedup_map); if (unlikely(!__pyx_mstate_global->__pyx_codeobj_tab[10])) goto bad;
+  }
+  {
+    const __Pyx_PyCode_New_function_description descr = {8, 0, 0, 12, (unsigned int)(CO_OPTIMIZED|CO_NEWLOCALS), 549};
+    PyObject* const varnames[] = {__pyx_mstate->__pyx_n_u_frame_timestamps, __pyx_mstate->__pyx_n_u_obj_false_positives, __pyx_mstate->__pyx_n_u_obj_motionless_counts, __pyx_mstate->__pyx_n_u_obj_start, __pyx_mstate->__pyx_n_u_obj_end, __pyx_mstate->__pyx_n_u_segment_start, __pyx_mstate->__pyx_n_u_segment_end, __pyx_mstate->__pyx_n_u_motion_boxes_by_frame, __pyx_mstate->__pyx_n_u_active_count, __pyx_mstate->__pyx_n_u_i, __pyx_mstate->__pyx_n_u_fp, __pyx_mstate->__pyx_n_u_mc};
+    __pyx_mstate_global->__pyx_codeobj_tab[11] = __Pyx_PyCode_New(descr, varnames, __pyx_mstate->__pyx_kp_u_frigate_record_record_cython_pyx, __pyx_mstate->__pyx_n_u_compute_segment_active_with_moti, __pyx_mstate->__pyx_kp_b_iso88591_H_1_U_a_1Cr_1Cr_1_3c_4s_Q_A_1, tuple_dedup_map); if (unlikely(!__pyx_mstate_global->__pyx_codeobj_tab[11])) goto bad;
+  }
+  {
+    const __Pyx_PyCode_New_function_description descr = {8, 0, 0, 17, (unsigned int)(CO_OPTIMIZED|CO_NEWLOCALS), 605};
+    PyObject* const varnames[] = {__pyx_mstate->__pyx_n_u_frame_timestamps, __pyx_mstate->__pyx_n_u_obj_false_positives, __pyx_mstate->__pyx_n_u_obj_motionless_counts, __pyx_mstate->__pyx_n_u_frame_obj_counts, __pyx_mstate->__pyx_n_u_motion_boxes_by_frame, __pyx_mstate->__pyx_n_u_all_motion_boxes, __pyx_mstate->__pyx_n_u_segment_start, __pyx_mstate->__pyx_n_u_segment_end, __pyx_mstate->__pyx_n_u_active_count, __pyx_mstate->__pyx_n_u_i, __pyx_mstate->__pyx_n_u_fp, __pyx_mstate->__pyx_n_u_mc, __pyx_mstate->__pyx_n_u_frame_boxes, __pyx_mstate->__pyx_n_u_obj_idx, __pyx_mstate->__pyx_n_u_frame_size, __pyx_mstate->__pyx_n_u_end, __pyx_mstate->__pyx_n_u_j};
+    __pyx_mstate_global->__pyx_codeobj_tab[12] = __Pyx_PyCode_New(descr, varnames, __pyx_mstate->__pyx_kp_u_frigate_record_record_cython_pyx, __pyx_mstate->__pyx_n_u_compute_active_objects_and_motio, __pyx_mstate->__pyx_kp_b_iso88591_D_1_a_U_3aq_1Cr_1Cr_Qa_Rr_AQ_q, tuple_dedup_map); if (unlikely(!__pyx_mstate_global->__pyx_codeobj_tab[12])) goto bad;
+  }
+  {
+    const __Pyx_PyCode_New_function_description descr = {6, 0, 0, 8, (unsigned int)(CO_OPTIMIZED|CO_NEWLOCALS), 674};
+    PyObject* const varnames[] = {__pyx_mstate->__pyx_n_u_timestamps, __pyx_mstate->__pyx_n_u_audio_frames, __pyx_mstate->__pyx_n_u_start_idx, __pyx_mstate->__pyx_n_u_end_idx, __pyx_mstate->__pyx_n_u_segment_start, __pyx_mstate->__pyx_n_u_segment_end, __pyx_mstate->__pyx_n_u_count, __pyx_mstate->__pyx_n_u_i};
+    __pyx_mstate_global->__pyx_codeobj_tab[13] = __Pyx_PyCode_New(descr, varnames, __pyx_mstate->__pyx_kp_u_frigate_record_record_cython_pyx, __pyx_mstate->__pyx_n_u_compute_audio_frame_count, __pyx_mstate->__pyx_kp_b_iso88591_2_A_U_a_Qc_1_Qc_1_1, tuple_dedup_map); if (unlikely(!__pyx_mstate_global->__pyx_codeobj_tab[13])) goto bad;
   }
   Py_DECREF(tuple_dedup_map);
   return 0;
@@ -29597,6 +30873,18 @@ static const char* __Pyx_BufFmt_CheckString(__Pyx_BufFmt_Context* ctx, const cha
       result.memview = NULL;
       result.data = NULL;
       return result;
+  }
+  
+/* MemviewDtypeToObject */
+  static CYTHON_INLINE PyObject *__pyx_memview_get_double(const char *itemp) {
+      return (PyObject *) PyFloat_FromDouble(*(double const *) itemp);
+  }
+  static CYTHON_INLINE int __pyx_memview_set_double(char *itemp, PyObject *obj) {
+      double value = __Pyx_PyFloat_AsDouble(obj);
+      if (unlikely((value == (double)-1) && PyErr_Occurred()))
+          return 0;
+      *(double *) itemp = value;
+      return 1;
   }
   
 /* MemviewSliceCopy */

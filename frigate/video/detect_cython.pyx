@@ -169,3 +169,90 @@ def cython_extract_tracked_box(
         return tuple(obj["estimate"])
     else:
         return tuple(obj["box"])
+
+
+def cython_build_detections_with_attributes(
+    object tracked_objects,
+    object consolidated_detections,
+    object all_attributes,
+    object attributes_map,
+    object cython_find_best_object,
+):
+    """Build detections dict and assign attributes in a single pass.
+
+    Replaces the Python loops in video/detect.py that:
+    1. Build a detections dict from tracked_objects (lines 443-445)
+    2. Filter consolidated detections by attribute labels
+    3. For each detected attribute, find the best matching object
+
+    The Cython find_best_object is already used but the Python wrapper
+    TrackedObjectAttribute.find_best_object() is called instead.
+
+    Args:
+        tracked_objects: Dict of tracked object data
+        consolidated_detections: List of consolidated detection tuples
+        all_attributes: Set of attribute label names
+        attributes_map: Dict mapping attribute label -> list of parent labels
+        cython_find_best_object: cython_find_best_object function from object_cython
+
+    Returns:
+        Dict mapping object ID -> {**obj_data, "attributes": [...]}
+    """
+    cdef:
+        dict detections = {}
+        dict obj
+        str obj_id
+        tuple det
+        str label
+        list filtered_boxes = []
+        list filtered_ids = []
+        list filtered_labels = []
+        object best_id
+        object best_label
+        dict attr_data
+
+    # Build detections dict (single pass)
+    for obj_key in tracked_objects:
+        obj = tracked_objects[obj_key]
+        obj_id = obj["id"]
+        detections[obj_id] = dict(obj)  # shallow copy
+        detections[obj_id]["attributes"] = []
+
+    # Process consolidated detections for attributes
+    # Filter to only attribute detections
+    attr_dets = []
+    for det in consolidated_detections:
+        label = det[0]
+        if label in all_attributes:
+            attr_dets.append(det)
+
+    # For each attribute detection, find best matching object
+    for det in attr_dets:
+        attr_label = det[0]
+        attr_box = det[2]
+
+        # Find objects whose label is in the attributes_map for this attribute
+        filtered_boxes = []
+        filtered_ids = []
+        filtered_labels = []
+
+        for obj_key in tracked_objects:
+            obj = tracked_objects[obj_key]
+            if obj["label"] in attributes_map.get(attr_label, []):
+                filtered_boxes.append(obj["box"])
+                filtered_ids.append(obj["id"])
+                filtered_labels.append(obj["label"])
+
+        best_id, best_label = cython_find_best_object(
+            filtered_boxes, filtered_ids, filtered_labels, [attr_box[0], attr_box[1], attr_box[2], attr_box[3]]
+        )
+
+        if best_id is not None:
+            attr_data = {
+                "label": attr_label,
+                "box": attr_box,
+                "score": det[1],
+            }
+            detections[best_id]["attributes"].append(attr_data)
+
+    return detections

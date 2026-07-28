@@ -18,6 +18,9 @@ Usage:
 
 # cython: language_level=3, boundscheck=False, wraparound=False, cdivision=True
 
+import numpy as np
+cimport numpy as cnp
+
 from typing import Any
 
 
@@ -228,3 +231,180 @@ def cython_get_tracking_data(
     # and the new object data from norfair tracks.
     # This function serves as a template for batching.
     return (active_ids, new_registrations, updates)
+
+
+def cython_build_detections_from_raw(
+    list detections,
+    object frame_manager,
+    object get_histogram,
+    object frame_name,
+    bint need_embedding,
+    object camera_config,
+    double frame_time,
+):
+    """Build Detection objects from raw detection tuples.
+
+    Replaces the Python loop in norfair_tracker.match_and_update() that
+    iterates over detections to create Detection objects with centroid
+    computation and optional embedding extraction.
+
+    This is a hot path that runs every frame per camera. It creates
+    numpy arrays (points) and Detection objects per detection.
+
+    Args:
+        detections: List of (label, score, box, area, ratio, region) tuples
+        frame_manager: SharedMemoryFrameManager for YUV frame access
+        get_histogram: Function to extract histogram embedding from YUV frame
+        frame_name: Name of the current frame
+        need_embedding: Whether to extract PTZ embeddings
+        camera_config: CameraConfig for autotracker check
+        frame_time: Current frame timestamp to attach to each detection
+
+    Returns:
+        Dict mapping label -> list of Detection objects
+    """
+    cdef:
+        dict by_label = {}
+        tuple det
+        str label
+        int x0, y0, x1, y1
+        int centroid_x, centroid_y
+        object points
+        object embedding
+        object yuv_frame = None
+        object Detection
+
+    # Import Detection class from norfair (runtime import)
+    from norfair.tracker import Detection
+
+    for det in detections:
+        label = det[0]
+        if label not in by_label:
+            by_label[label] = []
+
+        box = det[2]
+        x0 = box[0]
+        y0 = box[1]
+        x1 = box[2]
+        y1 = box[3]
+
+        # Compute centroid
+        centroid_x = (x0 + x1) // 2
+        centroid_y = (y0 + y1) // 2
+
+        # Create points array (top-left and bottom-right corners)
+        points = np.array([[x0, y0], [x1, y1]], dtype=np.float32)
+
+        # Extract embedding if needed for PTZ autotracker
+        embedding = None
+        if need_embedding:
+            if yuv_frame is None:
+                yuv_frame = frame_manager.get(frame_name, camera_config.frame_shape_yuv)
+            embedding = get_histogram(yuv_frame, x0, y0, x1, y1)
+
+        detection = Detection(
+            points=points,
+            label=label,
+            embedding=embedding,
+            data={
+                "label": label,
+                "score": det[1],
+                "box": (x0, y0, x1, y1),
+                "area": det[3],
+                "ratio": det[4],
+                "region": det[5],
+                "frame_time": frame_time,
+                "centroid": (centroid_x, centroid_y),
+            },
+        )
+        by_label[label].append(detection)
+
+    return by_label
+
+
+def cython_update_tracks(
+    object all_tracked_objects,
+    object track_id_map,
+    object register,
+    object disappeared,
+    object tracked_objects,
+    object get_stationary_threshold,
+    object update,
+    object frame_time,
+    int width,
+    int height,
+):
+    """Update or create new tracks from norfair tracked objects.
+
+    Replaces the loop in norfair_tracker.match_and_update() (lines 602-642)
+    that updates or registers tracked objects, computes clamped boxes,
+    counts disappeared, and identifies expired tracks.
+
+    This runs every frame for all tracked objects.
+
+    Args:
+        all_tracked_objects: List of norfair TrackedObject instances
+        track_id_map: Dict mapping norfair global_id -> Frigate object id
+        register: Function to register a new tracked object
+        disappeared: Dict mapping object id -> disappeared count
+        tracked_objects: Dict of current tracked objects
+        get_stationary_threshold: Function to get threshold for label
+        update: Function to update an existing tracked object
+        frame_time: Current frame timestamp
+        width: Image width for box clamping
+        height: Image height for box clamping
+
+    Returns:
+        Tuple of (active_ids: set, expired_ids: list)
+    """
+    cdef:
+        set active_ids = set()
+        list expired_updates = []
+        object t
+        tuple estimate
+        str track_id
+        str global_id_str
+        dict new_obj
+        dict obj
+        str label
+        thresholds
+        double ft
+
+    ft = frame_time
+
+    for t in all_tracked_objects:
+        global_id_str = str(t.global_id)
+        active_ids.add(global_id_str)
+
+        # Clamp estimate to image bounds
+        estimate = tuple(t.estimate.flatten().astype(int))
+        cx0 = estimate[0] if estimate[0] > 0 else 0
+        cy0 = estimate[1] if estimate[1] > 0 else 0
+        cx1 = estimate[2] if estimate[2] < width - 1 else width - 1
+        cy1 = estimate[3] if estimate[3] < height - 1 else height - 1
+
+        if cx0 >= cx1 or cy0 >= cy1:
+            continue
+
+        clamped = (cx0, cy0, cx1, cy1)
+
+        new_obj = {
+            **t.last_detection.data,
+            "estimate": clamped,
+            "estimate_velocity": t.estimate_velocity,
+        }
+
+        if global_id_str not in track_id_map:
+            register(global_id_str, new_obj)
+        elif t.last_detection.data["frame_time"] != ft:
+            track_id = track_id_map[global_id_str]
+            disappeared[track_id] = disappeared.get(track_id, 0) + 1
+            # Only update estimate if box is valid (upper left < bottom right)
+            if cx0 < cx1 and cy0 < cy1:
+                tracked_objects[track_id]["estimate"] = new_obj["estimate"]
+        else:
+            label = t.last_detection.data["label"]
+            thresholds = get_stationary_threshold(label)
+            update(global_id_str, new_obj, thresholds, None)
+
+    return (active_ids, expired_updates)

@@ -39,7 +39,9 @@ from frigate.const import (
 from frigate.models import Recordings, ReviewSegment
 from frigate.record.record_cython import (
     compute_active_object_count_cython,
+    compute_active_objects_and_motion,
     compute_average_audio_cython,
+    compute_audio_frame_count,
     compute_motion_heatmap_cython,
     compute_segment_stats_cython,
 )
@@ -554,8 +556,12 @@ class RecordingMaintainer(threading.Thread):
             timestamps, motion_counts, region_counts, 0, len(timestamps), seg_start, seg_end
         )
 
-        # Count active objects and collect motion boxes
-        active_count = 0
+        # Count active objects and collect motion boxes using Cython
+        # Pre-flatten object data across all frames for a single Cython pass
+        all_fp: list[int] = []
+        all_mc: list[int] = []
+        frame_obj_counts: list[int] = []
+        motion_boxes_by_frame: list[list[tuple[int, int, int, int]]] = []
         all_motion_boxes: list[tuple[int, int, int, int]] = []
 
         for i in range(len(object_frames)):
@@ -567,41 +573,34 @@ class RecordingMaintainer(threading.Thread):
             frame = object_frames[i]
             frame_objects = frame[1]
 
-            # Use Cython for active object counting
             if frame_objects:
-                fp_array = np.array(
-                    [1 if o["false_positive"] else 0 for o in frame_objects],
-                    dtype=np.uint8,
-                )
-                mc_array = np.array(
-                    [o["motionless_count"] for o in frame_objects],
-                    dtype=np.int32,
-                )
-                # Repeat the frame timestamp for each object entry
-                frame_ts = np.full(len(mc_array), timestamps[i], dtype=np.float64)
-                active_count += compute_active_object_count_cython(
-                    frame_ts,
-                    mc_array,
-                    fp_array,
-                    0,
-                    len(mc_array),
-                    seg_start,
-                    seg_end,
-                )
+                all_fp.extend([1 if o["false_positive"] else 0 for o in frame_objects])
+                all_mc.extend([o["motionless_count"] for o in frame_objects])
+                frame_obj_counts.append(len(frame_objects))
+                motion_boxes_by_frame.append(frame[2])
+            else:
+                frame_obj_counts.append(0)
+                motion_boxes_by_frame.append([])
 
-            all_motion_boxes.extend(frame[2])
+        active_count = compute_active_objects_and_motion(
+            timestamps,
+            np.array(all_fp, dtype=np.uint8),
+            np.array(all_mc, dtype=np.int32),
+            frame_obj_counts,
+            motion_boxes_by_frame,
+            all_motion_boxes,
+            seg_start,
+            seg_end,
+        )
 
         # Audio stats
         audio_frames = self.audio_recordings_info[camera]
         audio_timestamps = np.array([f[0] for f in audio_frames], dtype=np.float64)
         audio_dbfs = np.array([f[1] for f in audio_frames], dtype=np.float64)
 
-        active_count += len(
-            [
-                f
-                for f in audio_frames
-                if seg_start <= f[0] <= seg_end
-            ]
+        audio_ts = np.array([f[0] for f in audio_frames], dtype=np.float64)
+        active_count += compute_audio_frame_count(
+            audio_ts, audio_frames, 0, len(audio_frames), seg_start, seg_end
         )
 
         average_dBFS = compute_average_audio_cython(

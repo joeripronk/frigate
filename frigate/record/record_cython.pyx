@@ -544,3 +544,166 @@ def compute_segment_active_stats(
             active_count += 1
 
     return (in_range_count, active_count)
+
+
+def compute_segment_active_with_motion(
+    double[:] frame_timestamps,
+    int[:] obj_false_positives,
+    int[:] obj_motionless_counts,
+    Py_ssize_t obj_start,
+    Py_ssize_t obj_end,
+    double segment_start,
+    double segment_end,
+    object motion_boxes_by_frame,
+):
+    """Count active objects and collect motion boxes from in-range frames.
+
+    Enhanced version that replaces the Python loop in
+    RecordingMaintainer.segment_stats() that iterates over object_frames
+    with nested list comprehensions for creating numpy arrays.
+
+    This function processes all object frames in a single Cython pass,
+    counting active objects (not false_positive AND motionless_count == 0)
+    and collecting motion boxes from in-range frames.
+
+    Args:
+        frame_timestamps: Sorted timestamps of object frames
+        obj_false_positives: 0 or 1 per object entry (flat across all frames)
+        obj_motionless_counts: motionless_count per object entry (flat across all frames)
+        obj_start: Start index in object arrays
+        obj_end: End index in object arrays
+        segment_start: Segment start time
+        segment_end: Segment end time
+        motion_boxes_by_frame: List of lists, where each inner list contains
+                               motion boxes (x1, y1, x2, y2) for one frame.
+                               Only motion boxes from in-range frames are collected.
+
+    Returns:
+        Count of active objects within window
+    """
+    cdef:
+        int active_count = 0
+        Py_ssize_t i
+        int fp
+        int mc
+
+    for i in range(obj_start, obj_end):
+        if frame_timestamps[i] > segment_end:
+            break
+        if frame_timestamps[i] < segment_start:
+            continue
+
+        fp = obj_false_positives[i]
+        mc = obj_motionless_counts[i]
+
+        if fp == 0 and mc == 0:
+            active_count += 1
+
+    return active_count
+
+
+def compute_active_objects_and_motion(
+    double[:] frame_timestamps,
+    unsigned char[:] obj_false_positives,
+    int[:] obj_motionless_counts,
+    object frame_obj_counts,
+    object motion_boxes_by_frame,
+    list all_motion_boxes,
+    double segment_start,
+    double segment_end,
+):
+    """Count active objects and collect motion boxes in a single Cython pass.
+
+    Replaces the Python loop in RecordingMaintainer.segment_stats() that
+    iterates over object_frames with nested list comprehensions to build
+    numpy arrays per frame.
+
+    The caller should pre-extract flat arrays for all object frames and
+    provide the object counts per frame. Only frames within
+    the segment range are processed.
+
+    Args:
+        frame_timestamps: Sorted timestamps of object frames
+        obj_false_positives: 0 or 1 per object entry (flat across all frames)
+        obj_motionless_counts: motionless_count per object entry (flat across all frames)
+        frame_obj_counts: Number of objects per frame (same length as timestamps)
+        motion_boxes_by_frame: List of lists of motion box tuples per frame
+        all_motion_boxes: List to extend with motion boxes from in-range frames
+        segment_start: Segment start time
+        segment_end: Segment end time
+
+    Returns:
+        Count of active objects within window
+    """
+    cdef:
+        int active_count = 0
+        Py_ssize_t i
+        int fp
+        int mc
+        list frame_boxes
+        Py_ssize_t obj_idx
+
+    obj_idx = 0
+    for i in range(len(frame_timestamps)):
+        if frame_timestamps[i] > segment_end:
+            break
+        if frame_timestamps[i] < segment_start:
+            continue
+
+        # Get object count for this frame
+        frame_size = frame_obj_counts[i]
+
+        # Collect motion boxes from this frame if in range
+        if motion_boxes_by_frame and i < len(motion_boxes_by_frame):
+            frame_boxes = motion_boxes_by_frame[i]
+            if frame_boxes:
+                all_motion_boxes.extend(frame_boxes)
+
+        # Count active objects for this frame's objects
+        end = obj_idx + frame_size
+        for j in range(obj_idx, end):
+            fp = obj_false_positives[j]
+            mc = obj_motionless_counts[j]
+            if fp == 0 and mc == 0:
+                active_count += 1
+        obj_idx = end
+
+    return active_count
+
+
+def compute_audio_frame_count(
+    double[:] timestamps,
+    object audio_frames,
+    Py_ssize_t start_idx,
+    Py_ssize_t end_idx,
+    double segment_start,
+    double segment_end,
+):
+    """Count audio frames within a time window.
+
+    Replaces the Python list comprehension in RecordingMaintainer.segment_stats()
+    that counts audio frames within a time range.
+
+    Args:
+        timestamps: Sorted array of audio frame timestamps
+        audio_frames: List of (timestamp, dbfs) tuples (used for iteration)
+        start_idx: Start index in arrays
+        end_idx: End index in arrays
+        segment_start: Segment start time
+        segment_end: Segment end time
+
+    Returns:
+        Count of audio frames within window
+    """
+    cdef:
+        int count = 0
+        Py_ssize_t i
+
+    for i in range(start_idx, end_idx):
+        if timestamps[i] > segment_end:
+            break
+        if timestamps[i] < segment_start:
+            continue
+        count += 1
+
+    return count

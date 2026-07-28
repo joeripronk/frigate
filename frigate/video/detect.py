@@ -48,9 +48,11 @@ from frigate.util.object import (
     intersects_any,
     reduce_detections,
 )
+from frigate.util.object_cython import cython_find_best_object
 from frigate.util.process import FrigateProcess
 from frigate.util.time import get_tomorrow_at_time
 from frigate.video.detect_cython import (
+    cython_build_detections_with_attributes,
     cython_filter_detections_by_label,
     cython_process_tracked_objects,
 )
@@ -326,9 +328,9 @@ def process_frames(
             # check every Nth frame for stationary objects
             # disappeared objects are not stationary
             # also check for overlapping motion boxes
+            stationary_object_ids: set[str] = set()
             if stationary_frame_counter == camera_config.detect.stationary.interval:
                 stationary_frame_counter = 0
-                stationary_object_ids = set()
             else:
                 stationary_frame_counter += 1
 
@@ -439,33 +441,14 @@ def process_frames(
             else:
                 object_tracker.update_frame_times(frame_name, frame_time)
 
-        # build detections
-        detections = {}
-        for obj in object_tracker.tracked_objects.values():
-            detections[obj["id"]] = {**obj, "attributes": []}
-
-         # assign each detected attribute to the best matching object.
-        # iterate consolidated_detections once so attributes that appear under
-        # multiple parent labels in attributes_map (e.g. license_plate is in
-        # both "car" and "motorcycle") are not appended more than once
-        all_objects: list[dict[str, Any]] = object_tracker.tracked_objects.values()
-        detected_attributes = [
-            TrackedObjectAttribute(d)
-            for d in cython_filter_detections_by_label(
-                consolidated_detections, all_attributes
-            )
-        ]
-        for attribute in detected_attributes:
-            filtered_objects = filter(
-                lambda o: attribute.label in attributes_map.get(o["label"], []),
-                all_objects,
-            )
-            selected_object_id = attribute.find_best_object(filtered_objects)
-
-            if selected_object_id is not None:
-                detections[selected_object_id]["attributes"].append(
-                    attribute.get_tracking_data()
-                )
+        # build detections with attributes using Cython
+        detections = cython_build_detections_with_attributes(
+            object_tracker.tracked_objects,
+            consolidated_detections,
+            all_attributes,
+            attributes_map,
+            cython_find_best_object,
+        )
 
         # debug object tracking
         if False:
