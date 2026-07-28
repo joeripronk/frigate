@@ -50,7 +50,10 @@ from frigate.util.object import (
 )
 from frigate.util.process import FrigateProcess
 from frigate.util.time import get_tomorrow_at_time
-from frigate.video.detect_cython import cython_filter_detections_by_label
+from frigate.video.detect_cython import (
+    cython_filter_detections_by_label,
+    cython_process_tracked_objects,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -325,32 +328,27 @@ def process_frames(
             # also check for overlapping motion boxes
             if stationary_frame_counter == camera_config.detect.stationary.interval:
                 stationary_frame_counter = 0
-                stationary_object_ids = []
+                stationary_object_ids = set()
             else:
                 stationary_frame_counter += 1
-                motion_boxes_for_check = (
-                    [] if motion_detector.is_calibrating() else motion_boxes
-                )
-                stationary_object_ids = [
-                    obj["id"]
-                    for obj in object_tracker.tracked_objects.values()
-                    if obj["motionless_count"]
-                    >= camera_config.detect.stationary.threshold
-                    and object_tracker.disappeared[obj["id"]] == 0
-                    and not intersects_any(obj["box"], motion_boxes_for_check)
-                ]
 
-            # get tracked object boxes that aren't stationary
-            tracked_object_boxes = [
-                (
-                    obj["estimate"]
-                    if obj["motionless_count"]
-                    < camera_config.detect.stationary.threshold
-                    else obj["box"]
+            motion_boxes_for_check = (
+                [] if motion_detector.is_calibrating() else motion_boxes
+            )
+            stationary_object_ids, tracked_object_boxes, detections, _ = (
+                cython_process_tracked_objects(
+                    object_tracker.tracked_objects,
+                    motion_boxes_for_check,
+                    stationary_object_ids,
+                    camera_config.detect.stationary.threshold,
+                    object_tracker.disappeared,
+                    intersects_any,
+                    None,
+                    None,
+                    set(),
+                    None,
                 )
-                for obj in object_tracker.tracked_objects.values()
-                if obj["id"] not in stationary_object_ids
-            ]
+            )
             object_boxes = tracked_object_boxes + object_tracker.untracked_object_boxes
 
             # get consolidated regions for tracked objects
@@ -409,20 +407,9 @@ def process_frames(
                 startup_scan = False
 
             # resize regions and detect
-            # seed with stationary objects
-            stationary_set = set(stationary_object_ids)
-            detections = [
-                (
-                    obj["label"],
-                    obj["score"],
-                    obj["box"],
-                    obj["area"],
-                    obj["ratio"],
-                    obj["region"],
-                )
-                for obj in object_tracker.tracked_objects.values()
-                if obj["id"] in stationary_set
-            ]
+            # seed with stationary objects (already built by cython_process_tracked_objects)
+            stationary_set = stationary_object_ids
+            detections = []
 
             for region in regions:
                 detections.extend(

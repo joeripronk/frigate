@@ -3,7 +3,6 @@
 import datetime
 import logging
 import math
-from collections import defaultdict
 from typing import Any
 
 import cv2
@@ -17,7 +16,9 @@ from frigate.const import (
     LABEL_NMS_DEFAULT,
     LABEL_NMS_MAP,
 )
+from frigate.detectors.detection_cython import overlap_consolidate
 from frigate.detectors.detector_config import PixelFormatEnum
+from frigate.track.tracking_cython import cython_group_detections_by_label
 from frigate.models import Event, Regions, Timeline
 from frigate.util.image import (
     calculate_region,
@@ -378,8 +379,6 @@ def cython_overlap_consolidate(
     default_threshold: float,
 ) -> list[tuple]:
     """Consolidate overlapping detections using Cython-accelerated loop."""
-    from frigate.detectors.detection_cython import overlap_consolidate
-
     return overlap_consolidate(sorted_by_area, consolidation_map, default_threshold)
 
 
@@ -425,9 +424,7 @@ def reduce_detections(
 
     def reduce_overlapping_detections(detections: list[tuple[Any]]) -> list[tuple[Any]]:
         """apply non-maxima suppression to suppress weak, overlapping bounding boxes."""
-        detected_object_groups = defaultdict(lambda: [])
-        for detection in detections:
-            detected_object_groups[detection[0]].append(detection)
+        detected_object_groups = cython_group_detections_by_label(detections)
 
         selected_objects = []
         for group in detected_object_groups.values():
@@ -464,9 +461,7 @@ def reduce_detections(
 
     def get_consolidated_object_detections(detections: list[tuple[Any]]):
         """Drop detections that overlap too much."""
-        detected_object_groups = defaultdict(lambda: [])
-        for detection in detections:
-            detected_object_groups[detection[0]].append(detection)
+        detected_object_groups = cython_group_detections_by_label(detections)
 
         consolidated_detections = []
         for group in detected_object_groups.values():

@@ -18,6 +18,7 @@ setup(
         "frigate.video",
         "frigate.track",
         "frigate.record",
+        "frigate.data_processing.common.face",
     ],
     ext_modules=cythonize(
         [
@@ -31,6 +32,7 @@ setup(
             "frigate/motion/motion_cython.pyx",
             "frigate/video/detect_cython.pyx",
             "frigate/track/tracking_cython.pyx",
+            "frigate/data_processing/common/face/model_cython.pyx",
         ],
         language_level=3,
         compiler_directives={

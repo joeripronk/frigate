@@ -378,6 +378,7 @@ COPY --from=cython-build frigate/record frigate/record
 COPY --from=cython-build frigate/motion frigate/motion
 COPY --from=cython-build frigate/video frigate/video
 COPY --from=cython-build frigate/track frigate/track
+COPY --from=cython-build frigate/data_processing frigate/data_processing
 COPY --from=web-build /work/dist/ web/
 
 # Frigate final container
