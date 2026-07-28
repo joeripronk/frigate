@@ -375,6 +375,7 @@ COPY --from=cython-build frigate/detectors frigate/detectors
 COPY --from=cython-build frigate/embeddings frigate/embeddings
 COPY --from=cython-build frigate/events frigate/events
 COPY --from=cython-build frigate/record frigate/record
+COPY --from=cython-build frigate/motion frigate/motion
 COPY --from=web-build /work/dist/ web/
 
 # Frigate final container
