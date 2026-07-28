@@ -613,7 +613,7 @@ class TrackedObjectAttribute:
     def __init__(self, raw_data: tuple) -> None:
         self.label = raw_data[0]
         self.score = raw_data[1]
-        self.box = raw_data[2]
+        self.box = list(raw_data[2])
         self.area = raw_data[3]
         self.ratio = raw_data[4]
         self.region = raw_data[5]
