@@ -142,7 +142,7 @@ class ImprovedMotionDetector(MotionDetector):
         )
 
         if motion_array.shape[0] > 0:
-            motion_boxes = [tuple(box) for box in motion_array]
+            motion_boxes = [tuple(int(v) for v in box) for box in motion_array]
 
         pct_motion = total_contour_area / (
             self.motion_frame_size[0] * self.motion_frame_size[1]

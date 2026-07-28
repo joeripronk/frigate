@@ -46,7 +46,7 @@ def cython_find_motion_boxes(
     contours = grab_cv2_contours(contours)
 
     if len(contours) == 0:
-        return np.empty((0, 4), dtype=np.float32), 0.0
+        return np.empty((0, 4), dtype=np.int32), 0.0
 
     result_boxes: list = []
     total_area: float = 0.0
@@ -61,17 +61,17 @@ def cython_find_motion_boxes(
 
         if contour_area > area_thresh:
             x, y, w, h = cv2.boundingRect(c)
-            result_boxes.append([
+            result_boxes.append((
                 int(x * rf),
                 int(y * rf),
                 int((x + w) * rf),
                 int((y + h) * rf),
-            ])
+            ))
 
     if not result_boxes:
-        return np.empty((0, 4), dtype=np.float32), total_area
+        return np.empty((0, 4), dtype=np.int32), total_area
 
-    return np.array(result_boxes, dtype=np.float32), total_area
+    return np.array(result_boxes, dtype=np.int32), total_area
 
 
 def cython_filter_motion_boxes(
@@ -94,7 +94,7 @@ def cython_filter_motion_boxes(
     cdef int n = regions.shape[0]
 
     if m == 0 or n == 0:
-        return motion_boxes
+        return motion_boxes.astype(np.int32)
 
     result_boxes: list = []
     cdef int i, j
@@ -123,12 +123,12 @@ def cython_filter_motion_boxes(
                 break
 
         if not inside:
-            result_boxes.append(motion_boxes[i])
+            result_boxes.append(tuple(motion_boxes[i]))
 
     if not result_boxes:
-        return np.empty((0, 4), dtype=np.float32)
+        return np.empty((0, 4), dtype=np.int32)
 
-    return np.array(result_boxes, dtype=np.float32)
+    return np.array(result_boxes, dtype=np.int32)
 
 
 def cython_count_motion(

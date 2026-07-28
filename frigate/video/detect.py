@@ -371,7 +371,7 @@ def process_frames(
                     motion_boxes_array, regions_array
                 )
                 standalone_motion_boxes = [
-                    tuple(box) for box in standalone_motion_array
+                    tuple(int(v) for v in box) for box in standalone_motion_array
                 ]
 
                 if standalone_motion_boxes:
