@@ -4,6 +4,9 @@ Cython-accelerated object clustering and bounding box operations.
 
 # cython: language_level=3, boundscheck=False, wraparound=False, cdivision=True
 
+import numpy as np
+cimport numpy as cnp
+
 from typing import Any
 
 
@@ -306,3 +309,105 @@ cdef list _cython_calculate_region(
         y_offset = max(0, (frame_shape[0] - size))
 
     return [x_offset, y_offset, x_offset + size, y_offset + size]
+
+
+def cython_average_boxes(list boxes):
+    """Compute the average box from a list of boxes.
+
+    Args:
+        boxes: List of [x_min, y_min, x_max, y_max] boxes
+
+    Returns:
+        Average box [x_min, y_min, x_max, y_max] as list of floats
+    """
+    cdef int n = len(boxes)
+    if n == 0:
+        return [0, 0, 0, 0]
+
+    cdef double sum_x0 = 0.0
+    cdef double sum_y0 = 0.0
+    cdef double sum_x1 = 0.0
+    cdef double sum_y1 = 0.0
+    cdef int i
+
+    for i in range(n):
+        b = boxes[i]
+        sum_x0 += b[0]
+        sum_y0 += b[1]
+        sum_x1 += b[2]
+        sum_y1 += b[3]
+
+    return [
+        sum_x0 / n,
+        sum_y0 / n,
+        sum_x1 / n,
+        sum_y1 / n,
+    ]
+
+
+def cython_median_of_boxes(list boxes):
+    """Find the median box by area from a list of boxes.
+
+    Args:
+        boxes: List of [x_min, y_min, x_max, y_max] boxes
+
+    Returns:
+        The box with median area
+    """
+    cdef int n = len(boxes)
+    if n == 0:
+        return [0, 0, 0, 0]
+
+    cdef int mid = n // 2
+    cdef int i
+    cdef double areas
+
+    # Compute areas inline to avoid function call overhead
+    areas = 0.0
+    for i in range(n):
+        b = boxes[i]
+        areas += (b[2] - b[0]) * (b[3] - b[1])
+
+    # Simple selection algorithm for median by area
+    # Create list of (area, box) pairs
+    area_box_pairs = []
+    for i in range(n):
+        b = boxes[i]
+        area = (b[2] - b[0]) * (b[3] - b[1])
+        area_box_pairs.append((area, b))
+
+    # Partial sort to find median
+    area_box_pairs.sort(key=lambda x: x[0])
+
+    return list(area_box_pairs[mid][1])
+
+
+def cython_intersects_any_vectorized(list boxes, list query_box):
+    """Check if query_box intersects any box in boxes list.
+
+    Args:
+        boxes: List of [x_min, y_min, x_max, y_max] boxes
+        query_box: [x_min, y_min, x_max, y_max] to check against
+
+    Returns:
+        True if any box intersects with query_box
+    """
+    cdef int n = len(boxes)
+    if n == 0:
+        return False
+
+    cdef int q0, q1, q2, q3
+    q0, q1, q2, q3 = query_box
+
+    cdef int i
+    cdef int b0, b1, b2, b3
+
+    for i in range(n):
+        b = boxes[i]
+        b0, b1, b2, b3 = b
+
+        # Check for NO intersection, if not, they intersect
+        if not (q2 < b0 or q0 > b2 or q1 > b3 or q3 < b1):
+            return True
+
+    return False

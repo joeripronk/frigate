@@ -163,11 +163,23 @@ def detect(
         region,
     )
 
-    for d in converted:
-        # apply object filters
-        if is_object_filtered(d, objects_to_track, object_filters):
-            continue
-        detections.append(d)
+    if converted:
+        # Batch object filtering using Cython-accelerated version
+        labels = [d[0] for d in converted]
+        scores = [d[1] for d in converted]
+        boxes = [d[2] for d in converted]
+        areas = [d[3] for d in converted]
+        ratios = [d[4] for d in converted]
+
+        from frigate.detectors.detection_cython import is_object_filtered_batch
+
+        filtered = is_object_filtered_batch(
+            labels, scores, boxes, areas, ratios, objects_to_track, object_filters
+        )
+
+        for i, d in enumerate(converted):
+            if not filtered[i]:
+                detections.append(d)
     return detections
 
 
