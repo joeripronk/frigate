@@ -3,14 +3,22 @@ Setup script for building Frigate's Cython extensions.
 Run: python3 setup_cython.py build_ext --inplace
 """
 
-from setuptools import setup, Extension
-from Cython.Build import cythonize
 import numpy as np
+from Cython.Build import cythonize
+from setuptools import setup
 
 # Cythonize all .pyx files with compiler directives
 setup(
     name="frigate-cython",
-    packages=["frigate.util", "frigate.embeddings", "frigate.events", "frigate.motion"],
+    packages=[
+        "frigate.util",
+        "frigate.embeddings",
+        "frigate.events",
+        "frigate.motion",
+        "frigate.video",
+        "frigate.track",
+        "frigate.record",
+    ],
     ext_modules=cythonize(
         [
             "frigate/util/image_cython.pyx",
@@ -21,6 +29,8 @@ setup(
             "frigate/detectors/detection_cython.pyx",
             "frigate/record/record_cython.pyx",
             "frigate/motion/motion_cython.pyx",
+            "frigate/video/detect_cython.pyx",
+            "frigate/track/tracking_cython.pyx",
         ],
         language_level=3,
         compiler_directives={

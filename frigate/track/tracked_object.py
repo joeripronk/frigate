@@ -24,8 +24,8 @@ from frigate.util.image import (
     is_better_thumbnail,
 )
 from frigate.util.object_cython import (
+    cython_batch_zone_check,
     cython_find_best_object,
-    cython_point_in_polygon,
 )
 from frigate.util.velocity import calculate_real_world_speed
 
@@ -143,8 +143,7 @@ class TrackedObject:
 
         # calculate if this is a false positive
         self.computed_score = self.compute_score()
-        if self.computed_score > self.top_score:
-            self.top_score = self.computed_score
+        self.top_score = max(self.top_score, self.computed_score)
         self.false_positive = self._is_false_positive()
         self.active = self.is_active()
 
@@ -186,6 +185,40 @@ class TrackedObject:
         in_loitering_zone = False
         in_speed_zone = False
 
+        # Pre-extract zone data for batch Cython point-in-polygon check
+        zone_names = []
+        zone_contours = []
+        zone_enabled = []
+        zone_inertia = []
+        zone_loitering_time = []
+        zone_speed_threshold = []
+        zone_has_distances = []
+
+        for name, zone in self.camera_config.zones.items():
+            zone_names.append(name)
+            zone_contours.append(zone.contour)
+            zone_enabled.append(zone.enabled)
+            zone_inertia.append(zone.inertia)
+            zone_loitering_time.append(zone.loitering_time)
+            zone_speed_threshold.append(zone.speed_threshold)
+            zone_has_distances.append(zone.distances is not None and len(zone.distances) > 0)
+
+        # Batch Cython point-in-polygon check for all zones
+        if zone_names:
+            zone_results = cython_batch_zone_check(
+                bottom_center[0],
+                bottom_center[1],
+                zone_contours,
+                zone_enabled,
+                zone_inertia,
+                zone_loitering_time,
+                zone_speed_threshold,
+                zone_has_distances,
+                self.zone_presence,
+            )
+        else:
+            zone_results = {}
+
         # check each zone
         for name, zone in self.camera_config.zones.items():
             # skip disabled zones
@@ -195,11 +228,14 @@ class TrackedObject:
             # if the zone is not for this object type, skip
             if len(zone.objects) > 0 and obj_data["label"] not in zone.objects:
                 continue
-            contour = zone.contour
-            zone_score = self.zone_presence.get(name, 0) + 1
 
-            # Cython-accelerated point-in-polygon test
-            if cython_point_in_polygon(contour, bottom_center[0], bottom_center[1]):
+            # Get pre-computed zone check result
+            idx = zone_names.index(name)
+            result = zone_results.get(str(idx), {})
+            in_zone = result.get("in_zone", False)
+            zone_score = result.get("zone_score", self.zone_presence.get(name, 0) + 1)
+
+            if in_zone:
                 # if the object passed the filters once, dont apply again
                 if name in self.current_zones or not zone_filtered(self, zone.filters):
                     # Calculate speed first if this is a speed zone
@@ -250,7 +286,7 @@ class TrackedObject:
 
                         logger.debug(
                             f"Camera: {self.camera_config.name}, tracked object ID: {self.obj_data['id']}, "
-                            f"zone: {name}, pixel velocity: {str(tuple(np.round(self.obj_data['estimate_velocity']).flatten().astype(int)))}, "
+                            f"zone: {name}, pixel velocity: {tuple(np.round(self.obj_data['estimate_velocity']).flatten().astype(int))!s}, "
                             f"speed magnitude: {speed_magnitude}, velocity angle: {self.velocity_angle}, "
                             f"estimated speed: {self.current_estimated_speed:.1f}, "
                             f"average speed: {self.average_estimated_speed:.1f}, "
@@ -291,9 +327,8 @@ class TrackedObject:
                     else:
                         self.zone_presence[name] = zone_score
             else:
-                # once an object has a zone inertia of 3+ it is not checked anymore
-                if 0 < zone_score < zone.inertia:
-                    self.zone_presence[name] = zone_score - 1
+                # Store the pre-computed zone score from batch check
+                self.zone_presence[name] = zone_score
 
             # Reset speed if not in speed zone
             if zone.distances and name not in current_zones:
@@ -304,8 +339,7 @@ class TrackedObject:
 
         # maintain attributes
         for attr in obj_data["attributes"]:
-            if self.attributes[attr["label"]] < attr["score"]:
-                self.attributes[attr["label"]] = attr["score"]
+            self.attributes[attr["label"]] = max(self.attributes[attr["label"]], attr["score"])
 
         # populate the sub_label for object with highest scoring logo
         if self.obj_data["label"] in ["car", "motorcycle", "package", "person"]:

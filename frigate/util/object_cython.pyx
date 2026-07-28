@@ -542,3 +542,120 @@ def cython_intersects_any(list boxes, object query_box):
             return True
 
     return False
+
+
+def cython_batch_zone_check(
+    double px,
+    double py,
+    object zone_contours,
+    object zone_enabled,
+    object zone_inertia,
+    object zone_loitering_time,
+    object zone_speed_threshold,
+    object zone_has_distances,
+    object current_zone_presence,
+):
+    """Batch check multiple zones for point containment.
+
+    Replaces the Python loop in tracked_object.check_zones() that
+    iterates over all zones and calls cython_point_in_polygon() per zone.
+
+    This function processes all zones in a single Cython pass,
+    checking point-in-polygon for each zone and returning results.
+
+    Args:
+        px: X coordinate of point to test
+        py: Y coordinate of point to test
+        zone_contours: List of zone contour arrays (numpy arrays or lists of [x,y])
+        zone_enabled: List of bools indicating enabled zones
+        zone_inertia: List of inertia values (int)
+        zone_loitering_time: List of loitering times (int)
+        zone_speed_threshold: List of speed thresholds (float or None)
+        zone_has_distances: List of bools indicating if zone has distances
+        current_zone_presence: Dict of current zone presence scores
+
+    Returns:
+        Dict mapping zone index to:
+            - 'in_zone': bool (point is inside polygon)
+            - 'zone_score': int (new presence score)
+            - 'inertia': int (zone inertia threshold)
+            - 'is_speed_zone': bool (zone has distance calculations)
+    """
+    cdef:
+        dict results = {}
+        int n = len(zone_contours)
+        int i
+        bint in_z
+        int zone_score
+
+    for i in range(n):
+        if not zone_enabled[i]:
+            continue
+
+        # Check point in polygon for this zone
+        in_z = cython_point_in_polygon(zone_contours[i], px, py)
+
+        # Calculate zone score
+        prev_score = current_zone_presence.get(str(i), 0)
+        if in_z:
+            zone_score = prev_score + 1
+        else:
+            # Once an object has a zone inertia of 3+, it is not checked anymore
+            if 0 < prev_score < zone_inertia[i]:
+                zone_score = prev_score - 1
+            else:
+                zone_score = prev_score
+
+        results[str(i)] = {
+            "in_zone": in_z,
+            "zone_score": zone_score,
+            "inertia": zone_inertia[i],
+            "is_speed_zone": zone_has_distances[i],
+            "loitering_time": zone_loitering_time[i],
+            "speed_threshold": zone_speed_threshold[i],
+        }
+
+    return results
+
+
+def cython_batch_zone_check_fast(
+    double px,
+    double py,
+    object zone_contours,
+    object zone_enabled,
+    object zone_inertia,
+):
+    """Fast batch zone check returning only presence and scores.
+
+    Optimized version that returns only the essential zone check results.
+
+    Args:
+        px: X coordinate of point
+        py: Y coordinate of point
+        zone_contours: List of zone contour arrays
+        zone_enabled: List of bools
+        zone_inertia: List of inertia values
+
+    Returns:
+        Tuple of (zone_scores_list, in_zone_bools)
+        - zone_scores_list: List of zone scores (index=i corresponds to zone i)
+        - in_zone_bools: List of booleans (index=i corresponds to zone i)
+    """
+    cdef:
+        list scores = []
+        list in_zones = []
+        int n = len(zone_contours)
+        int i
+        bint in_z
+
+    for i in range(n):
+        if not zone_enabled[i]:
+            scores.append(0)
+            in_zones.append(False)
+            continue
+
+        in_z = cython_point_in_polygon(zone_contours[i], px, py)
+        scores.append(in_z)
+        in_zones.append(in_z)
+
+    return (scores, in_zones)

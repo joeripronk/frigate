@@ -50,6 +50,7 @@ from frigate.util.object import (
 )
 from frigate.util.process import FrigateProcess
 from frigate.util.time import get_tomorrow_at_time
+from frigate.video.detect_cython import cython_filter_detections_by_label
 
 logger = logging.getLogger(__name__)
 
@@ -327,25 +328,21 @@ def process_frames(
                 stationary_object_ids = []
             else:
                 stationary_frame_counter += 1
+                motion_boxes_for_check = (
+                    [] if motion_detector.is_calibrating() else motion_boxes
+                )
                 stationary_object_ids = [
                     obj["id"]
                     for obj in object_tracker.tracked_objects.values()
-                    # if it has exceeded the stationary threshold
                     if obj["motionless_count"]
                     >= camera_config.detect.stationary.threshold
-                    # and it hasn't disappeared
                     and object_tracker.disappeared[obj["id"]] == 0
-                    # and it doesn't overlap with any current motion boxes when not calibrating
-                    and not intersects_any(
-                        obj["box"],
-                        [] if motion_detector.is_calibrating() else motion_boxes,
-                    )
+                    and not intersects_any(obj["box"], motion_boxes_for_check)
                 ]
 
             # get tracked object boxes that aren't stationary
             tracked_object_boxes = [
                 (
-                    # use existing object box for stationary objects
                     obj["estimate"]
                     if obj["motionless_count"]
                     < camera_config.detect.stationary.threshold
@@ -413,6 +410,7 @@ def process_frames(
 
             # resize regions and detect
             # seed with stationary objects
+            stationary_set = set(stationary_object_ids)
             detections = [
                 (
                     obj["label"],
@@ -423,7 +421,7 @@ def process_frames(
                     obj["region"],
                 )
                 for obj in object_tracker.tracked_objects.values()
-                if obj["id"] in stationary_object_ids
+                if obj["id"] in stationary_set
             ]
 
             for region in regions:
@@ -443,9 +441,9 @@ def process_frames(
 
             # if detection was run on this frame, consolidate
             if len(regions) > 0:
-                tracked_detections = [
-                    d for d in consolidated_detections if d[0] not in all_attributes
-                ]
+                tracked_detections = cython_filter_detections_by_label(
+                    consolidated_detections, all_attributes
+                )
                 # now that we have refined our detections, we need to track objects
                 object_tracker.match_and_update(
                     frame_name, frame_time, tracked_detections
@@ -459,15 +457,16 @@ def process_frames(
         for obj in object_tracker.tracked_objects.values():
             detections[obj["id"]] = {**obj, "attributes": []}
 
-        # assign each detected attribute to the best matching object.
+         # assign each detected attribute to the best matching object.
         # iterate consolidated_detections once so attributes that appear under
         # multiple parent labels in attributes_map (e.g. license_plate is in
         # both "car" and "motorcycle") are not appended more than once
         all_objects: list[dict[str, Any]] = object_tracker.tracked_objects.values()
         detected_attributes = [
             TrackedObjectAttribute(d)
-            for d in consolidated_detections
-            if d[0] in all_attributes
+            for d in cython_filter_detections_by_label(
+                consolidated_detections, all_attributes
+            )
         ]
         for attribute in detected_attributes:
             filtered_objects = filter(

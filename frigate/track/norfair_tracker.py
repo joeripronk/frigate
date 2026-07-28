@@ -717,7 +717,7 @@ class NorfairTracker(ObjectTracker):
             )
             frame = Drawer.text(
                 frame,
-                f"{obj.id}: {str(obj.last_distance)}",
+                f"{obj.id}: {obj.last_distance!s}",
                 position=text_anchor,
                 size=None,
                 color=(255, 0, 0),
