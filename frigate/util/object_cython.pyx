@@ -483,7 +483,7 @@ def cython_median_of_boxes(list boxes):
     return list(area_box_pairs[mid][1])
 
 
-def cython_inside_any(list boxes, list query_box):
+def cython_inside_any(list boxes, object query_box):
     """Check if query_box is inside any box in boxes list.
 
     Args:
@@ -513,7 +513,7 @@ def cython_inside_any(list boxes, list query_box):
     return False
 
 
-def cython_intersects_any(list boxes, list query_box):
+def cython_intersects_any(list boxes, object query_box):
     """Check if query_box intersects any box in boxes list.
 
     Args:
