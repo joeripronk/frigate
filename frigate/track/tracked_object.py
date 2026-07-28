@@ -20,11 +20,13 @@ from frigate.detectors.detector_config import ModelConfig
 from frigate.review.types import SeverityEnum
 from frigate.util.builtin import sanitize_float
 from frigate.util.image import (
-    area,
     get_snapshot_bytes,
     is_better_thumbnail,
 )
-from frigate.util.object import box_inside
+from frigate.util.object_cython import (
+    cython_find_best_object,
+    cython_point_in_polygon,
+)
 from frigate.util.velocity import calculate_real_world_speed
 
 logger = logging.getLogger(__name__)
@@ -196,8 +198,8 @@ class TrackedObject:
             contour = zone.contour
             zone_score = self.zone_presence.get(name, 0) + 1
 
-            # check if the object is in the zone
-            if cv2.pointPolygonTest(contour, bottom_center, False) >= 0:
+            # Cython-accelerated point-in-polygon test
+            if cython_point_in_polygon(contour, bottom_center[0], bottom_center[1]):
                 # if the object passed the filters once, dont apply again
                 if name in self.current_zones or not zone_filtered(self, zone.filters):
                     # Calculate speed first if this is a speed zone
@@ -592,32 +594,11 @@ class TrackedObjectAttribute:
 
     def find_best_object(self, objects: list[dict[str, Any]]) -> str | None:
         """Find the best attribute for each object and return its ID."""
-        best_object_area: float | None = None
-        best_object_id: str | None = None
-        best_object_label: str | None = None
+        boxes = [obj["box"] for obj in objects]
+        ids = [obj["id"] for obj in objects]
+        labels = [obj["label"] for obj in objects]
 
-        for obj in objects:
-            if not box_inside(obj["box"], self.box):
-                continue
-
-            object_area = area(obj["box"])
-
-            # if multiple objects have the same attribute then they
-            # are overlapping, it is most likely that the smaller object
-            # is the one with the attribute
-            if best_object_area is None:
-                best_object_area = object_area
-                best_object_id = obj["id"]
-                best_object_label = obj["label"]
-            else:
-                if best_object_label == obj["label"]:
-                    # if multiple objects of the same type are overlapping
-                    # then the attribute will not be assigned
-                    return None
-                elif object_area < best_object_area:
-                    # if a car and person are overlapping then assign the label to the smaller object (which should be the person)
-                    best_object_area = object_area
-                    best_object_id = obj["id"]
-                    best_object_label = obj["label"]
-
-        return best_object_id
+        best_id, _best_label = cython_find_best_object(
+            boxes, ids, labels, self.box
+        )
+        return best_id

@@ -46,7 +46,6 @@ from frigate.util.object import (
     get_min_region_size,
     get_startup_regions,
     intersects_any,
-    is_object_filtered,
     reduce_detections,
 )
 from frigate.util.process import FrigateProcess

@@ -20,17 +20,12 @@ from frigate.const import (
 from frigate.detectors.detector_config import PixelFormatEnum
 from frigate.models import Event, Regions, Timeline
 from frigate.util.image import (
-    area,
     calculate_region,
     clipped,
-    intersection,
-    intersection_over_union,
     yuv_region_2_bgr,
     yuv_region_2_rgb,
     yuv_region_2_yuv,
 )
-
-from frigate.const import LABEL_CONSOLIDATION_DEFAULT, LABEL_CONSOLIDATION_MAP
 
 logger = logging.getLogger(__name__)
 
@@ -321,34 +316,28 @@ def reduce_boxes(boxes, iou_threshold=0.0):
 
 def average_boxes(boxes: list[list[int, int, int, int]]) -> list[int, int, int, int]:
     """Return a box that is the average of a list of boxes."""
-    n = len(boxes)
-    return [
-        sum(box[0] for box in boxes) / n,
-        sum(box[1] for box in boxes) / n,
-        sum(box[2] for box in boxes) / n,
-        sum(box[3] for box in boxes) / n,
-    ]
+    from frigate.util.object_cython import cython_average_boxes
+
+    return cython_average_boxes(boxes)
 
 
 def median_of_boxes(boxes: list[list[int, int, int, int]]) -> list[int, int, int, int]:
     """Return a box that is the median of a list of boxes."""
-    sorted_boxes = sorted(boxes, key=lambda x: area(x))
-    return sorted_boxes[int(len(sorted_boxes) / 2.0)]
+    from frigate.util.object_cython import cython_median_of_boxes
+
+    return cython_median_of_boxes(boxes)
 
 
 def intersects_any(box_a, boxes):
-    for box in boxes:
-        if box_overlaps(box_a, box):
-            return True
-    return False
+    from frigate.util.object_cython import cython_intersects_any
+
+    return cython_intersects_any(boxes, box_a)
 
 
 def inside_any(box_a, boxes):
-    for box in boxes:
-        # check if box_a is inside of box
-        if box_inside(box, box_a):
-            return True
-    return False
+    from frigate.util.object_cython import cython_inside_any
+
+    return cython_inside_any(boxes, box_a)
 
 
 def get_cluster_boundary(box, min_region):

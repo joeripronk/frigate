@@ -311,6 +311,107 @@ cdef list _cython_calculate_region(
     return [x_offset, y_offset, x_offset + size, y_offset + size]
 
 
+def cython_find_best_object(
+    list objects_boxes,
+    list objects_ids,
+    list objects_labels,
+    list query_box,
+):
+    """Find the best matching object for attribute assignment.
+
+    Cython version of TrackedObject.find_best_object(). Iterates over
+    candidate objects and finds the smallest one that contains the query box.
+
+    Args:
+        objects_boxes: List of [x_min, y_min, x_max, y_max] boxes
+        objects_ids: List of object IDs (same order as boxes)
+        objects_labels: List of object labels (same order as boxes)
+        query_box: [x_min, y_min, x_max, y_max] to match against
+
+    Returns:
+        Tuple of (best_object_id, best_object_label) or (None, None)
+    """
+    cdef int n = len(objects_boxes)
+    if n == 0:
+        return (None, None)
+
+    cdef int qx0, qy0, qx1, qy1
+    qx0, qy0, qx1, qy1 = query_box
+
+    cdef int i
+    cdef int bx0, by0, bx1, by1
+    cdef double object_area
+    cdef double best_area = -1.0
+    cdef str best_id = None
+    cdef str best_label = None
+    cdef str prev_label = None
+
+    for i in range(n):
+        bx = objects_boxes[i]
+        bx0, by0, bx1, by1 = bx
+
+        # Check if query_box is inside obj box (query is inside obj)
+        if not (qx0 >= bx0 and qy0 >= by0 and qx1 <= bx1 and qy1 <= by1):
+            continue
+
+        object_area = (bx1 - bx0) * (by1 - by0)
+
+        if best_id is None:
+            best_area = object_area
+            best_id = objects_ids[i]
+            best_label = objects_labels[i]
+            prev_label = objects_labels[i]
+        else:
+            if prev_label == objects_labels[i]:
+                return (None, None)
+            elif object_area < best_area:
+                best_area = object_area
+                best_id = objects_ids[i]
+                best_label = objects_labels[i]
+                prev_label = objects_labels[i]
+
+    return (best_id, best_label)
+
+
+def cython_point_in_polygon(list polygon, double px, double py):
+    """Check if a point is inside a polygon using the ray casting algorithm.
+
+    Cython replacement for cv2.pointPolygonTest for single point checks.
+    Much faster when called repeatedly in a loop (e.g., per object per zone).
+
+    Args:
+        polygon: List of [x, y] points defining the polygon
+        px: X coordinate of the point
+        py: Y coordinate of the point
+
+    Returns:
+        True if point is inside polygon, False otherwise
+    """
+    cdef int n = len(polygon)
+    if n < 3:
+        return False
+
+    cdef int j = n - 1
+    cdef int i
+    cdef double px0, py0, px1, py1
+    cdef int result = 0
+
+    for i in range(n):
+        px0 = polygon[i][0]
+        py0 = polygon[i][1]
+        px1 = polygon[j][0]
+        py1 = polygon[j][1]
+
+        if ((py0 > py) != (py1 > py)) and (
+            px < (px1 - px0) * (py - py0) / (py1 - py0) + px0
+        ):
+            result = not result
+
+        j = i
+
+    return result
+
+
 def cython_average_boxes(list boxes):
     """Compute the average box from a list of boxes.
 
@@ -382,7 +483,37 @@ def cython_median_of_boxes(list boxes):
     return list(area_box_pairs[mid][1])
 
 
-def cython_intersects_any_vectorized(list boxes, list query_box):
+def cython_inside_any(list boxes, list query_box):
+    """Check if query_box is inside any box in boxes list.
+
+    Args:
+        boxes: List of [x_min, y_min, x_max, y_max] boxes (outer boxes)
+        query_box: [x_min, y_min, x_max, y_max] to check (inner box)
+
+    Returns:
+        True if query_box is inside any box in the list
+    """
+    cdef int n = len(boxes)
+    if n == 0:
+        return False
+
+    cdef int qx0, qy0, qx1, qy1
+    qx0, qy0, qx1, qy1 = query_box
+
+    cdef int i
+    cdef int b0, b1, b2, b3
+
+    for i in range(n):
+        b = boxes[i]
+        b0, b1, b2, b3 = b
+
+        if qx0 >= b0 and qy0 >= b1 and qx1 <= b2 and qy1 <= b3:
+            return True
+
+    return False
+
+
+def cython_intersects_any(list boxes, list query_box):
     """Check if query_box intersects any box in boxes list.
 
     Args:
