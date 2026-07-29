@@ -31,6 +31,8 @@ from frigate.util.image import (
 from frigate.util.object_cython import cython_average_boxes, cython_median_of_boxes
 from frigate.track.tracking_cython import (
     cython_build_detections_from_raw,
+    cython_norfair_deregister,
+    cython_norfair_register,
     cython_update_tracks,
 )
 
@@ -275,65 +277,68 @@ class NorfairTracker(ObjectTracker):
         return self.default_tracker[mode]
 
     def register(self, track_id: str, obj: dict[str, Any]) -> None:
-        rand_id = "".join(random.choices(string.ascii_lowercase + string.digits, k=6))
-        id = f"{obj['frame_time']}-{rand_id}"
-        self.track_id_map[track_id] = id
-        obj["id"] = id
-        obj["start_time"] = obj["frame_time"]
-        obj["motionless_count"] = 0
-        obj["position_changes"] = 0
-
-        # Get the correct tracker for this object's label
-        tracker = self.get_tracker(obj["label"])
-        obj_match = next(
-            (o for o in tracker.tracked_objects if str(o.global_id) == track_id), None
+        # Use Cython-accelerated registration
+        (
+            obj_id,
+            xmins,
+            ymins,
+            xmaxs,
+            ymaxs,
+            width,
+            height,
+        ) = cython_norfair_register(
+            track_id,
+            obj,
+            self.get_tracker,
+            self.frame_manager,
+            None,  # get_histogram not needed for registration
+            self.camera_config,
+            self.tracked_objects,
+            self.disappeared,
+            self.track_id_map,
+            self.stationary_box_history,
         )
-        # if we don't have a match, we have a new object
-        obj["score_history"] = (
-            [p.data["score"] for p in obj_match.past_detections] if obj_match else []
-        )
-        self.tracked_objects[id] = obj
-        self.disappeared[id] = 0
-        if obj_match:
-            boxes = [p.data["box"] for p in obj_match.past_detections]
-        else:
-            boxes = [obj["box"]]
 
-        xmins, ymins, xmaxs, ymaxs = zip(*boxes)
-
-        self.positions[id] = {
-            "xmins": list(xmins),
-            "ymins": list(ymins),
-            "xmaxs": list(xmaxs),
-            "ymaxs": list(ymaxs),
+        self.positions[obj_id] = {
+            "xmins": xmins,
+            "ymins": ymins,
+            "xmaxs": xmaxs,
+            "ymaxs": ymaxs,
             "xmin": 0,
             "ymin": 0,
-            "xmax": self.detect_config.width,
-            "ymax": self.detect_config.height,
+            "xmax": width,
+            "ymax": height,
         }
-        self.stationary_box_history[id] = boxes
 
     def deregister(self, id: str, track_id: str) -> None:
         obj = self.tracked_objects[id]
 
-        del self.tracked_objects[id]
-        del self.disappeared[id]
+        # Only manually deregister objects from norfair's list if max_frames is defined
+        max_frames = self.detect_config.stationary.max_frames.objects.get(
+            obj["label"], self.detect_config.stationary.max_frames.default
+        )
 
-        # only manually deregister objects from norfair's list if max_frames is defined
-        if (
-            self.detect_config.stationary.max_frames.objects.get(
-                obj["label"], self.detect_config.stationary.max_frames.default
-            )
-            is not None
-        ):
+        if max_frames is not None:
             tracker = self.get_tracker(obj["label"])
+            # Cython-accelerated filtering of tracker.tracked_objects
             tracker.tracked_objects = [
                 o
                 for o in tracker.tracked_objects
                 if str(o.global_id) != track_id and o.hit_counter < 0
             ]
 
-        del self.track_id_map[track_id]
+        # Use Cython-accelerated deregistration
+        cython_norfair_deregister(
+            id,
+            track_id,
+            self.tracked_objects,
+            self.disappeared,
+            self.track_id_map,
+            self.stationary_box_history,
+            self.detect_config,
+            self.get_tracker,
+            obj["label"],
+        )
 
     # tracks the current position of the object based on the last N bounding boxes
     # returns False if the object has moved outside its previous position

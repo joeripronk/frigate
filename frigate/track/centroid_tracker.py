@@ -1,3 +1,4 @@
+import logging
 import random
 import string
 from collections import defaultdict
@@ -8,7 +9,15 @@ from scipy.spatial import distance as dist
 
 from frigate.config import DetectConfig
 from frigate.track import ObjectTracker
+from frigate.track.tracking_cython import (
+    cython_centroid_build_centroids,
+    cython_centroid_compute_assignment,
+    cython_centroid_match_and_update,
+    cython_update_frame_times_and_motionless,
+)
 from frigate.util.image import intersection_over_union
+
+logger = logging.getLogger(__name__)
 
 
 class CentroidTracker(ObjectTracker):
@@ -131,11 +140,12 @@ class CentroidTracker(ObjectTracker):
         self.tracked_objects[id].update(new_obj)
 
     def update_frame_times(self, frame_name: str, frame_time: float) -> None:
-        for id in list(self.tracked_objects.keys()):
-            self.tracked_objects[id]["frame_time"] = frame_time
-            self.tracked_objects[id]["motionless_count"] += 1
-            if self.is_expired(id):
-                self.deregister(id)
+        cython_update_frame_times_and_motionless(
+            self.tracked_objects,
+            frame_time,
+            self.is_expired,
+            self.deregister,
+        )
 
     def match_and_update(
         self,
@@ -143,105 +153,82 @@ class CentroidTracker(ObjectTracker):
         frame_time: float,
         detections: list[tuple[Any, Any, Any, Any, Any, Any]],
     ) -> None:
-        # group by name
-        detection_groups = defaultdict(lambda: [])
-        for det in detections:
-            detection_groups[det[0]].append(
-                {
-                    "label": det[0],
-                    "score": det[1],
-                    "box": det[2],
-                    "area": det[3],
-                    "ratio": det[4],
-                    "region": det[5],
-                    "frame_time": frame_time,
-                }
-            )
-
-        # update any tracked objects with labels that are not
-        # seen in the current objects and deregister if needed
-        for obj in list(self.tracked_objects.values()):
-            if obj["label"] not in detection_groups:
-                if self.disappeared[obj["id"]] >= self.max_disappeared:
-                    self.deregister(obj["id"])
-                else:
-                    self.disappeared[obj["id"]] += 1
+        # Use Cython for detection grouping and disappeared counting
+        detection_groups, expired_ids = cython_centroid_match_and_update(
+            detections,
+            self.tracked_objects,
+            self.disappeared,
+            self.max_disappeared,
+            self.register,
+            self.update,
+            self.deregister,
+            self.is_expired,
+            frame_time,
+        )
 
         if len(detections) == 0:
             return
 
-        # track objects for each label type
+        # Process each label group with Cython-accelerated assignment
         for label, group in detection_groups.items():
             current_objects = [
                 o for o in self.tracked_objects.values() if o["label"] == label
             ]
             current_ids = [o["id"] for o in current_objects]
-            current_centroids = np.array([o["centroid"] for o in current_objects])
 
-            # compute centroids of new objects
+            if len(current_objects) == 0:
+                # No existing objects for this label, register all new detections
+                for obj in group:
+                    self.register(obj)
+                continue
+
+            # Compute centroids using Cython
+            current_centroids = cython_centroid_build_centroids(current_objects)
+
+            # Compute centroids of new objects in Python (still fast)
             for obj in group:
                 centroid_x = int((obj["box"][0] + obj["box"][2]) / 2.0)
                 centroid_y = int((obj["box"][1] + obj["box"][3]) / 2.0)
                 obj["centroid"] = (centroid_x, centroid_y)
 
-            if len(current_objects) == 0:
-                for index, obj in enumerate(group):
+            new_centroids = cython_centroid_build_centroids(group)
+
+            # Compute assignment using Cython
+            rows, cols = cython_centroid_compute_assignment(
+                current_centroids, new_centroids
+            )
+
+            if len(rows) == 0:
+                # No matches found, register all as new, deregister all existing
+                for obj in group:
                     self.register(obj)
-                continue
-
-            new_centroids = np.array([o["centroid"] for o in group])
-
-            # compute the distance between each pair of tracked
-            # centroids and new centroids, respectively -- our
-            # goal will be to match each current centroid to a new
-            # object centroid
-            D = dist.cdist(current_centroids, new_centroids)
-
-            # in order to perform this matching we must (1) find the smallest
-            # value in each row (i.e. the distance from each current object to
-            # the closest new object) and then (2) sort the row indexes based
-            # on their minimum values so that the row with the smallest
-            # distance (the best match) is at the *front* of the index list
-            rows = D.min(axis=1).argsort()
-
-            # next, we determine which new object each existing object matched
-            # against, and apply the same sorting as was applied previously
-            cols = D.argmin(axis=1)[rows]
-
-            # many current objects may register with each new object, so only
-            # match the closest ones.  unique returns the indices of the first
-            # occurrences of each value, and because the rows are sorted by
-            # distance, this will be index of the closest match
-            _, index = np.unique(cols, return_index=True)
-            rows = rows[index]
-            cols = cols[index]
-
-            # loop over the combination of the (row, column) index tuples
-            for row, col in zip(rows, cols):
-                # grab the object ID for the current row, set its new centroid,
-                # and reset the disappeared counter
-                objectID = current_ids[row]
-                self.update(objectID, group[col])
-
-            # compute the row and column indices we have NOT yet examined
-            unusedRows = set(range(D.shape[0])).difference(rows)
-            unusedCols = set(range(D.shape[1])).difference(cols)
-
-            # in the event that the number of object centroids is
-            # equal or greater than the number of input centroids
-            # we need to check and see if some of these objects have
-            # potentially disappeared
-            if D.shape[0] >= D.shape[1]:
-                for row in unusedRows:
-                    id = current_ids[row]
-
-                    if self.disappeared[id] >= self.max_disappeared:
+                for row_idx in range(len(current_ids)):
+                    id = current_ids[row_idx]
+                    if self.disappeared.get(id, 0) >= self.max_disappeared:
                         self.deregister(id)
                     else:
-                        self.disappeared[id] += 1
-            # if the number of input centroids is greater
-            # than the number of existing object centroids we need to
-            # register each new input centroid as a trackable object
-            else:
-                for col in unusedCols:
+                        self.disappeared[id] = self.disappeared.get(id, 0) + 1
+                continue
+
+            # Apply matches using Cython
+            unused_rows = set(range(len(current_ids))).difference(rows)
+            unused_cols = set(range(len(group))).difference(cols)
+
+            # Update matched objects
+            for row, col in zip(rows, cols):
+                object_id = current_ids[row]
+                self.update(object_id, group[col])
+
+            # Handle unmatched current objects (disappeared)
+            for row in unused_rows:
+                if row < len(current_ids):
+                    id = current_ids[row]
+                    if self.disappeared.get(id, 0) >= self.max_disappeared:
+                        self.deregister(id)
+                    else:
+                        self.disappeared[id] = self.disappeared.get(id, 0) + 1
+
+            # Handle unmatched new detections (register as new)
+            for col in unused_cols:
+                if col < len(group):
                     self.register(group[col])
