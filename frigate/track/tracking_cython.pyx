@@ -545,7 +545,9 @@ def cython_norfair_register(
     else:
         box = obj["box"]
         past_boxes = [box]
+        score_history = []
 
+    obj["score_history"] = score_history
     tracked_objects[obj_id] = obj
     disappeared[obj_id] = 0
 
