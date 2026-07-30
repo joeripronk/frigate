@@ -12,6 +12,21 @@ from frigate.const import MODEL_CACHE_DIR
 
 logger = logging.getLogger(__name__)
 
+try:
+    from frigate.util.model_cython import (
+        cython_post_process_dfine,
+        cython_post_process_nms_yolo,
+        cython_post_process_rfdetr,
+        cython_post_process_yolox,
+    )
+    from frigate.util.model_cython import (
+        cython_post_process_multipart_yolo as cython_post_process_yolo,
+    )
+
+    CYTHON_AVAILABLE = True
+except ImportError:
+    CYTHON_AVAILABLE = False
+
 
 ### Post Processing
 
@@ -19,6 +34,9 @@ logger = logging.getLogger(__name__)
 def post_process_dfine(
     tensor_output: np.ndarray, width: int, height: int
 ) -> np.ndarray:
+    if CYTHON_AVAILABLE:
+        return cython_post_process_dfine(tensor_output, width, height)
+
     class_ids = tensor_output[0][tensor_output[2] > 0.4]
     boxes = tensor_output[1][tensor_output[2] > 0.4]
     scores = tensor_output[2][tensor_output[2] > 0.4]
@@ -46,7 +64,14 @@ def post_process_dfine(
     return detections
 
 
-def post_process_rfdetr(tensor_output: list[np.ndarray, np.ndarray]) -> np.ndarray:
+def post_process_rfdetr(
+    tensor_output: list[np.ndarray, np.ndarray],
+    width: int = 0,
+    height: int = 0,
+) -> np.ndarray:
+    if CYTHON_AVAILABLE:
+        return cython_post_process_rfdetr(tensor_output, width, height)
+
     boxes = tensor_output[0]
     raw_scores = tensor_output[1]
 
@@ -228,8 +253,12 @@ def __post_process_nms_yolo(predictions: np.ndarray, width, height) -> np.ndarra
 
 def post_process_yolo(output: list[np.ndarray], width: int, height: int) -> np.ndarray:
     if len(output) > 1:
+        if CYTHON_AVAILABLE:
+            return cython_post_process_yolo(output, width, height)
         return __post_process_multipart_yolo(output, width, height)
     else:
+        if CYTHON_AVAILABLE:
+            return cython_post_process_nms_yolo(output[0], width, height)
         return __post_process_nms_yolo(output[0], width, height)
 
 
@@ -240,6 +269,11 @@ def post_process_yolox(
     grids: np.ndarray,
     expanded_strides: np.ndarray,
 ) -> np.ndarray:
+    if CYTHON_AVAILABLE:
+        return cython_post_process_yolox(
+            predictions, width, height, grids, expanded_strides
+        )
+
     predictions[..., :2] = (predictions[..., :2] + grids) * expanded_strides
     predictions[..., 2:4] = np.exp(predictions[..., 2:4]) * expanded_strides
 

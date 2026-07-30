@@ -19,10 +19,12 @@ setup(
         "frigate.track",
         "frigate.record",
         "frigate.data_processing.common.face",
+        "frigate.data_processing.common.license_plate",
     ],
     ext_modules=cythonize(
         [
             "frigate/util/image_cython.pyx",
+            "frigate/util/model_cython.pyx",
             "frigate/util/object_cython.pyx",
             "frigate/util/multiprocessing_sync_cython.pyx",
             "frigate/embeddings/util_cython.pyx",
@@ -33,6 +35,7 @@ setup(
             "frigate/video/detect_cython.pyx",
             "frigate/track/tracking_cython.pyx",
             "frigate/data_processing/common/face/model_cython.pyx",
+            "frigate/data_processing/common/license_plate/license_plate_cython.pyx",
         ],
         language_level=3,
         compiler_directives={
