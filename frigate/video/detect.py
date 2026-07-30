@@ -31,7 +31,6 @@ from frigate.object_detection.base import RemoteObjectDetector
 from frigate.ptz.autotrack import ptz_moving_at_frame_time
 from frigate.track import ObjectTracker
 from frigate.track.norfair_tracker import NorfairTracker
-from frigate.track.tracked_object import TrackedObjectAttribute
 from frigate.util.builtin import EventsPerSecond
 from frigate.util.image import (
     FrameManager,
@@ -410,21 +409,55 @@ def process_frames(
 
             # resize regions and detect
             # seed with stationary objects (already built by cython_process_tracked_objects)
-            stationary_set = stationary_object_ids
             detections = []
 
-            for region in regions:
-                detections.extend(
-                    detect(
-                        camera_config.detect,
-                        object_detector,
-                        frame,
-                        model_config,
-                        region,
-                        camera_config.objects.track,
-                        camera_config.objects.filters,
-                    )
+            if regions:
+                # Batch detection: pack all regions into a single IPC round-trip
+                batch_results = object_detector.detect_batch(
+                    regions, frame, model_config
                 )
+
+                for i, region in enumerate(regions):
+                    region_detections = batch_results[i]
+
+                    if not region_detections:
+                        continue
+
+                    # Convert normalized boxes to frame coordinates
+                    converted = convert_detection_boxes(
+                        camera_config.detect.width,
+                        camera_config.detect.height,
+                        region[0],
+                        region[1],
+                        region[2] - region[0],
+                        region_detections,
+                        region,
+                    )
+
+                    if converted:
+                        from frigate.detectors.detection_cython import (
+                            is_object_filtered_batch,
+                        )
+
+                        labels = [d[0] for d in converted]
+                        scores = [d[1] for d in converted]
+                        boxes = [d[2] for d in converted]
+                        areas = [d[3] for d in converted]
+                        ratios = [d[4] for d in converted]
+
+                        filtered = is_object_filtered_batch(
+                            labels,
+                            scores,
+                            boxes,
+                            areas,
+                            ratios,
+                            camera_config.objects.track,
+                            camera_config.objects.filters,
+                        )
+
+                        for j, d in enumerate(converted):
+                            if not filtered[j]:
+                                detections.append(d)
 
             consolidated_detections = reduce_detections(frame_shape, detections)
 

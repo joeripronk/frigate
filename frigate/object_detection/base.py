@@ -11,6 +11,10 @@ from typing import Any
 
 import numpy as np
 import zmq
+from frigate.detectors.detection_cython import (
+    filter_from_shared_memory,
+    filter_raw_detections,
+)
 
 from frigate.comms.object_detector_signaler import (
     ObjectDetectorPublisher,
@@ -26,9 +30,8 @@ from frigate.detectors.detector_config import (
 )
 from frigate.util.builtin import EventsPerSecond, load_labels
 from frigate.util.image import SharedMemoryFrameManager, UntrackedSharedMemory
+from frigate.util.object import create_tensor_input
 from frigate.util.process import FrigateProcess
-
-from frigate.detectors.detection_cython import filter_raw_detections, filter_from_shared_memory
 
 from .util import tensor_transform
 
@@ -87,6 +90,30 @@ class BaseLocalDetector(ObjectDetector):
         return detections
 
 
+def _filter_raw_detections_keep_id(
+    raw_detections: np.ndarray, labels: dict[int, str], threshold: float
+) -> list:
+    """Filter raw detections by threshold, preserving label_id format.
+
+    Returns (label_id, score, y0, x0, y1, x1) tuples suitable for
+    convert_detection_boxes.
+    """
+    results: list = []
+    label_count = len(labels)
+    for i in range(len(raw_detections)):
+        label_id = int(raw_detections[i, 0])
+        score = float(raw_detections[i, 1])
+
+        if label_id < 0 or label_id >= label_count:
+            continue
+        if score < threshold:
+            break
+
+        results.append((label_id, score, tuple(raw_detections[i, 2:6])))
+
+    return results
+
+
 class LocalObjectDetector(BaseLocalDetector):
     def detect_raw(self, tensor_input: np.ndarray) -> np.ndarray:
         tensor_input = self._transform_input(tensor_input)
@@ -100,6 +127,10 @@ class AsyncLocalObjectDetector(BaseLocalDetector):
 
     def async_receive_output(self) -> Any:
         return self.detect_api.receive_output()
+
+
+BATCH_PREFIX = "-"
+DETECTOR_BATCH_SIZE = 16
 
 
 class DetectorRunner(FrigateProcess):
@@ -122,11 +153,20 @@ class DetectorRunner(FrigateProcess):
         self.config = config
         self.detector_config = detector_config
         self.outputs: dict[str, Any] = {}
+        self.batch_outputs: dict[str, Any] = {}
 
     def create_output_shm(self, name: str) -> None:
         out_shm = UntrackedSharedMemory(name=f"out-{name}", create=False)
         out_np: np.ndarray = np.ndarray((20, 6), dtype=np.float32, buffer=out_shm.buf)
         self.outputs[name] = {"shm": out_shm, "np": out_np}
+
+    def create_batch_output_shm(self, name: str) -> None:
+        batch_size = DETECTOR_BATCH_SIZE * 20
+        out_shm = UntrackedSharedMemory(name=f"batch-out-{name}", create=True)
+        out_np: np.ndarray = np.ndarray(
+            (batch_size, 6), dtype=np.float32, buffer=out_shm.buf
+        )
+        self.batch_outputs[name] = {"shm": out_shm, "np": out_np}
 
     def run(self) -> None:
         self.pre_run_setup(self.config.logger)
@@ -140,9 +180,60 @@ class DetectorRunner(FrigateProcess):
 
         while not self.stop_event.is_set():
             try:
-                connection_id = self.detection_queue.get(timeout=1)
+                queue_message = self.detection_queue.get(timeout=1)
             except queue.Empty:
                 continue
+
+            # Check if this is a batch message (starts with BATCH_PREFIX)
+            if queue_message.startswith(BATCH_PREFIX):
+                try:
+                    batch_str = queue_message[len(BATCH_PREFIX) :]
+                    camera_name, batch_count = batch_str.rsplit(":", 1)
+                    batch_count = int(batch_count)
+                except ValueError:
+                    logger.warning(f"Failed to parse batch message: {queue_message}")
+                    continue
+
+                if camera_name not in self.batch_outputs:
+                    self.create_batch_output_shm(camera_name)
+
+                batch_start = time.monotonic()
+                offset = 0
+                for region_idx in range(batch_count):
+                    input_frame = frame_manager.get(
+                        camera_name,
+                        (
+                            batch_count,
+                            self.detector_config.model.height,  # type: ignore[union-attr]
+                            self.detector_config.model.width,  # type: ignore[union-attr]
+                            3,
+                        ),
+                    )
+
+                    if input_frame is None:
+                        logger.warning(
+                            f"Failed to get batch frame for {camera_name} region {region_idx}"
+                        )
+                        break
+
+                    mono_start = time.monotonic()
+                    detections = object_detector.detect_raw(input_frame)
+                    duration = time.monotonic() - mono_start
+
+                    frame_manager.close(camera_name)
+                    self.batch_outputs[camera_name]["np"][
+                        offset : offset + len(detections)
+                    ] = detections
+                    offset += len(detections)
+
+                duration = time.monotonic() - batch_start
+                detector_publisher.publish(f"{camera_name}/batch")
+                self.start_time.value = 0.0
+                self.avg_speed.value = (self.avg_speed.value * 9 + duration) / 10
+                continue
+
+            # Single-region detection (existing behavior)
+            connection_id = queue_message
             input_frame = frame_manager.get(
                 connection_id,
                 (
@@ -391,13 +482,20 @@ class RemoteObjectDetector:
         self.stop_event = stop_event
         self.shm = UntrackedSharedMemory(name=self.name, create=False)
         self.np_shm: np.ndarray = np.ndarray(
-            (1, model_config.height, model_config.width, 3),
+            (DETECTOR_BATCH_SIZE, model_config.height, model_config.width, 3),
             dtype=np.uint8,
             buffer=self.shm.buf,
         )
         self.out_shm = UntrackedSharedMemory(name=f"out-{self.name}", create=False)
         self.out_np_shm: np.ndarray = np.ndarray(
             (20, 6), dtype=np.float32, buffer=self.out_shm.buf
+        )
+        batch_out_size = DETECTOR_BATCH_SIZE * 20
+        self.batch_out_shm = UntrackedSharedMemory(
+            name=f"batch-out-{self.name}", create=False
+        )
+        self.batch_out_np_shm: np.ndarray = np.ndarray(
+            (batch_out_size, 6), dtype=np.float32, buffer=self.batch_out_shm.buf
         )
         self.detector_subscriber = ObjectDetectorSubscriber(name)
 
@@ -417,7 +515,7 @@ class RemoteObjectDetector:
                 break
 
         # copy input to shared memory
-        self.np_shm[:] = tensor_input[:]
+        self.np_shm[0] = tensor_input
         self.detection_queue.put(self.name)
         result = self.detector_subscriber.check_for_update()
 
@@ -429,7 +527,52 @@ class RemoteObjectDetector:
         self.fps.update()
         return detections
 
+    def detect_batch(
+        self, regions: list[tuple[int, int, int, int]], frame, model_config: ModelConfig
+    ) -> list[list]:
+        """Run detection on multiple regions in a single IPC round-trip.
+
+        Args:
+            regions: List of (x0, y0, x1, y1) region coordinates
+            frame: Full YUV frame
+            model_config: Model configuration
+
+        Returns:
+            List of raw detection lists per region, each containing
+            (label_id, score, y0, x0, y1, x1) tuples
+        """
+        results: list = []
+
+        if self.stop_event.is_set() or not regions:
+            return results
+
+        # Pack region tensors into batch input SHM
+        for i, region in enumerate(regions):
+            tensor_input = create_tensor_input(frame, model_config, region)
+            self.np_shm[i] = tensor_input
+
+        # Send batch message: "-<camera>:<count>"
+        batch_message = f"-{self.name}:{len(regions)}"
+        self.detection_queue.put(batch_message)
+
+        # Wait for batch completion signal
+        result = self.detector_subscriber.check_for_update()
+        if result is None:
+            return results
+
+        # Read raw detections for each region from batch output SHM
+        offset = 0
+        for _ in regions:
+            region_detections = self.batch_out_np_shm[offset : offset + 20]
+            raw = _filter_raw_detections_keep_id(region_detections, self.labels, 0.4)
+            results.append(raw)
+            offset += len(raw)
+
+        self.fps.update()
+        return results
+
     def cleanup(self) -> None:
         self.detector_subscriber.stop()
         self.shm.unlink()
         self.out_shm.unlink()
+        self.batch_out_shm.unlink()
