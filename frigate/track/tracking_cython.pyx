@@ -505,7 +505,7 @@ def cython_norfair_register(
         str obj_id
         str frame_time_str
         str label
-        list box
+        object box
         int x0, y0, x1, y1
         int width, height
         object tracker
