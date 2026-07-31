@@ -63,11 +63,15 @@ except ModuleNotFoundError:
         frame_input = ops.parameter(dtype=ov.Type.u8, shape=ov.PartialShape([1, h, w, 1]), name="frame_input")
         avg_frame_input = ops.parameter(dtype=ov.Type.f32, shape=ov.PartialShape([h, w]), name="avg_frame_input")
         avg_frame_u8 = ops.convert(avg_frame_input, ov.Type.u8)
-        absdiff = ops.absdiff(frame_input, ops.expand(avg_frame_u8, [1, 1, 1, 1]))
-        threshold_node = ops.threshold(absdiff, threshold_value)
+        avg_reshaped = ops.reshape(avg_frame_u8, [h, w], False)
+        avg_expanded = ops.reshape(avg_reshaped, [1, h, w, 1], False)
+        absdiff = ops.abs(
+            ops.subtract(frame_input, avg_expanded)
+        )
+        threshold_node = ops.greater(absdiff, np.uint8(threshold_value))
         motion_model = ov.Model([threshold_node], [frame_input, avg_frame_input], "motion_detect")
         ppp = PrePostProcessor(motion_model)
-        ppp.input().tensor().set_layout(ov.Layout("NHWC"))
+        ppp.input(0).tensor().set_layout(ov.Layout("NHWC"))
         model = ppp.build()
         import os
         model_dir = os.path.dirname(model_path)
