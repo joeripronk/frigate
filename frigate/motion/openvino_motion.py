@@ -141,9 +141,11 @@ class OpenVinoMotionModel:
                 expected_shape = tuple(model_shape)
                 if frame.shape != expected_shape:
                     resized = np.zeros(expected_shape, dtype=frame.dtype)
-                    h_slice = min(frame.shape[0], expected_shape[0])
-                    w_slice = min(frame.shape[1], expected_shape[1])
-                    resized[:h_slice, :w_slice] = frame[:h_slice, :w_slice]
+                    h = min(frame.shape[0], expected_shape[0])
+                    w = min(frame.shape[1], expected_shape[1])
+                    d = min(frame.shape[2], expected_shape[2])
+                    c = min(frame.shape[3], expected_shape[3])
+                    resized[:h, :w, :d, :c] = frame[:h, :w, :d, :c]
                     copyto_inplace(self.input_tensor.data, resized)
                     tensor = self.input_tensor
                 else:
@@ -166,9 +168,11 @@ class OpenVinoMotionModel:
                 input_element_type = self.compiled_model.inputs[0].get_element_type()
                 tensor = self._ov.Tensor(input_element_type, model_input_shape)
                 resized = np.zeros(model_input_shape, dtype=frame.dtype)
-                h_slice = min(frame.shape[0], model_input_shape[0])
-                w_slice = min(frame.shape[1], model_input_shape[1])
-                resized[:h_slice, :w_slice, ...] = frame[:h_slice, :w_slice, ...]
+                h = min(frame.shape[0], model_input_shape[0])
+                w = min(frame.shape[1], model_input_shape[1])
+                d = min(frame.shape[2], model_input_shape[2])
+                c = min(frame.shape[3], model_input_shape[3])
+                resized[:h, :w, :d, :c] = frame[:h, :w, :d, :c]
                 copyto_inplace(tensor.data, resized)
             infer_request.set_input_tensor(input_index, tensor)
 
