@@ -42,9 +42,39 @@ model = ppp.build()
 ov.save_model(model, "/models/ssdlite_mobilenet_v2.xml", compress_to_fp16=True)
 
 # Build motion detection model
-from frigate.motion.openvino_motion_model import (
-    build_motion_model as build_motion_model_main,
-)
+try:
+    from frigate.motion.openvino_motion_model import (
+        build_motion_model as build_motion_model_main,
+    )
+except ModuleNotFoundError:
+    # ov-converter stage: frigate deps (py3nvml, zmq) not installed
+    # Fall back to the same logic that only needs openvino + numpy
+    def build_motion_model_main(
+        model_path: str = "/openvino-model/motion_detect.xml",
+        frame_shape: tuple = (100, 133),
+        threshold_value: float = 30.0,
+        compress_to_fp16: bool = True,
+    ) -> str:
+        import openvino as ov
+        from openvino import opset8 as ops
+        from openvino.preprocess import PrePostProcessor
+
+        h, w = frame_shape
+        frame_input = ops.parameter(ov.Type.u8, shape=ov.PartialShape([1, h, w, 1]), name="frame_input")
+        avg_frame_input = ops.parameter(ov.Type.f32, shape=ov.PartialShape([h, w]), name="avg_frame_input")
+        avg_frame_u8 = ops.convert(avg_frame_input, ov.Type.u8)
+        absdiff = ops.absdiff(frame_input, ops.expand(avg_frame_u8, [1, 1, 1, 1]))
+        threshold_node = ops.threshold(absdiff, threshold_value)
+        motion_model = ov.Model([threshold_node], [frame_input, avg_frame_input], "motion_detect")
+        ppp = PrePostProcessor(motion_model)
+        ppp.input().tensor().set_layout(ov.Layout("NHWC"))
+        model = ppp.build()
+        import os
+        model_dir = os.path.dirname(model_path)
+        if model_dir:
+            os.makedirs(model_dir, exist_ok=True)
+        ov.save_model(model, model_path, compress_to_fp16=compress_to_fp16)
+        return model_path
 
 build_motion_model_main(
     model_path="/openvino-model/motion_detect.xml",
