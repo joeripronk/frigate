@@ -60,8 +60,8 @@ except ModuleNotFoundError:
         from openvino.preprocess import PrePostProcessor
 
         h, w = frame_shape
-        frame_input = ops.parameter(ov.Type.u8, ov.PartialShape([1, h, w, 1]), "frame_input")
-        avg_frame_input = ops.parameter(ov.Type.f32, ov.PartialShape([h, w]), "avg_frame_input")
+        frame_input = ops.parameter(type=ov.Type.u8, shape=ov.PartialShape([1, h, w, 1]), name="frame_input")
+        avg_frame_input = ops.parameter(type=ov.Type.f32, shape=ov.PartialShape([h, w]), name="avg_frame_input")
         avg_frame_u8 = ops.convert(avg_frame_input, ov.Type.u8)
         absdiff = ops.absdiff(frame_input, ops.expand(avg_frame_u8, [1, 1, 1, 1]))
         threshold_node = ops.threshold(absdiff, threshold_value)
