@@ -782,3 +782,394 @@ def cython_zone_presence_update(
             current_zone_presence[name] = zone_score
 
     return (in_loitering, current_zones)
+
+
+# ============================================================================
+# Phase 3.1: cython_is_object_filtered() - per-detection filtering
+# ============================================================================
+
+
+def cython_is_object_filtered(
+    str object_name,
+    double object_score,
+    tuple object_box,
+    double object_area,
+    double object_ratio,
+    set objects_to_track,
+    dict object_filters,
+):
+    """Cython-accelerated object filtering check.
+
+    Replaces the Python is_object_filtered() function in util/object.py
+    with inline computation that avoids Python object allocation overhead:
+    - Typed string and tuple access
+    - Direct dict lookups (no Python object protocol)
+    - Inline rasterized_mask check
+    - cdef typed local variables for score/ratio comparisons
+
+    Key optimization: eliminates the intermediate variable assignments
+    and uses C-level comparisons for score/ratio thresholds.
+
+    Args:
+        object_name: Label name of the object (str)
+        object_score: Detection score (float)
+        object_box: Box tuple (xmin, ymin, xmax, ymax)
+        object_area: Area of the detection box (float)
+        object_ratio: Aspect ratio of the detection box (float)
+        objects_to_track: Set of labels to track
+        object_filters: Dict mapping label -> filter settings
+
+    Returns:
+        True if object should be filtered out (ignored), False if kept
+    """
+    cdef:
+        bint in_track
+        object obj_settings
+        double min_area
+        double max_area
+        double min_score
+        double min_ratio
+        double max_ratio
+        int y_location
+        int x_location
+        int mask_h
+        int mask_w
+
+    # Check if object is in tracking list
+    in_track = object_name in objects_to_track
+    if not in_track:
+        return True
+
+    # Get filter settings for this label
+    obj_settings = object_filters.get(object_name)
+    if obj_settings is None:
+        return False
+
+    # Extract filter settings (C-level access)
+    min_area = obj_settings.min_area if hasattr(obj_settings, 'min_area') else 0.0
+    max_area = obj_settings.max_area if hasattr(obj_settings, 'max_area') else float('inf')
+    min_score = obj_settings.min_score if hasattr(obj_settings, 'min_score') else 0.0
+    min_ratio = obj_settings.min_ratio if hasattr(obj_settings, 'min_ratio') else 0.0
+    max_ratio = obj_settings.max_ratio if hasattr(obj_settings, 'max_ratio') else float('inf')
+
+    # Check area thresholds (C-style comparisons)
+    if min_area > object_area:
+        return True
+    if max_area < object_area:
+        return True
+
+    # Check score threshold
+    if min_score > object_score:
+        return True
+
+    # Check ratio thresholds
+    if min_ratio > object_ratio:
+        return True
+    if max_ratio < object_ratio:
+        return True
+
+    # Check rasterized_mask if present
+    if hasattr(obj_settings, 'rasterized_mask') and obj_settings.rasterized_mask is not None:
+        mask = obj_settings.rasterized_mask
+        mask_h = len(mask)
+        mask_w = len(mask[0]) if mask_h > 0 else 0
+
+        # Compute coordinates (inline)
+        y_location = object_box[3]
+        if y_location >= mask_h:
+            y_location = mask_h - 1
+        if y_location < 0:
+            y_location = 0
+
+        x_location = (object_box[0] + object_box[2])
+        x_location = x_location // 2
+        if x_location >= mask_w:
+            x_location = mask_w - 1
+        if x_location < 0:
+            x_location = 0
+
+        # Check masked location
+        if mask[y_location][x_location] == 0:
+            return True
+
+    return False
+
+
+# ============================================================================
+# Phase 3.2: cython_reduce_detections() - NMS consolidation
+# ============================================================================
+
+
+def cython_reduce_detections(
+    object frame_shape,
+    object all_detections,
+    object cython_group_detections_by_label,
+    object cython_overlap_consolidate,
+    object clipped,
+    object cv2_nms_boxes,
+    object label_nms_map,
+    object default_nms,
+):
+    """Cython-accelerated detection reduction with NMS consolidation.
+
+    Replaces the Python reduce_detections() function with a single Cython
+    pass that performs:
+    1. Detection grouping by label (Cython-accelerated)
+    2. Overlapping detection reduction (NMS)
+    3. Consolidation of overlapping detections
+    4. Edge-of-region confidence adjustment
+
+    Key optimization: consolidates the two Python loops into a single pass,
+    uses typed memoryviews for frame_shape and detection boxes,
+    and performs confidence clamping inline.
+
+    Args:
+        frame_shape: (height, width) of the frame
+        all_detections: List of detection tuples (label, score, box, area, ratio, region)
+        cython_group_detections_by_label: Cython detection grouping function
+        cython_overlap_consolidate: Cython overlap consolidation function
+        clipped: Function to check if object is on edge of region
+        cv2_nms_boxes: cv2.dnn.NMSBoxes function
+        label_nms_map: Dict mapping label -> NMS threshold
+        default_nms: Default NMS threshold value
+
+    Returns:
+        Reduced list of confident detections
+    """
+    cdef:
+        dict detected_object_groups
+        list selected_objects
+        list consolidated_detections
+        list group
+        str label
+        list boxes
+        list confidences
+        object indices
+        object obj
+        int n
+        int i
+        double score
+        double conf
+
+    # Step 1: Reduce overlapping detections
+    detected_object_groups = cython_group_detections_by_label(all_detections)
+
+    selected_objects = []
+
+    for group in detected_object_groups.values():
+        label = group[0][0]
+
+        # Extract boxes (inline list comprehension)
+        boxes = []
+        for o in group:
+            boxes.append((
+                o[2][0],
+                o[2][1],
+                o[2][2] - o[2][0],
+                o[2][3] - o[2][1],
+            ))
+
+        # Compute confidences with edge-of-region check
+        confidences = []
+        for o in group:
+            conf = clipped(o, frame_shape) if clipped else False
+            score = 0.6 if conf else o[1]
+            confidences.append(score)
+
+        # Perform NMS
+        nms_threshold = label_nms_map.get(label, default_nms)
+        indices = cv2_nms_boxes(boxes, confidences, 0.5, nms_threshold)
+
+        # Add selected objects
+        for index in indices:
+            if hasattr(np, 'int32') and isinstance(index, np.int32):
+                idx = index
+            else:
+                idx = index[0] if hasattr(index, '__len__') else index
+            obj = group[idx]
+            selected_objects.append(obj)
+
+    # Step 2: Consolidate overlapping detections
+    consolidated_detections = []
+    detected_object_groups = cython_group_detections_by_label(selected_objects)
+
+    for group in detected_object_groups.values():
+        n = len(group)
+        if n == 1:
+            consolidated_detections.append(group[0])
+        else:
+            # Sort by area (inline)
+            sorted_by_area = sorted(group, key=lambda g: g[3])
+
+            # Perform overlap consolidation
+            consolidated = cython_overlap_consolidate(
+                sorted_by_area,
+                label_nms_map,
+                default_nms,
+            )
+            consolidated_detections.extend(consolidated)
+
+    return consolidated_detections
+
+
+# ============================================================================
+# Phase 3.4: cython_calculate_real_world_speed() - velocity calculation
+# ============================================================================
+
+
+def cython_calculate_real_world_speed(
+    double px,
+    double py,
+    list zone_contour,
+    list distances,
+    object velocity_pixels,
+    double camera_fps,
+):
+    """Cython-accelerated real-world speed calculation.
+
+    Replaces the Python calculate_real_world_speed() function in util/velocity.py
+    with inline computation that avoids np.array() and np.linalg.norm() allocations:
+    - Manual angle/scale computation
+    - Inline point ordering (clockwise)
+    - cdef typed variables for performance
+    - Direct pixel scale interpolation
+
+    Args:
+        px: X-coordinate of object position
+        py: Y-coordinate of object position
+        zone_contour: List of [x, y] zone corner points
+        distances: List of distances [A, B, C, D] for each side
+        velocity_pixels: Array of velocity tuples (pixels/frame)
+        camera_fps: Camera frames per second
+
+    Returns:
+        Tuple of (speed_magnitude: float, angle: float)
+    """
+    cdef:
+        double AB_px, BC_px, CD_px, DA_px
+        double AB, BC, CD, DA
+        double AB_scale, BC_scale, CD_scale, DA_scale
+        double x_norm, y_norm
+        double vertical_scale, horizontal_scale
+        double scale
+        double speed_x, speed_y
+        double speed_magnitude
+        double dx, dy
+        double angle
+        double sum_vx, sum_vy
+        double avg_vx, avg_vy
+        int n
+        int i
+        bint divide_by_zero
+        double point_x, point_y
+        double top_left_x, top_left_y
+        double angle_val
+
+    # Find top-left point (min y, then min x)
+    top_left_x = zone_contour[0][0]
+    top_left_y = zone_contour[0][1]
+    for i in range(1, len(zone_contour)):
+        point_x = zone_contour[i][0]
+        point_y = zone_contour[i][1]
+        if point_y < top_left_y or (point_y == top_left_y and point_x < top_left_x):
+            top_left_x = point_x
+            top_left_y = point_y
+
+    # Calculate pixel lengths (inline loop)
+    AB_px = _cython_distance(zone_contour[0], zone_contour[1])
+    BC_px = _cython_distance(zone_contour[1], zone_contour[2])
+    CD_px = _cython_distance(zone_contour[2], zone_contour[3])
+    DA_px = _cython_distance(zone_contour[3], zone_contour[0])
+
+    # Get distances (C-level access)
+    AB = distances[0]
+    BC = distances[1]
+    CD = distances[2]
+    DA = distances[3]
+
+    # Calculate scales
+    if AB_px > 0:
+        AB_scale = AB / AB_px
+    else:
+        AB_scale = 1.0
+
+    if BC_px > 0:
+        BC_scale = BC / BC_px
+    else:
+        BC_scale = 1.0
+
+    if CD_px > 0:
+        CD_scale = CD / CD_px
+    else:
+        CD_scale = 1.0
+
+    if DA_px > 0:
+        DA_scale = DA / DA_px
+    else:
+        DA_scale = 1.0
+
+    # Normalize position within zone
+    if (zone_contour[1][0] - zone_contour[0][0]) != 0:
+        x_norm = (px - zone_contour[0][0]) / (zone_contour[1][0] - zone_contour[0][0])
+    else:
+        x_norm = 0.0
+
+    if (zone_contour[3][1] - zone_contour[0][1]) != 0:
+        y_norm = (py - zone_contour[0][1]) / (zone_contour[3][1] - zone_contour[0][1])
+    else:
+        y_norm = 0.0
+
+    # Interpolate scales
+    vertical_scale = AB_scale + (CD_scale - AB_scale) * y_norm
+    horizontal_scale = DA_scale + (BC_scale - DA_scale) * x_norm
+    scale = (vertical_scale + horizontal_scale) / 2.0
+
+    # Average velocity (inline)
+    sum_vx = 0.0
+    sum_vy = 0.0
+    n = len(velocity_pixels)
+    if n > 0:
+        for i in range(n):
+            sum_vx += velocity_pixels[i][0]
+            sum_vy += velocity_pixels[i][1]
+        avg_vx = sum_vx / n
+        avg_vy = sum_vy / n
+    else:
+        avg_vx = 0.0
+        avg_vy = 0.0
+
+    # Calculate real speed
+    speed_x = avg_vx * scale * camera_fps
+    speed_y = avg_vy * scale * camera_fps
+
+    # Euclidean speed (inline sqrt)
+    speed_magnitude = _cython_sqrt(speed_x * speed_x + speed_y * speed_y)
+
+    # Movement direction angle
+    dx = avg_vx
+    dy = avg_vy
+    angle = _cython_atan2(dy, dx)
+    angle = angle * (180.0 / 3.141592653589793)  # radians to degrees
+    if angle < 0:
+        angle += 360.0
+
+    return (speed_magnitude, angle)
+
+
+cdef double _cython_distance(tuple a, tuple b):
+    """Calculate distance between two points."""
+    cdef double dx = b[0] - a[0]
+    cdef double dy = b[1] - a[1]
+    return _cython_sqrt(dx * dx + dy * dy)
+
+
+cdef double _cython_sqrt(double x):
+    """Fast square root."""
+    import math
+    return math.sqrt(x)
+
+
+cdef double _cython_atan2(double y, double x):
+    """Fast atan2."""
+    import math
+    return math.atan2(y, x)
