@@ -40,3 +40,15 @@ ppp.input().preprocess().reverse_channels()
 model = ppp.build()
 
 ov.save_model(model, "/models/ssdlite_mobilenet_v2.xml", compress_to_fp16=True)
+
+# Build motion detection model
+from frigate.motion.openvino_motion_model import (
+    build_motion_model as build_motion_model_main,
+)
+
+build_motion_model_main(
+    model_path="/openvino-model/motion_detect.xml",
+    frame_shape=(100, 133),
+    threshold_value=30.0,
+    compress_to_fp16=True,
+)
