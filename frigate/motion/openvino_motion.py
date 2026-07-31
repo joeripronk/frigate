@@ -136,10 +136,19 @@ class OpenVinoMotionModel:
                 copyto_inplace(self.input_tensor.data, frame)
                 tensor = self.input_tensor
             else:
-                input_port = self.compiled_model.inputs[0]
-                input_element_type = input_port.get_element_type()
-                tensor = self._ov.Tensor(input_element_type, frame.shape)
-                copyto_inplace(tensor.data, frame)
+                # Resize frame data to match the model's input shape
+                model_shape = self.compiled_model.inputs[0].get_shape()
+                expected_shape = tuple(model_shape)
+                if frame.shape != expected_shape:
+                    resized = np.zeros(expected_shape, dtype=frame.dtype)
+                    h_slice = min(frame.shape[0], expected_shape[0])
+                    w_slice = min(frame.shape[1], expected_shape[1])
+                    resized[:h_slice, :w_slice, ...] = frame[:h_slice, :w_slice, ...]
+                    copyto_inplace(self.input_tensor.data, resized)
+                    tensor = self.input_tensor
+                else:
+                    copyto_inplace(self.input_tensor.data, frame)
+                    tensor = self.input_tensor
         else:
             input_port = self.compiled_model.inputs[0]
             input_element_type = input_port.get_element_type()
@@ -150,6 +159,17 @@ class OpenVinoMotionModel:
         input_index = 0
         infer_request = self.infer_request
         if infer_request is not None:
+            tensor_shape = tensor.get_shape()
+            model_input_shape = self.compiled_model.inputs[0].get_shape()
+            if tensor_shape != list(model_input_shape):
+                # Recreate tensor with model's expected shape
+                input_element_type = self.compiled_model.inputs[0].get_element_type()
+                tensor = self._ov.Tensor(input_element_type, model_input_shape)
+                resized = np.zeros(model_input_shape, dtype=frame.dtype)
+                h_slice = min(frame.shape[0], model_input_shape[0])
+                w_slice = min(frame.shape[1], model_input_shape[1])
+                resized[:h_slice, :w_slice, ...] = frame[:h_slice, :w_slice, ...]
+                copyto_inplace(tensor.data, resized)
             infer_request.set_input_tensor(input_index, tensor)
 
             # Run inference
