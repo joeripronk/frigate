@@ -92,7 +92,7 @@ RUN apt-get -qq update \
     && wget -q https://bootstrap.pypa.io/get-pip.py -O get-pip.py \
     && sed -i 's/args.append("setuptools")/args.append("setuptools==77.0.3")/' get-pip.py \
     && python3 get-pip.py "pip" \
-    && pip3 install -r /requirements-ov.txt requests pydantic ruamel.yaml opencv-python-headless
+    && pip3 install -r /requirements-ov.txt requests pydantic ruamel.yaml opencv-python-headless psutil
 
 # Get OpenVino Model
 RUN --mount=type=bind,source=frigate,target=/frigate \
