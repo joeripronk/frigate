@@ -437,7 +437,7 @@ def process_frames(
             if regions:
                 # Batch detection: pack all regions into a single IPC round-trip
                 batch_results = object_detector.detect_batch(
-                    regions, frame, model_config
+                    regions, frame, model_config, frame_name
                 )
 
                 for i, region in enumerate(regions):

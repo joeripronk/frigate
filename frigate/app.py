@@ -381,14 +381,24 @@ class FrigateApp:
                     size=largest_frame,
                 )
             except FileExistsError:
-                shm_in = UntrackedSharedMemory(name=name)
+                old_shm = UntrackedSharedMemory(name=name)
+                old_shm.unlink()
+                shm_in = UntrackedSharedMemory(
+                    name=name,
+                    create=True,
+                    size=largest_frame,
+                )
 
             try:
                 shm_out = UntrackedSharedMemory(
                     name=f"out-{name}", create=True, size=20 * 6 * 4
                 )
             except FileExistsError:
-                shm_out = UntrackedSharedMemory(name=f"out-{name}")
+                old_shm = UntrackedSharedMemory(name=f"out-{name}")
+                old_shm.unlink()
+                shm_out = UntrackedSharedMemory(
+                    name=f"out-{name}", create=True, size=20 * 6 * 4
+                )
 
             self.detection_shms.append(shm_in)
             self.detection_shms.append(shm_out)

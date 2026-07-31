@@ -194,7 +194,7 @@ class DetectorRunner(FrigateProcess):
             if queue_message.startswith(BATCH_PREFIX):
                 try:
                     batch_str = queue_message[len(BATCH_PREFIX) :]
-                    camera_name, batch_count = batch_str.rsplit(":", 1)
+                    camera_name, batch_count, frame_name = batch_str.rsplit(":", 2)
                     batch_count = int(batch_count)
                 except ValueError:
                     logger.warning(f"Failed to parse batch message: {queue_message}")
@@ -208,28 +208,29 @@ class DetectorRunner(FrigateProcess):
 
                 batch_start = time.monotonic()
                 offset = 0
-                for region_idx in range(batch_count):
-                    input_frame = frame_manager.get(
-                        camera_name,
-                        (
-                            batch_count,
-                            self.detector_config.model.height,  # type: ignore[union-attr]
-                            self.detector_config.model.width,  # type: ignore[union-attr]
-                            3,
-                        ),
+                model_width = self.detector_config.model.width  # type: ignore[union-attr]
+                model_height = self.detector_config.model.height  # type: ignore[union-attr]
+
+                try:
+                    input_shm = UntrackedSharedMemory(name=camera_name, create=False)
+                except FileNotFoundError:
+                    logger.warning(
+                        f"Input SHM not found for {camera_name} batch detection"
                     )
+                    continue
 
-                    if input_frame is None:
-                        logger.warning(
-                            f"Failed to get batch frame for {camera_name} region {region_idx}"
-                        )
-                        break
+                input_np = np.ndarray(
+                    (DETECTOR_BATCH_SIZE, model_height, model_width, 3),
+                    dtype=np.uint8,
+                    buffer=input_shm.buf,
+                )
 
+                for region_idx in range(batch_count):
                     mono_start = time.monotonic()
-                    detections = object_detector.detect_raw(input_frame)
+                    tensor_input = input_np[region_idx]
+                    detections = object_detector.detect_raw(tensor_input)
                     duration = time.monotonic() - mono_start
 
-                    frame_manager.close(camera_name)
                     # Pad to 20 slots per region for fixed-stride reading
                     region_data = self.batch_outputs[camera_name]["np"][
                         offset : offset + 20
@@ -546,7 +547,11 @@ class RemoteObjectDetector:
         return detections
 
     def detect_batch(
-        self, regions: list[tuple[int, int, int, int]], frame, model_config: ModelConfig
+        self,
+        regions: list[tuple[int, int, int, int]],
+        frame,
+        model_config: ModelConfig,
+        frame_name: str,
     ) -> list[list]:
         """Run detection on multiple regions in a single IPC round-trip.
 
@@ -554,6 +559,7 @@ class RemoteObjectDetector:
             regions: List of (x0, y0, x1, y1) region coordinates
             frame: Full YUV frame
             model_config: Model configuration
+            frame_name: Frame identifier for SHM lookup by detector
 
         Returns:
             List of raw detection lists per region, each containing
@@ -569,8 +575,8 @@ class RemoteObjectDetector:
             tensor_input = create_tensor_input(frame, model_config, region)
             self.np_shm[i] = tensor_input
 
-        # Send batch message: "-<camera>:<count>"
-        batch_message = f"-{self.name}:{len(regions)}"
+        # Send batch message: "-<camera>:<count>:<frame_name>"
+        batch_message = f"-{self.name}:{len(regions)}:{frame_name}"
         self.detection_queue.put(batch_message)
 
         # Wait for batch completion signal
