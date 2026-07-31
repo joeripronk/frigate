@@ -47,7 +47,7 @@ def build_motion_model(
     model_path: str = "/openvino-model/motion_detect.xml",
     frame_shape: tuple[int, int] = (100, 133),
     threshold_value: float = 30.0,
-    compress_to_fp16: bool = True,
+    compress_to_fp16: bool = False,
 ) -> str:
     """Build the OpenVINO motion detection model and save to disk.
 

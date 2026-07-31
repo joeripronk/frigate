@@ -53,7 +53,7 @@ except ModuleNotFoundError:
         model_path: str = "/openvino-model/motion_detect.xml",
         frame_shape: tuple = (100, 133),
         threshold_value: float = 30.0,
-        compress_to_fp16: bool = True,
+        compress_to_fp16: bool = False,
     ) -> str:
         import openvino as ov
         from openvino import opset8 as ops
@@ -84,5 +84,5 @@ build_motion_model_main(
     model_path="/openvino-model/motion_detect.xml",
     frame_shape=(100, 133),
     threshold_value=30.0,
-    compress_to_fp16=True,
+    compress_to_fp16=False,
 )

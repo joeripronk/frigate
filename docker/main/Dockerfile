@@ -146,6 +146,7 @@ COPY labelmap.txt .
 COPY --from=ov-converter /models/ssdlite_mobilenet_v2.xml openvino-model/
 COPY --from=ov-converter /models/ssdlite_mobilenet_v2.bin openvino-model/
 COPY --from=ov-converter /openvino-model/motion_detect.xml openvino-model/
+COPY --from=ov-converter /openvino-model/motion_detect.bin openvino-model/
 RUN wget -q https://github.com/openvinotoolkit/open_model_zoo/raw/master/data/dataset_classes/coco_91cl_bkgr.txt -O openvino-model/coco_91cl_bkgr.txt && \
     sed -i 's/truck/car/g' openvino-model/coco_91cl_bkgr.txt
 # Get Audio Model and labels
