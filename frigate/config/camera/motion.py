@@ -1,4 +1,4 @@
-from typing import Any
+from typing import Any, Literal
 
 from pydantic import Field, field_serializer
 
@@ -13,6 +13,16 @@ class MotionConfig(FrigateBaseModel):
         default=True,
         title="Enable motion detection",
         description="Enable or disable motion detection for all cameras; can be overridden per-camera.",
+    )
+    detector_type: Literal["auto", "opencv", "openvino"] = Field(
+        default="auto",
+        title="Detector type",
+        description="Motion detection engine to use (opencv, openvino, or auto). OpenVINO accelerates frame differencing on Intel hardware.",
+    )
+    openvino_device: str = Field(
+        default="CPU",
+        title="OpenVINO device",
+        description="OpenVINO execution device for motion detection (CPU, GPU, or NPU). Only used when detector_type is openvino or auto.",
     )
     threshold: int = Field(
         default=30,
