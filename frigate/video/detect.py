@@ -228,6 +228,10 @@ def process_frames(
     attributes_map = model_config.attributes_map
     all_attributes = model_config.all_attributes
 
+    # Pre-allocate reusable buffers to avoid per-frame NumPy allocations
+    motion_boxes_buf = np.empty((500, 4), dtype=np.float32)
+    regions_buf = np.empty((100, 4), dtype=np.float32)
+
     # remove license_plate from attributes if this camera is a dedicated LPR cam
     if camera_config.type == CameraTypeEnum.lpr:
         modified_attributes_map = model_config.attributes_map.copy()
@@ -370,16 +374,35 @@ def process_frames(
                 ptz_metrics.stop_time.value,
             ):
                 # Cython-accelerated filtering of standalone motion boxes
-                motion_boxes_array = np.array(motion_boxes, dtype=np.float32).reshape(
-                    -1, 4
-                )
-                regions_array = np.array(regions, dtype=np.float32)
-                standalone_motion_array = cython_filter_motion_boxes(
-                    motion_boxes_array, regions_array
-                )
-                standalone_motion_boxes = [
-                    tuple(int(v) for v in box) for box in standalone_motion_array
-                ]
+                # Use pre-allocated buffers to avoid per-frame NumPy allocations
+                m_count = len(motion_boxes)
+                r_count = len(regions)
+                standalone_motion_boxes: list = []
+
+                if m_count > 0 and r_count > 0:
+                    if (
+                        m_count <= motion_boxes_buf.shape[0]
+                        and r_count <= regions_buf.shape[0]
+                    ):
+                        # Reuse pre-allocated buffers
+                        motion_boxes_buf[:m_count] = motion_boxes
+                        regions_buf[:r_count] = regions
+                        standalone_motion_array = cython_filter_motion_boxes(
+                            motion_boxes_buf[:m_count], regions_buf[:r_count]
+                        )
+                    else:
+                        # Fall back to allocation if buffers are too small
+                        motion_boxes_array = np.array(
+                            motion_boxes, dtype=np.float32
+                        ).reshape(-1, 4)
+                        regions_array = np.array(regions, dtype=np.float32)
+                        standalone_motion_array = cython_filter_motion_boxes(
+                            motion_boxes_array, regions_array
+                        )
+
+                    standalone_motion_boxes = [
+                        tuple(int(v) for v in box) for box in standalone_motion_array
+                    ]
 
                 if standalone_motion_boxes:
                     motion_clusters = get_cluster_candidates(
