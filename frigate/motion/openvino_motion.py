@@ -143,7 +143,7 @@ class OpenVinoMotionModel:
                     resized = np.zeros(expected_shape, dtype=frame.dtype)
                     h_slice = min(frame.shape[0], expected_shape[0])
                     w_slice = min(frame.shape[1], expected_shape[1])
-                    resized[:h_slice, :w_slice, ...] = frame[:h_slice, :w_slice, ...]
+                    resized[:h_slice, :w_slice] = frame[:h_slice, :w_slice]
                     copyto_inplace(self.input_tensor.data, resized)
                     tensor = self.input_tensor
                 else:
