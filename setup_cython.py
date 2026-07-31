@@ -34,6 +34,7 @@ setup(
             "frigate/motion/motion_cython.pyx",
             "frigate/video/detect_cython.pyx",
             "frigate/track/tracking_cython.pyx",
+            "frigate/track/distance_cython.pyx",
             "frigate/data_processing/common/face/model_cython.pyx",
             "frigate/data_processing/common/license_plate/license_plate_cython.pyx",
         ],

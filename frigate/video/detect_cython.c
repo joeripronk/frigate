@@ -1757,6 +1757,24 @@ static CYTHON_INLINE __pyx_t_long_double_complex __pyx_t_long_double_complex_fro
 /* #### Code section: type_declarations ### */
 
 /*--- Type declarations ---*/
+struct __pyx_obj_7frigate_5video_13detect_cython___pyx_scope_struct__genexpr;
+
+/* "frigate/video/detect_cython.pyx":524
+ * 
+ *                             standalone_motion_boxes = [
+ *                                 tuple(int(v) for v in box) for box in standalone_motion_array             # <<<<<<<<<<<<<<
+ *                             ]
+ * 
+*/
+struct __pyx_obj_7frigate_5video_13detect_cython___pyx_scope_struct__genexpr {
+  PyObject_HEAD
+  PyObject *__pyx_genexpr_arg_0;
+  PyObject *__pyx_v_v;
+  PyObject *__pyx_t_0;
+  Py_ssize_t __pyx_t_1;
+  PyObject *(*__pyx_t_2)(PyObject *);
+};
+
 /* #### Code section: utility_code_proto ### */
 
 /* --- Runtime support code (head) --- */
@@ -1833,12 +1851,15 @@ static CYTHON_INLINE __pyx_t_long_double_complex __pyx_t_long_double_complex_fro
 #define __Pyx_CLEAR(r)    do { PyObject* tmp = ((PyObject*)(r)); r = NULL; __Pyx_DECREF(tmp);} while(0)
 #define __Pyx_XCLEAR(r)   do { if((r) != NULL) {PyObject* tmp = ((PyObject*)(r)); r = NULL; __Pyx_DECREF(tmp);}} while(0)
 
-/* GetTopmostException.proto (used by SaveResetException) */
-#if CYTHON_USE_EXC_INFO_STACK && CYTHON_FAST_THREAD_STATE
-static _PyErr_StackItem * __Pyx_PyErr_GetTopmostException(PyThreadState *tstate);
+/* PyErrExceptionMatches.proto (used by PyObjectGetAttrStrNoError) */
+#if CYTHON_FAST_THREAD_STATE
+#define __Pyx_PyErr_ExceptionMatches(err) __Pyx_PyErr_ExceptionMatchesInState(__pyx_tstate, err)
+static CYTHON_INLINE int __Pyx_PyErr_ExceptionMatchesInState(PyThreadState* tstate, PyObject* err);
+#else
+#define __Pyx_PyErr_ExceptionMatches(err)  PyErr_ExceptionMatches(err)
 #endif
 
-/* PyThreadStateGet.proto (used by SaveResetException) */
+/* PyThreadStateGet.proto (used by PyErrFetchRestore) */
 #if CYTHON_FAST_THREAD_STATE
 #define __Pyx_PyThreadState_declare  PyThreadState *__pyx_tstate;
 #define __Pyx_PyThreadState_assign  __pyx_tstate = __Pyx_PyThreadState_Current;
@@ -1856,6 +1877,49 @@ static _PyErr_StackItem * __Pyx_PyErr_GetTopmostException(PyThreadState *tstate)
 #define __Pyx_PyErr_CurrentExceptionType()  PyErr_Occurred()
 #endif
 
+/* PyErrFetchRestore.proto (used by PyObjectGetAttrStrNoError) */
+#if CYTHON_FAST_THREAD_STATE
+#define __Pyx_PyErr_Clear() __Pyx_ErrRestore(NULL, NULL, NULL)
+#define __Pyx_ErrRestoreWithState(type, value, tb)  __Pyx_ErrRestoreInState(PyThreadState_GET(), type, value, tb)
+#define __Pyx_ErrFetchWithState(type, value, tb)    __Pyx_ErrFetchInState(PyThreadState_GET(), type, value, tb)
+#define __Pyx_ErrRestore(type, value, tb)  __Pyx_ErrRestoreInState(__pyx_tstate, type, value, tb)
+#define __Pyx_ErrFetch(type, value, tb)    __Pyx_ErrFetchInState(__pyx_tstate, type, value, tb)
+static CYTHON_INLINE void __Pyx_ErrRestoreInState(PyThreadState *tstate, PyObject *type, PyObject *value, PyObject *tb);
+static CYTHON_INLINE void __Pyx_ErrFetchInState(PyThreadState *tstate, PyObject **type, PyObject **value, PyObject **tb);
+#if CYTHON_COMPILING_IN_CPYTHON && PY_VERSION_HEX < 0x030C00A6
+#define __Pyx_PyErr_SetNone(exc) (Py_INCREF(exc), __Pyx_ErrRestore((exc), NULL, NULL))
+#else
+#define __Pyx_PyErr_SetNone(exc) PyErr_SetNone(exc)
+#endif
+#else
+#define __Pyx_PyErr_Clear() PyErr_Clear()
+#define __Pyx_PyErr_SetNone(exc) PyErr_SetNone(exc)
+#define __Pyx_ErrRestoreWithState(type, value, tb)  PyErr_Restore(type, value, tb)
+#define __Pyx_ErrFetchWithState(type, value, tb)  PyErr_Fetch(type, value, tb)
+#define __Pyx_ErrRestoreInState(tstate, type, value, tb)  PyErr_Restore(type, value, tb)
+#define __Pyx_ErrFetchInState(tstate, type, value, tb)  PyErr_Fetch(type, value, tb)
+#define __Pyx_ErrRestore(type, value, tb)  PyErr_Restore(type, value, tb)
+#define __Pyx_ErrFetch(type, value, tb)  PyErr_Fetch(type, value, tb)
+#endif
+
+/* PyObjectGetAttrStr.proto (used by PyObjectGetAttrStrNoError) */
+#if CYTHON_USE_TYPE_SLOTS
+static CYTHON_INLINE PyObject* __Pyx_PyObject_GetAttrStr(PyObject* obj, PyObject* attr_name);
+#else
+#define __Pyx_PyObject_GetAttrStr(o,n) PyObject_GetAttr(o,n)
+#endif
+
+/* PyObjectGetAttrStrNoError.proto (used by GetBuiltinName) */
+static CYTHON_INLINE PyObject* __Pyx_PyObject_GetAttrStrNoError(PyObject* obj, PyObject* attr_name);
+
+/* GetBuiltinName.proto */
+static PyObject *__Pyx_GetBuiltinName(PyObject *name);
+
+/* GetTopmostException.proto (used by SaveResetException) */
+#if CYTHON_USE_EXC_INFO_STACK && CYTHON_FAST_THREAD_STATE
+static _PyErr_StackItem * __Pyx_PyErr_GetTopmostException(PyThreadState *tstate);
+#endif
+
 /* SaveResetException.proto */
 #if CYTHON_FAST_THREAD_STATE
 #define __Pyx_ExceptionSave(type, value, tb)  __Pyx__ExceptionSave(__pyx_tstate, type, value, tb)
@@ -1865,14 +1929,6 @@ static CYTHON_INLINE void __Pyx__ExceptionReset(PyThreadState *tstate, PyObject 
 #else
 #define __Pyx_ExceptionSave(type, value, tb)   PyErr_GetExcInfo(type, value, tb)
 #define __Pyx_ExceptionReset(type, value, tb)  PyErr_SetExcInfo(type, value, tb)
-#endif
-
-/* PyErrExceptionMatches.proto */
-#if CYTHON_FAST_THREAD_STATE
-#define __Pyx_PyErr_ExceptionMatches(err) __Pyx_PyErr_ExceptionMatchesInState(__pyx_tstate, err)
-static CYTHON_INLINE int __Pyx_PyErr_ExceptionMatchesInState(PyThreadState* tstate, PyObject* err);
-#else
-#define __Pyx_PyErr_ExceptionMatches(err)  PyErr_ExceptionMatches(err)
 #endif
 
 /* GetException.proto */
@@ -1901,31 +1957,6 @@ static CYTHON_INLINE PyObject* __Pyx_PyObject_CallMethO(PyObject *func, PyObject
 /* PyObjectFastCall.proto */
 #define __Pyx_PyObject_FastCall(func, args, nargs)  __Pyx_PyObject_FastCallDict(func, args, (size_t)(nargs), NULL)
 static CYTHON_INLINE PyObject* __Pyx_PyObject_FastCallDict(PyObject *func, PyObject * const*args, size_t nargs, PyObject *kwargs);
-
-/* PyErrFetchRestore.proto (used by RaiseException) */
-#if CYTHON_FAST_THREAD_STATE
-#define __Pyx_PyErr_Clear() __Pyx_ErrRestore(NULL, NULL, NULL)
-#define __Pyx_ErrRestoreWithState(type, value, tb)  __Pyx_ErrRestoreInState(PyThreadState_GET(), type, value, tb)
-#define __Pyx_ErrFetchWithState(type, value, tb)    __Pyx_ErrFetchInState(PyThreadState_GET(), type, value, tb)
-#define __Pyx_ErrRestore(type, value, tb)  __Pyx_ErrRestoreInState(__pyx_tstate, type, value, tb)
-#define __Pyx_ErrFetch(type, value, tb)    __Pyx_ErrFetchInState(__pyx_tstate, type, value, tb)
-static CYTHON_INLINE void __Pyx_ErrRestoreInState(PyThreadState *tstate, PyObject *type, PyObject *value, PyObject *tb);
-static CYTHON_INLINE void __Pyx_ErrFetchInState(PyThreadState *tstate, PyObject **type, PyObject **value, PyObject **tb);
-#if CYTHON_COMPILING_IN_CPYTHON && PY_VERSION_HEX < 0x030C00A6
-#define __Pyx_PyErr_SetNone(exc) (Py_INCREF(exc), __Pyx_ErrRestore((exc), NULL, NULL))
-#else
-#define __Pyx_PyErr_SetNone(exc) PyErr_SetNone(exc)
-#endif
-#else
-#define __Pyx_PyErr_Clear() PyErr_Clear()
-#define __Pyx_PyErr_SetNone(exc) PyErr_SetNone(exc)
-#define __Pyx_ErrRestoreWithState(type, value, tb)  PyErr_Restore(type, value, tb)
-#define __Pyx_ErrFetchWithState(type, value, tb)  PyErr_Fetch(type, value, tb)
-#define __Pyx_ErrRestoreInState(tstate, type, value, tb)  PyErr_Restore(type, value, tb)
-#define __Pyx_ErrFetchInState(tstate, type, value, tb)  PyErr_Fetch(type, value, tb)
-#define __Pyx_ErrRestore(type, value, tb)  PyErr_Restore(type, value, tb)
-#define __Pyx_ErrFetch(type, value, tb)  PyErr_Fetch(type, value, tb)
-#endif
 
 /* RaiseException.export */
 static void __Pyx_Raise(PyObject *type, PyObject *value, PyObject *tb, PyObject *cause);
@@ -1998,13 +2029,6 @@ static CYTHON_INLINE PyObject* __Pyx_PyDict_Items(PyObject* d);
 
 /* PyObjectCallOneArg.proto (used by CallUnboundCMethod0) */
 static CYTHON_INLINE PyObject* __Pyx_PyObject_CallOneArg(PyObject *func, PyObject *arg);
-
-/* PyObjectGetAttrStr.proto (used by UnpackUnboundCMethod) */
-#if CYTHON_USE_TYPE_SLOTS
-static CYTHON_INLINE PyObject* __Pyx_PyObject_GetAttrStr(PyObject* obj, PyObject* attr_name);
-#else
-#define __Pyx_PyObject_GetAttrStr(o,n) PyObject_GetAttr(o,n)
-#endif
 
 /* UnpackUnboundCMethod.proto (used by CallUnboundCMethod0) */
 typedef struct {
@@ -2136,9 +2160,6 @@ static PyObject *__Pyx_GetItemInt_Generic(PyObject *o, PyObject* j);
 static CYTHON_INLINE PyObject *__Pyx_GetItemInt_Fast(PyObject *o, Py_ssize_t i,
                                                      int is_list, int wraparound, int boundscheck, int unsafe_shared);
 
-/* PyObjectGetAttrStrNoError.proto (used by ObjectGetItem) */
-static CYTHON_INLINE PyObject* __Pyx_PyObject_GetAttrStrNoError(PyObject* obj, PyObject* attr_name);
-
 /* ObjectGetItem.proto */
 #if CYTHON_USE_TYPE_SLOTS
 static CYTHON_INLINE PyObject *__Pyx_PyObject_GetItem(PyObject *obj, PyObject *key);
@@ -2194,6 +2215,178 @@ static CYTHON_INLINE int __Pyx_PySequence_ContainsTF(PyObject* item, PyObject* s
     return unlikely(result < 0) ? result : (result == (eq == Py_EQ));
 }
 
+/* RaiseUnboundLocalError.proto */
+static void __Pyx_RaiseUnboundLocalError(const char *varname);
+
+/* pep479.proto */
+static void __Pyx_Generator_Replace_StopIteration(int in_async_gen);
+
+/* PyObjectVectorCallKwBuilder.proto */
+CYTHON_UNUSED static int __Pyx_VectorcallBuilder_AddArg_Check(PyObject *key, PyObject *value, PyObject *builder, PyObject **args, int n);
+#if CYTHON_VECTORCALL
+#if PY_VERSION_HEX >= 0x03090000
+#define __Pyx_Object_Vectorcall_CallFromBuilder PyObject_Vectorcall
+#else
+#define __Pyx_Object_Vectorcall_CallFromBuilder _PyObject_Vectorcall
+#endif
+#define __Pyx_MakeVectorcallBuilderKwds(n) PyTuple_New(n)
+static int __Pyx_VectorcallBuilder_AddArg(PyObject *key, PyObject *value, PyObject *builder, PyObject **args, int n);
+static int __Pyx_VectorcallBuilder_AddArgStr(const char *key, PyObject *value, PyObject *builder, PyObject **args, int n);
+#else
+#define __Pyx_Object_Vectorcall_CallFromBuilder __Pyx_PyObject_FastCallDict
+#define __Pyx_MakeVectorcallBuilderKwds(n) __Pyx_PyDict_NewPresized(n)
+#define __Pyx_VectorcallBuilder_AddArg(key, value, builder, args, n) PyDict_SetItem(builder, key, value)
+#define __Pyx_VectorcallBuilder_AddArgStr(key, value, builder, args, n) PyDict_SetItemString(builder, key, value)
+#endif
+
+/* PyObjectVectorCallMethodKwBuilder.proto */
+#if CYTHON_VECTORCALL && PY_VERSION_HEX >= 0x03090000
+#define __Pyx_Object_VectorcallMethod_CallFromBuilder PyObject_VectorcallMethod
+#else
+static PyObject *__Pyx_Object_VectorcallMethod_CallFromBuilder(PyObject *name, PyObject *const *args, size_t nargsf, PyObject *kwnames);
+#endif
+
+/* HasAttr.proto (used by ImportImpl) */
+#if __PYX_LIMITED_VERSION_HEX >= 0x030d0000
+#define __Pyx_HasAttr(o, n)  PyObject_HasAttrWithError(o, n)
+#else
+static CYTHON_INLINE int __Pyx_HasAttr(PyObject *, PyObject *);
+#endif
+
+/* ImportImpl.export */
+static PyObject *__Pyx__Import(PyObject *name, PyObject *const *imported_names, Py_ssize_t len_imported_names, PyObject *qualname, PyObject *moddict, int level);
+
+/* Import.proto */
+static CYTHON_INLINE PyObject *__Pyx_Import(PyObject *name, PyObject *const *imported_names, Py_ssize_t len_imported_names, PyObject *qualname, int level);
+
+/* ImportFrom.proto */
+static PyObject* __Pyx_ImportFrom(PyObject* module, PyObject* name);
+
+/* PyLongBinop.proto */
+#if !CYTHON_COMPILING_IN_PYPY
+static CYTHON_INLINE PyObject* __Pyx_PyLong_RemainderObjC(PyObject *op1, PyObject *op2, long intval, int inplace, int zerodivision_check);
+#else
+#define __Pyx_PyLong_RemainderObjC(op1, op2, intval, inplace, zerodivision_check)\
+    (inplace ? PyNumber_InPlaceRemainder(op1, op2) : PyNumber_Remainder(op1, op2))
+#endif
+
+/* PyLongCompare.proto */
+static CYTHON_INLINE int __Pyx_PyLong_BoolEqObjC(PyObject *op1, PyObject *op2, long intval, long inplace);
+
+/* PyLongBinop.proto */
+#if !CYTHON_COMPILING_IN_PYPY
+static CYTHON_INLINE PyObject* __Pyx_PyLong_MultiplyObjC(PyObject *op1, PyObject *op2, long intval, int inplace, int zerodivision_check);
+#else
+#define __Pyx_PyLong_MultiplyObjC(op1, op2, intval, inplace, zerodivision_check)\
+    (inplace ? PyNumber_InPlaceMultiply(op1, op2) : PyNumber_Multiply(op1, op2))
+#endif
+
+/* PyLongBinop.proto */
+#if !CYTHON_COMPILING_IN_PYPY
+static CYTHON_INLINE PyObject* __Pyx_PyLong_TrueDivideObjC(PyObject *op1, PyObject *op2, long intval, int inplace, int zerodivision_check);
+#else
+#define __Pyx_PyLong_TrueDivideObjC(op1, op2, intval, inplace, zerodivision_check)\
+    (inplace ? PyNumber_InPlaceTrueDivide(op1, op2) : PyNumber_TrueDivide(op1, op2))
+#endif
+
+/* PyLongBinop.proto */
+#if !CYTHON_COMPILING_IN_PYPY
+static CYTHON_INLINE PyObject* __Pyx_PyLong_AddObjC(PyObject *op1, PyObject *op2, long intval, int inplace, int zerodivision_check);
+#else
+#define __Pyx_PyLong_AddObjC(op1, op2, intval, inplace, zerodivision_check)\
+    (inplace ? PyNumber_InPlaceAdd(op1, op2) : PyNumber_Add(op1, op2))
+#endif
+
+/* PyDictVersioning.proto (used by GetModuleGlobalName) */
+#if CYTHON_USE_DICT_VERSIONS && CYTHON_USE_TYPE_SLOTS
+#define __PYX_DICT_VERSION_INIT  ((PY_UINT64_T) -1)
+#define __PYX_GET_DICT_VERSION(dict)  (((PyDictObject*)(dict))->ma_version_tag)
+#define __PYX_UPDATE_DICT_CACHE(dict, value, cache_var, version_var)\
+    (version_var) = __PYX_GET_DICT_VERSION(dict);\
+    (cache_var) = (value);
+#define __PYX_PY_DICT_LOOKUP_IF_MODIFIED(VAR, DICT, LOOKUP) {\
+    static PY_UINT64_T __pyx_dict_version = 0;\
+    static PyObject *__pyx_dict_cached_value = NULL;\
+    if (likely(__PYX_GET_DICT_VERSION(DICT) == __pyx_dict_version)) {\
+        (VAR) = __Pyx_XNewRef(__pyx_dict_cached_value);\
+    } else {\
+        (VAR) = __pyx_dict_cached_value = (LOOKUP);\
+        __pyx_dict_version = __PYX_GET_DICT_VERSION(DICT);\
+    }\
+}
+static CYTHON_INLINE PY_UINT64_T __Pyx_get_tp_dict_version(PyObject *obj);
+static CYTHON_INLINE PY_UINT64_T __Pyx_get_object_dict_version(PyObject *obj);
+static CYTHON_INLINE int __Pyx_object_dict_version_matches(PyObject* obj, PY_UINT64_T tp_dict_version, PY_UINT64_T obj_dict_version);
+#else
+#define __PYX_GET_DICT_VERSION(dict)  (0)
+#define __PYX_UPDATE_DICT_CACHE(dict, value, cache_var, version_var)
+#define __PYX_PY_DICT_LOOKUP_IF_MODIFIED(VAR, DICT, LOOKUP)  (VAR) = (LOOKUP);
+#endif
+
+/* GetModuleGlobalName.proto */
+#if CYTHON_USE_DICT_VERSIONS
+#define __Pyx_GetModuleGlobalName(var, name)  do {\
+    static PY_UINT64_T __pyx_dict_version = 0;\
+    static PyObject *__pyx_dict_cached_value = NULL;\
+    (var) = (likely(__pyx_dict_version == __PYX_GET_DICT_VERSION(__pyx_mstate_global->__pyx_d))) ?\
+        (likely(__pyx_dict_cached_value) ? __Pyx_NewRef(__pyx_dict_cached_value) : __Pyx_GetBuiltinName(name)) :\
+        __Pyx__GetModuleGlobalName(name, &__pyx_dict_version, &__pyx_dict_cached_value);\
+} while(0)
+#define __Pyx_GetModuleGlobalNameUncached(var, name)  do {\
+    PY_UINT64_T __pyx_dict_version;\
+    PyObject *__pyx_dict_cached_value;\
+    (var) = __Pyx__GetModuleGlobalName(name, &__pyx_dict_version, &__pyx_dict_cached_value);\
+} while(0)
+static PyObject *__Pyx__GetModuleGlobalName(PyObject *name, PY_UINT64_T *dict_version, PyObject **dict_cached_value);
+#else
+#define __Pyx_GetModuleGlobalName(var, name)  (var) = __Pyx__GetModuleGlobalName(name)
+#define __Pyx_GetModuleGlobalNameUncached(var, name)  (var) = __Pyx__GetModuleGlobalName(name)
+static CYTHON_INLINE PyObject *__Pyx__GetModuleGlobalName(PyObject *name);
+#endif
+
+/* PyDictContains.proto */
+static CYTHON_INLINE int __Pyx_PyDict_ContainsTF(PyObject* item, PyObject* dict, int eq) {
+    int result = PyDict_Contains(dict, item);
+    return unlikely(result < 0) ? result : (result == (eq == Py_EQ));
+}
+
+/* ListCompAppend.proto */
+#if CYTHON_USE_PYLIST_INTERNALS && CYTHON_ASSUME_SAFE_MACROS
+static CYTHON_INLINE int __Pyx_ListComp_Append(PyObject* list, PyObject* x) {
+    PyListObject* L = (PyListObject*) list;
+    Py_ssize_t len = Py_SIZE(list);
+    if (likely(L->allocated > len)) {
+        Py_INCREF(x);
+        #if CYTHON_COMPILING_IN_CPYTHON && PY_VERSION_HEX >= 0x030d0000
+        L->ob_item[len] = x;
+        #else
+        PyList_SET_ITEM(list, len, x);
+        #endif
+        __Pyx_SET_SIZE(list, len + 1);
+        return 0;
+    }
+    return PyList_Append(list, x);
+}
+#else
+#define __Pyx_ListComp_Append(L,x) PyList_Append(L,x)
+#endif
+
+/* PyObjectDelAttr.proto (used by PyObjectSetAttrStr) */
+#if CYTHON_COMPILING_IN_LIMITED_API && __PYX_LIMITED_VERSION_HEX < 0x030d0000
+#define __Pyx_PyObject_DelAttr(o, n) PyObject_SetAttr(o, n, NULL)
+#else
+#define __Pyx_PyObject_DelAttr(o, n) PyObject_DelAttr(o, n)
+#endif
+
+/* PyObjectSetAttrStr.proto */
+#if CYTHON_USE_TYPE_SLOTS
+#define __Pyx_PyObject_DelAttrStr(o,n) __Pyx_PyObject_SetAttrStr(o, n, NULL)
+static CYTHON_INLINE int __Pyx_PyObject_SetAttrStr(PyObject* obj, PyObject* attr_name, PyObject* value);
+#else
+#define __Pyx_PyObject_DelAttrStr(o,n)   __Pyx_PyObject_DelAttr(o,n)
+#define __Pyx_PyObject_SetAttrStr(o,n,v) PyObject_SetAttr(o,n,v)
+#endif
+
 /* RaiseTooManyValuesToUnpack.proto */
 static CYTHON_INLINE void __Pyx_RaiseTooManyValuesError(Py_ssize_t expected);
 
@@ -2205,6 +2398,52 @@ static CYTHON_INLINE int __Pyx_IterFinish(void);
 
 /* UnpackItemEndCheck.proto */
 static int __Pyx_IternextUnpackEndCheck(PyObject *retval, Py_ssize_t expected);
+
+/* FastTypeChecks.proto */
+#if CYTHON_COMPILING_IN_CPYTHON
+#define __Pyx_TypeCheck(obj, type) __Pyx_IsSubtype(Py_TYPE(obj), (PyTypeObject *)type)
+#define __Pyx_TypeCheck2(obj, type1, type2) __Pyx_IsAnySubtype2(Py_TYPE(obj), (PyTypeObject *)type1, (PyTypeObject *)type2)
+static CYTHON_INLINE int __Pyx_IsSubtype(PyTypeObject *a, PyTypeObject *b);
+static CYTHON_INLINE int __Pyx_IsAnySubtype2(PyTypeObject *cls, PyTypeObject *a, PyTypeObject *b);
+static CYTHON_INLINE int __Pyx_PyErr_GivenExceptionMatches(PyObject *err, PyObject *type);
+static CYTHON_INLINE int __Pyx_PyErr_GivenExceptionMatches2(PyObject *err, PyObject *type1, PyObject *type2);
+#else
+#define __Pyx_TypeCheck(obj, type) PyObject_TypeCheck(obj, (PyTypeObject *)type)
+#define __Pyx_TypeCheck2(obj, type1, type2) (PyObject_TypeCheck(obj, (PyTypeObject *)type1) || PyObject_TypeCheck(obj, (PyTypeObject *)type2))
+#define __Pyx_PyErr_GivenExceptionMatches(err, type) PyErr_GivenExceptionMatches(err, type)
+static CYTHON_INLINE int __Pyx_PyErr_GivenExceptionMatches2(PyObject *err, PyObject *type1, PyObject *type2) {
+    return PyErr_GivenExceptionMatches(err, type1) || PyErr_GivenExceptionMatches(err, type2);
+}
+#endif
+#define __Pyx_PyErr_ExceptionMatches2(err1, err2)  __Pyx_PyErr_GivenExceptionMatches2(__Pyx_PyErr_CurrentExceptionType(), err1, err2)
+#define __Pyx_PyException_Check(obj) __Pyx_TypeCheck(obj, PyExc_Exception)
+#ifdef PyExceptionInstance_Check
+  #define __Pyx_PyBaseException_Check(obj) PyExceptionInstance_Check(obj)
+#else
+  #define __Pyx_PyBaseException_Check(obj) __Pyx_TypeCheck(obj, PyExc_BaseException)
+#endif
+
+/* PyLongBinop.proto */
+#if !CYTHON_COMPILING_IN_PYPY
+static CYTHON_INLINE PyObject* __Pyx_PyLong_FloorDivideObjC(PyObject *op1, PyObject *op2, long intval, int inplace, int zerodivision_check);
+#else
+#define __Pyx_PyLong_FloorDivideObjC(op1, op2, intval, inplace, zerodivision_check)\
+    (inplace ? PyNumber_InPlaceFloorDivide(op1, op2) : PyNumber_FloorDivide(op1, op2))
+#endif
+
+/* SliceObject.proto */
+#define __Pyx_PyObject_DelSlice(obj, cstart, cstop, py_start, py_stop, py_slice, has_cstart, has_cstop, wraparound)\
+    __Pyx_PyObject_SetSlice(obj, (PyObject*)NULL, cstart, cstop, py_start, py_stop, py_slice, has_cstart, has_cstop, wraparound)
+static CYTHON_INLINE int __Pyx_PyObject_SetSlice(
+        PyObject* obj, PyObject* value, Py_ssize_t cstart, Py_ssize_t cstop,
+        PyObject** py_start, PyObject** py_stop, PyObject** py_slice,
+        int has_cstart, int has_cstop, int wraparound);
+
+/* SliceObject.proto */
+static CYTHON_INLINE PyObject* __Pyx_PyObject_GetSlice(
+        PyObject* obj, Py_ssize_t cstart, Py_ssize_t cstop,
+        PyObject** py_start, PyObject** py_stop, PyObject** py_slice,
+        int has_cstart, int has_cstop, int wraparound);
 
 /* PyObjectCall2Args.proto (used by PyObjectCallMethod1) */
 static CYTHON_INLINE PyObject* __Pyx_PyObject_Call2Args(PyObject* function, PyObject* arg1, PyObject* arg2);
@@ -2219,6 +2458,56 @@ static PyObject* __Pyx_PyObject_CallMethod1(PyObject* obj, PyObject* method_name
 
 /* append.proto */
 static CYTHON_INLINE int __Pyx_PyObject_Append(PyObject* L, PyObject* x);
+
+/* CheckTypeForFreelists.proto */
+#if CYTHON_USE_FREELISTS
+#if CYTHON_USE_TYPE_SPECS
+#define __PYX_CHECK_FINAL_TYPE_FOR_FREELISTS(t, expected_tp, expected_size) ((int) ((t) == (expected_tp)))
+#define __PYX_CHECK_TYPE_FOR_FREELIST_FLAGS  Py_TPFLAGS_IS_ABSTRACT
+#else
+#define __PYX_CHECK_FINAL_TYPE_FOR_FREELISTS(t, expected_tp, expected_size) ((int) ((t)->tp_basicsize == (expected_size)))
+#define __PYX_CHECK_TYPE_FOR_FREELIST_FLAGS  (Py_TPFLAGS_IS_ABSTRACT | Py_TPFLAGS_HEAPTYPE)
+#endif
+#define __PYX_CHECK_TYPE_FOR_FREELISTS(t, expected_tp, expected_size)\
+    (__PYX_CHECK_FINAL_TYPE_FOR_FREELISTS((t), (expected_tp), (expected_size)) &\
+     (int) (!__Pyx_PyType_HasFeature((t), __PYX_CHECK_TYPE_FOR_FREELIST_FLAGS)))
+#endif
+
+/* AllocateExtensionType.proto */
+static PyObject *__Pyx_AllocateExtensionType(PyTypeObject *t, int is_final);
+
+/* CallTypeTraverse.proto */
+#if !CYTHON_USE_TYPE_SPECS || (!CYTHON_COMPILING_IN_LIMITED_API && PY_VERSION_HEX < 0x03090000)
+#define __Pyx_call_type_traverse(o, always_call, visit, arg) 0
+#else
+static int __Pyx_call_type_traverse(PyObject *o, int always_call, visitproc visit, void *arg);
+#endif
+
+/* LimitedApiGetTypeDict.proto (used by SetItemOnTypeDict) */
+#if CYTHON_COMPILING_IN_LIMITED_API
+static PyObject *__Pyx_GetTypeDict(PyTypeObject *tp);
+#endif
+
+/* SetItemOnTypeDict.proto (used by FixUpExtensionType) */
+static int __Pyx__SetItemOnTypeDict(PyTypeObject *tp, PyObject *k, PyObject *v);
+#define __Pyx_SetItemOnTypeDict(tp, k, v) __Pyx__SetItemOnTypeDict((PyTypeObject*)tp, k, v)
+
+/* FixUpExtensionType.proto */
+static CYTHON_INLINE int __Pyx_fix_up_extension_type_from_spec(PyType_Spec *spec, PyTypeObject *type);
+
+/* PyObjectCallNoArg.proto (used by PyObjectCallMethod0) */
+static CYTHON_INLINE PyObject* __Pyx_PyObject_CallNoArg(PyObject *func);
+
+/* PyObjectCallMethod0.proto (used by PyType_Ready) */
+static PyObject* __Pyx_PyObject_CallMethod0(PyObject* obj, PyObject* method_name);
+
+/* ValidateBasesTuple.proto (used by PyType_Ready) */
+#if CYTHON_COMPILING_IN_CPYTHON || CYTHON_COMPILING_IN_LIMITED_API || CYTHON_USE_TYPE_SPECS
+static int __Pyx_validate_bases_tuple(const char *type_name, Py_ssize_t dictoffset, PyObject *bases);
+#endif
+
+/* PyType_Ready.proto */
+CYTHON_UNUSED static int __Pyx_PyType_Ready(PyTypeObject *t);
 
 /* TypeImport.proto */
 #ifndef __PYX_HAVE_RT_ImportType_proto_3_2_9
@@ -2239,36 +2528,8 @@ enum __Pyx_ImportType_CheckSize_3_2_9 {
 static PyTypeObject *__Pyx_ImportType_3_2_9(PyObject* module, const char *module_name, const char *class_name, size_t size, size_t alignment, enum __Pyx_ImportType_CheckSize_3_2_9 check_size);
 #endif
 
-/* HasAttr.proto (used by ImportImpl) */
-#if __PYX_LIMITED_VERSION_HEX >= 0x030d0000
-#define __Pyx_HasAttr(o, n)  PyObject_HasAttrWithError(o, n)
-#else
-static CYTHON_INLINE int __Pyx_HasAttr(PyObject *, PyObject *);
-#endif
-
-/* ImportImpl.export */
-static PyObject *__Pyx__Import(PyObject *name, PyObject *const *imported_names, Py_ssize_t len_imported_names, PyObject *qualname, PyObject *moddict, int level);
-
-/* Import.proto */
-static CYTHON_INLINE PyObject *__Pyx_Import(PyObject *name, PyObject *const *imported_names, Py_ssize_t len_imported_names, PyObject *qualname, int level);
-
-/* ImportFrom.proto */
-static PyObject* __Pyx_ImportFrom(PyObject* module, PyObject* name);
-
 /* dict_setdefault.proto (used by FetchCommonType) */
 static CYTHON_INLINE PyObject *__Pyx_PyDict_SetDefault(PyObject *d, PyObject *key, PyObject *default_value);
-
-/* LimitedApiGetTypeDict.proto (used by SetItemOnTypeDict) */
-#if CYTHON_COMPILING_IN_LIMITED_API
-static PyObject *__Pyx_GetTypeDict(PyTypeObject *tp);
-#endif
-
-/* SetItemOnTypeDict.proto (used by FixUpExtensionType) */
-static int __Pyx__SetItemOnTypeDict(PyTypeObject *tp, PyObject *k, PyObject *v);
-#define __Pyx_SetItemOnTypeDict(tp, k, v) __Pyx__SetItemOnTypeDict((PyTypeObject*)tp, k, v)
-
-/* FixUpExtensionType.proto (used by FetchCommonType) */
-static CYTHON_INLINE int __Pyx_fix_up_extension_type_from_spec(PyType_Spec *spec, PyTypeObject *type);
 
 /* AddModuleRef.proto (used by FetchSharedCythonModule) */
 #if ((CYTHON_COMPILING_IN_CPYTHON_FREETHREADING ) ||\
@@ -2287,13 +2548,6 @@ static PyTypeObject* __Pyx_FetchCommonTypeFromSpec(PyTypeObject *metaclass, PyOb
 /* CommonTypesMetaclass.proto (used by CythonFunctionShared) */
 static int __pyx_CommonTypesMetaclass_init(PyObject *module);
 #define __Pyx_CommonTypesMetaclass_USED
-
-/* CallTypeTraverse.proto (used by CythonFunctionShared) */
-#if !CYTHON_USE_TYPE_SPECS || (!CYTHON_COMPILING_IN_LIMITED_API && PY_VERSION_HEX < 0x03090000)
-#define __Pyx_call_type_traverse(o, always_call, visit, arg) 0
-#else
-static int __Pyx_call_type_traverse(PyObject *o, int always_call, visitproc visit, void *arg);
-#endif
 
 /* PyMethodNew.proto (used by CythonFunctionShared) */
 static PyObject *__Pyx_PyMethod_New(PyObject *func, PyObject *self, PyObject *typ);
@@ -2399,32 +2653,6 @@ static PyObject *__Pyx_CyFunction_New(PyMethodDef *ml,
                                       PyObject *closure,
                                       PyObject *module, PyObject *globals,
                                       PyObject* code);
-
-/* PyDictVersioning.proto (used by CLineInTraceback) */
-#if CYTHON_USE_DICT_VERSIONS && CYTHON_USE_TYPE_SLOTS
-#define __PYX_DICT_VERSION_INIT  ((PY_UINT64_T) -1)
-#define __PYX_GET_DICT_VERSION(dict)  (((PyDictObject*)(dict))->ma_version_tag)
-#define __PYX_UPDATE_DICT_CACHE(dict, value, cache_var, version_var)\
-    (version_var) = __PYX_GET_DICT_VERSION(dict);\
-    (cache_var) = (value);
-#define __PYX_PY_DICT_LOOKUP_IF_MODIFIED(VAR, DICT, LOOKUP) {\
-    static PY_UINT64_T __pyx_dict_version = 0;\
-    static PyObject *__pyx_dict_cached_value = NULL;\
-    if (likely(__PYX_GET_DICT_VERSION(DICT) == __pyx_dict_version)) {\
-        (VAR) = __Pyx_XNewRef(__pyx_dict_cached_value);\
-    } else {\
-        (VAR) = __pyx_dict_cached_value = (LOOKUP);\
-        __pyx_dict_version = __PYX_GET_DICT_VERSION(DICT);\
-    }\
-}
-static CYTHON_INLINE PY_UINT64_T __Pyx_get_tp_dict_version(PyObject *obj);
-static CYTHON_INLINE PY_UINT64_T __Pyx_get_object_dict_version(PyObject *obj);
-static CYTHON_INLINE int __Pyx_object_dict_version_matches(PyObject* obj, PY_UINT64_T tp_dict_version, PY_UINT64_T obj_dict_version);
-#else
-#define __PYX_GET_DICT_VERSION(dict)  (0)
-#define __PYX_UPDATE_DICT_CACHE(dict, value, cache_var, version_var)
-#define __PYX_PY_DICT_LOOKUP_IF_MODIFIED(VAR, DICT, LOOKUP)  (VAR) = (LOOKUP);
-#endif
 
 /* CLineInTraceback.proto (used by AddTraceback) */
 #if CYTHON_CLINE_IN_TRACEBACK && CYTHON_CLINE_IN_TRACEBACK_RUNTIME
@@ -2603,26 +2831,11 @@ static void __Pyx_AddTraceback(const char *funcname, int c_line,
 /* CIntFromPy.proto */
 static CYTHON_INLINE int __Pyx_PyLong_As_int(PyObject *);
 
-/* PyObjectVectorCallKwBuilder.proto (used by CIntToPy) */
-CYTHON_UNUSED static int __Pyx_VectorcallBuilder_AddArg_Check(PyObject *key, PyObject *value, PyObject *builder, PyObject **args, int n);
-#if CYTHON_VECTORCALL
-#if PY_VERSION_HEX >= 0x03090000
-#define __Pyx_Object_Vectorcall_CallFromBuilder PyObject_Vectorcall
-#else
-#define __Pyx_Object_Vectorcall_CallFromBuilder _PyObject_Vectorcall
-#endif
-#define __Pyx_MakeVectorcallBuilderKwds(n) PyTuple_New(n)
-static int __Pyx_VectorcallBuilder_AddArg(PyObject *key, PyObject *value, PyObject *builder, PyObject **args, int n);
-static int __Pyx_VectorcallBuilder_AddArgStr(const char *key, PyObject *value, PyObject *builder, PyObject **args, int n);
-#else
-#define __Pyx_Object_Vectorcall_CallFromBuilder __Pyx_PyObject_FastCallDict
-#define __Pyx_MakeVectorcallBuilderKwds(n) __Pyx_PyDict_NewPresized(n)
-#define __Pyx_VectorcallBuilder_AddArg(key, value, builder, args, n) PyDict_SetItem(builder, key, value)
-#define __Pyx_VectorcallBuilder_AddArgStr(key, value, builder, args, n) PyDict_SetItemString(builder, key, value)
-#endif
-
 /* CIntToPy.proto */
 static CYTHON_INLINE PyObject* __Pyx_PyLong_From_long(long value);
+
+/* CIntToPy.proto */
+static CYTHON_INLINE PyObject* __Pyx_PyLong_From_int(int value);
 
 /* FormatTypeName.proto */
 #if CYTHON_COMPILING_IN_LIMITED_API
@@ -2644,30 +2857,6 @@ typedef const char *__Pyx_TypeName;
 /* CIntFromPy.proto */
 static CYTHON_INLINE long __Pyx_PyLong_As_long(PyObject *);
 
-/* FastTypeChecks.proto */
-#if CYTHON_COMPILING_IN_CPYTHON
-#define __Pyx_TypeCheck(obj, type) __Pyx_IsSubtype(Py_TYPE(obj), (PyTypeObject *)type)
-#define __Pyx_TypeCheck2(obj, type1, type2) __Pyx_IsAnySubtype2(Py_TYPE(obj), (PyTypeObject *)type1, (PyTypeObject *)type2)
-static CYTHON_INLINE int __Pyx_IsSubtype(PyTypeObject *a, PyTypeObject *b);
-static CYTHON_INLINE int __Pyx_IsAnySubtype2(PyTypeObject *cls, PyTypeObject *a, PyTypeObject *b);
-static CYTHON_INLINE int __Pyx_PyErr_GivenExceptionMatches(PyObject *err, PyObject *type);
-static CYTHON_INLINE int __Pyx_PyErr_GivenExceptionMatches2(PyObject *err, PyObject *type1, PyObject *type2);
-#else
-#define __Pyx_TypeCheck(obj, type) PyObject_TypeCheck(obj, (PyTypeObject *)type)
-#define __Pyx_TypeCheck2(obj, type1, type2) (PyObject_TypeCheck(obj, (PyTypeObject *)type1) || PyObject_TypeCheck(obj, (PyTypeObject *)type2))
-#define __Pyx_PyErr_GivenExceptionMatches(err, type) PyErr_GivenExceptionMatches(err, type)
-static CYTHON_INLINE int __Pyx_PyErr_GivenExceptionMatches2(PyObject *err, PyObject *type1, PyObject *type2) {
-    return PyErr_GivenExceptionMatches(err, type1) || PyErr_GivenExceptionMatches(err, type2);
-}
-#endif
-#define __Pyx_PyErr_ExceptionMatches2(err1, err2)  __Pyx_PyErr_GivenExceptionMatches2(__Pyx_PyErr_CurrentExceptionType(), err1, err2)
-#define __Pyx_PyException_Check(obj) __Pyx_TypeCheck(obj, PyExc_Exception)
-#ifdef PyExceptionInstance_Check
-  #define __Pyx_PyBaseException_Check(obj) PyExceptionInstance_Check(obj)
-#else
-  #define __Pyx_PyBaseException_Check(obj) __Pyx_TypeCheck(obj, PyExc_BaseException)
-#endif
-
 /* GetRuntimeVersion.proto */
 #if __PYX_LIMITED_VERSION_HEX < 0x030b0000
 static unsigned long __Pyx_cached_runtime_version = 0;
@@ -2676,6 +2865,110 @@ static void __Pyx_init_runtime_version(void);
 #define __Pyx_init_runtime_version()
 #endif
 static unsigned long __Pyx_get_runtime_version(void);
+
+/* SwapException.proto (used by CoroutineBase) */
+#if CYTHON_FAST_THREAD_STATE
+#define __Pyx_ExceptionSwap(type, value, tb)  __Pyx__ExceptionSwap(__pyx_tstate, type, value, tb)
+static CYTHON_INLINE void __Pyx__ExceptionSwap(PyThreadState *tstate, PyObject **type, PyObject **value, PyObject **tb);
+#else
+static CYTHON_INLINE void __Pyx_ExceptionSwap(PyObject **type, PyObject **value, PyObject **tb);
+#endif
+
+/* IterNextPlain.proto (used by CoroutineBase) */
+static CYTHON_INLINE PyObject *__Pyx_PyIter_Next_Plain(PyObject *iterator);
+#if CYTHON_COMPILING_IN_LIMITED_API && __PYX_LIMITED_VERSION_HEX < 0x030A0000
+static PyObject *__Pyx_GetBuiltinNext_LimitedAPI(void);
+#endif
+
+/* ReturnWithStopIteration.proto (used by CoroutineBase) */
+static CYTHON_INLINE void __Pyx_ReturnWithStopIteration(PyObject* value, int async, int iternext);
+
+/* CoroutineBase.proto (used by Generator) */
+struct __pyx_CoroutineObject;
+typedef PyObject *(*__pyx_coroutine_body_t)(struct __pyx_CoroutineObject *, PyThreadState *, PyObject *);
+#if CYTHON_USE_EXC_INFO_STACK
+#define __Pyx_ExcInfoStruct  _PyErr_StackItem
+#else
+typedef struct {
+    PyObject *exc_type;
+    PyObject *exc_value;
+    PyObject *exc_traceback;
+} __Pyx_ExcInfoStruct;
+#endif
+typedef struct __pyx_CoroutineObject {
+    PyObject_HEAD
+    __pyx_coroutine_body_t body;
+    PyObject *closure;
+    __Pyx_ExcInfoStruct gi_exc_state;
+#if PY_VERSION_HEX < 0x030C0000 || CYTHON_COMPILING_IN_LIMITED_API
+    PyObject *gi_weakreflist;
+#endif
+    PyObject *classobj;
+    PyObject *yieldfrom;
+    __Pyx_pyiter_sendfunc yieldfrom_am_send;
+    PyObject *gi_name;
+    PyObject *gi_qualname;
+    PyObject *gi_modulename;
+    PyObject *gi_code;
+    PyObject *gi_frame;
+#if CYTHON_USE_SYS_MONITORING && (CYTHON_PROFILE || CYTHON_TRACE)
+    PyMonitoringState __pyx_pymonitoring_state[__Pyx_MonitoringEventTypes_CyGen_count];
+    uint64_t __pyx_pymonitoring_version;
+#endif
+    int resume_label;
+    char is_running;
+} __pyx_CoroutineObject;
+static __pyx_CoroutineObject *__Pyx__Coroutine_New(
+    PyTypeObject *type, __pyx_coroutine_body_t body, PyObject *code, PyObject *closure,
+    PyObject *name, PyObject *qualname, PyObject *module_name);
+static __pyx_CoroutineObject *__Pyx__Coroutine_NewInit(
+            __pyx_CoroutineObject *gen, __pyx_coroutine_body_t body, PyObject *code, PyObject *closure,
+            PyObject *name, PyObject *qualname, PyObject *module_name);
+static CYTHON_INLINE void __Pyx_Coroutine_ExceptionClear(__Pyx_ExcInfoStruct *self);
+static int __Pyx_Coroutine_clear(PyObject *self);
+static __Pyx_PySendResult __Pyx_Coroutine_AmSend(PyObject *self, PyObject *value, PyObject **retval);
+static PyObject *__Pyx_Coroutine_Send(PyObject *self, PyObject *value);
+static __Pyx_PySendResult __Pyx_Coroutine_Close(PyObject *self, PyObject **retval);
+static PyObject *__Pyx_Coroutine_Throw(PyObject *gen, PyObject *args);
+#if CYTHON_USE_EXC_INFO_STACK
+#define __Pyx_Coroutine_SwapException(self)
+#define __Pyx_Coroutine_ResetAndClearException(self)  __Pyx_Coroutine_ExceptionClear(&(self)->gi_exc_state)
+#else
+#define __Pyx_Coroutine_SwapException(self) {\
+    __Pyx_ExceptionSwap(&(self)->gi_exc_state.exc_type, &(self)->gi_exc_state.exc_value, &(self)->gi_exc_state.exc_traceback);\
+    __Pyx_Coroutine_ResetFrameBackpointer(&(self)->gi_exc_state);\
+    }
+#define __Pyx_Coroutine_ResetAndClearException(self) {\
+    __Pyx_ExceptionReset((self)->gi_exc_state.exc_type, (self)->gi_exc_state.exc_value, (self)->gi_exc_state.exc_traceback);\
+    (self)->gi_exc_state.exc_type = (self)->gi_exc_state.exc_value = (self)->gi_exc_state.exc_traceback = NULL;\
+    }
+#endif
+#if CYTHON_FAST_THREAD_STATE
+#define __Pyx_PyGen_FetchStopIterationValue(pvalue)\
+    __Pyx_PyGen__FetchStopIterationValue(__pyx_tstate, pvalue)
+#else
+#define __Pyx_PyGen_FetchStopIterationValue(pvalue)\
+    __Pyx_PyGen__FetchStopIterationValue(__Pyx_PyThreadState_Current, pvalue)
+#endif
+static int __Pyx_PyGen__FetchStopIterationValue(PyThreadState *tstate, PyObject **pvalue);
+static CYTHON_INLINE void __Pyx_Coroutine_ResetFrameBackpointer(__Pyx_ExcInfoStruct *exc_state);
+static char __Pyx_Coroutine_test_and_set_is_running(__pyx_CoroutineObject *gen);
+static void __Pyx_Coroutine_unset_is_running(__pyx_CoroutineObject *gen);
+static char __Pyx_Coroutine_get_is_running(__pyx_CoroutineObject *gen);
+static PyObject *__Pyx_Coroutine_get_is_running_getter(PyObject *gen, void *closure);
+#if __PYX_HAS_PY_AM_SEND == 2
+static void __Pyx_SetBackportTypeAmSend(PyTypeObject *type, __Pyx_PyAsyncMethodsStruct *static_amsend_methods, __Pyx_pyiter_sendfunc am_send);
+#endif
+static PyObject *__Pyx_Coroutine_fail_reduce_ex(PyObject *self, PyObject *arg);
+
+/* Generator.proto */
+#define __Pyx_Generator_USED
+#define __Pyx_Generator_CheckExact(obj) __Pyx_IS_TYPE(obj, __pyx_mstate_global->__pyx_GeneratorType)
+#define __Pyx_Generator_New(body, code, closure, name, qualname, module_name)\
+    __Pyx__Coroutine_New(__pyx_mstate_global->__pyx_GeneratorType, body, code, closure, name, qualname, module_name)
+static PyObject *__Pyx_Generator_Next(PyObject *self);
+static int __pyx_Generator_init(PyObject *module);
+static CYTHON_INLINE PyObject *__Pyx_Generator_GetInlinedResult(PyObject *self);
 
 /* CheckBinaryVersion.proto */
 static int __Pyx_check_binary_version(unsigned long ct_version, unsigned long rt_version, int allow_newer);
@@ -2785,6 +3078,7 @@ static CYTHON_INLINE PyObject *__pyx_f_5numpy_5ufunc_9userloops_userloops(PyUFun
 /* Module declarations from "numpy" */
 
 /* Module declarations from "frigate.video.detect_cython" */
+static int __pyx_f_7frigate_5video_13detect_cython_ptz_moving_at_frame_time(PyObject *, PyObject *, PyObject *); /*proto*/
 /* #### Code section: typeinfo ### */
 /* #### Code section: before_global_var ### */
 #define __Pyx_MODULE_NAME "frigate.video.detect_cython"
@@ -2793,13 +3087,18 @@ int __pyx_module_is_main_frigate__video__detect_cython = 0;
 
 /* Implementation of "frigate.video.detect_cython" */
 /* #### Code section: global_var ### */
+static PyObject *__pyx_builtin___import__;
+static PyObject *__pyx_builtin_enumerate;
 /* #### Code section: string_decls ### */
 static const char __pyx_k_Cython_accelerated_detection_pr[] = "\nCython-accelerated detection processing loops.\n\nConsolidates the multiple Python list comprehensions in video/detect.py\nthat iterate over tracked_objects.values() into single Cython passes:\n- Stationary object ID detection\n- Tracked object box extraction\n- Seed detection construction\n- Detection consolidation filtering\n\nUsage:\n    from frigate.video.detect_cython import (\n        cython_process_tracked_objects,\n        cython_filter_detections_by_label,\n    )\n";
 /* #### Code section: decls ### */
 static PyObject *__pyx_pf_7frigate_5video_13detect_cython_cython_process_tracked_objects(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_tracked_objects, PyObject *__pyx_v_motion_boxes, PyObject *__pyx_v_stationary_object_ids, int __pyx_v_stationary_threshold, PyObject *__pyx_v_disappeared, PyObject *__pyx_v_intersects_any, CYTHON_UNUSED PyObject *__pyx_v_reduce_overlapping_detections, CYTHON_UNUSED PyObject *__pyx_v_reduce_detections, PyObject *__pyx_v_all_attributes, PyObject *__pyx_v_consolidate_detections); /* proto */
 static PyObject *__pyx_pf_7frigate_5video_13detect_cython_2cython_filter_detections_by_label(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_detections, PyObject *__pyx_v_filter_labels); /* proto */
 static PyObject *__pyx_pf_7frigate_5video_13detect_cython_4cython_extract_tracked_box(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_obj, int __pyx_v_motionless, int __pyx_v_stationary_threshold); /* proto */
-static PyObject *__pyx_pf_7frigate_5video_13detect_cython_6cython_build_detections_with_attributes(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_tracked_objects, PyObject *__pyx_v_consolidated_detections, PyObject *__pyx_v_all_attributes, PyObject *__pyx_v_attributes_map, PyObject *__pyx_v_cython_find_best_object); /* proto */
+static PyObject *__pyx_pf_7frigate_5video_13detect_cython_21cython_process_frames_8genexpr3_genexpr(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_genexpr_arg_0); /* proto */
+static PyObject *__pyx_pf_7frigate_5video_13detect_cython_6cython_process_frames(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_requestor, PyObject *__pyx_v_frame_queue, PyObject *__pyx_v_frame_shape, PyObject *__pyx_v_model_config, PyObject *__pyx_v_camera_config, PyObject *__pyx_v_frame_manager, PyObject *__pyx_v_motion_detector, PyObject *__pyx_v_object_detector, PyObject *__pyx_v_object_tracker, PyObject *__pyx_v_detected_objects_queue, PyObject *__pyx_v_camera_metrics, PyObject *__pyx_v_stop_event, PyObject *__pyx_v_ptz_metrics, PyObject *__pyx_v_region_grid, int __pyx_v_exit_on_empty); /* proto */
+static PyObject *__pyx_pf_7frigate_5video_13detect_cython_8cython_build_detections_with_attributes(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_tracked_objects, PyObject *__pyx_v_consolidated_detections, PyObject *__pyx_v_all_attributes, PyObject *__pyx_v_attributes_map, PyObject *__pyx_v_cython_find_best_object); /* proto */
+static PyObject *__pyx_tp_new_7frigate_5video_13detect_cython___pyx_scope_struct__genexpr(PyTypeObject *t, PyObject *a, PyObject *k); /*proto*/
 /* #### Code section: late_includes ### */
 /* #### Code section: module_state ### */
 /* SmallCodeConfig */
@@ -2836,13 +3135,21 @@ typedef struct {
   PyTypeObject *__pyx_ptype_5numpy_flexible;
   PyTypeObject *__pyx_ptype_5numpy_character;
   PyTypeObject *__pyx_ptype_5numpy_ufunc;
+  PyObject *__pyx_type_7frigate_5video_13detect_cython___pyx_scope_struct__genexpr;
+  PyTypeObject *__pyx_ptype_7frigate_5video_13detect_cython___pyx_scope_struct__genexpr;
   __Pyx_CachedCFunction __pyx_umethod_PyDict_Type_items;
   __Pyx_CachedCFunction __pyx_umethod_PyDict_Type_pop;
   __Pyx_CachedCFunction __pyx_umethod_PyDict_Type_values;
-  PyObject *__pyx_codeobj_tab[4];
-  PyObject *__pyx_string_tab[83];
-  PyObject *__pyx_number_tab[1];
+  PyObject *__pyx_tuple[4];
+  PyObject *__pyx_codeobj_tab[6];
+  PyObject *__pyx_string_tab[246];
+  PyObject *__pyx_number_tab[13];
 /* #### Code section: module_state_contents ### */
+
+#if CYTHON_USE_FREELISTS
+struct __pyx_obj_7frigate_5video_13detect_cython___pyx_scope_struct__genexpr *__pyx_freelist_7frigate_5video_13detect_cython___pyx_scope_struct__genexpr[8];
+int __pyx_freecount_7frigate_5video_13detect_cython___pyx_scope_struct__genexpr;
+#endif
 /* CommonTypesMetaclass.module_state_decls */
 PyTypeObject *__pyx_CommonTypesMetaclassType;
 
@@ -2856,6 +3163,14 @@ PyTypeObject *__pyx_CyFunctionType;
 
 /* CodeObjectCache.module_state_decls */
 struct __Pyx_CodeObjectCache __pyx_code_cache;
+
+/* IterNextPlain.module_state_decls */
+#if CYTHON_COMPILING_IN_LIMITED_API && __PYX_LIMITED_VERSION_HEX < 0x030A0000
+PyObject *__Pyx_GetBuiltinNext_LimitedAPI_cache;
+#endif
+
+/* Generator.module_state_decls */
+PyTypeObject *__pyx_GeneratorType;
 
 /* #### Code section: module_state_end ### */
 } __pyx_mstatetype;
@@ -2884,88 +3199,263 @@ static __pyx_mstatetype * const __pyx_mstate_global = &__pyx_mstate_global_stati
 /* #### Code section: constant_name_defines ### */
 #define __pyx_kp_u_ __pyx_string_tab[0]
 #define __pyx_kp_u__2 __pyx_string_tab[1]
-#define __pyx_kp_u_frigate_video_detect_cython_pyx __pyx_string_tab[2]
-#define __pyx_kp_u_numpy__core_multiarray_failed_to __pyx_string_tab[3]
-#define __pyx_kp_u_numpy__core_umath_failed_to_impo __pyx_string_tab[4]
-#define __pyx_n_u_Any __pyx_string_tab[5]
-#define __pyx_n_u_Pyx_PyDict_NextRef __pyx_string_tab[6]
-#define __pyx_n_u_all_attributes __pyx_string_tab[7]
-#define __pyx_n_u_annotate __pyx_string_tab[8]
-#define __pyx_n_u_append __pyx_string_tab[9]
-#define __pyx_n_u_area __pyx_string_tab[10]
-#define __pyx_n_u_asyncio_coroutines __pyx_string_tab[11]
-#define __pyx_n_u_attr_box __pyx_string_tab[12]
-#define __pyx_n_u_attr_data __pyx_string_tab[13]
-#define __pyx_n_u_attr_dets __pyx_string_tab[14]
-#define __pyx_n_u_attr_label __pyx_string_tab[15]
-#define __pyx_n_u_attributes __pyx_string_tab[16]
-#define __pyx_n_u_attributes_map __pyx_string_tab[17]
-#define __pyx_n_u_best_id __pyx_string_tab[18]
-#define __pyx_n_u_best_label __pyx_string_tab[19]
-#define __pyx_n_u_box __pyx_string_tab[20]
-#define __pyx_n_u_box_data __pyx_string_tab[21]
-#define __pyx_n_u_class_getitem __pyx_string_tab[22]
-#define __pyx_n_u_cline_in_traceback __pyx_string_tab[23]
-#define __pyx_n_u_consolidate_detections __pyx_string_tab[24]
-#define __pyx_n_u_consolidated_detections __pyx_string_tab[25]
-#define __pyx_n_u_cython_build_detections_with_att __pyx_string_tab[26]
-#define __pyx_n_u_cython_extract_tracked_box __pyx_string_tab[27]
-#define __pyx_n_u_cython_filter_detections_by_labe __pyx_string_tab[28]
-#define __pyx_n_u_cython_find_best_object __pyx_string_tab[29]
-#define __pyx_n_u_cython_process_tracked_objects __pyx_string_tab[30]
-#define __pyx_n_u_det __pyx_string_tab[31]
-#define __pyx_n_u_detections __pyx_string_tab[32]
-#define __pyx_n_u_disappeared __pyx_string_tab[33]
-#define __pyx_n_u_disp __pyx_string_tab[34]
-#define __pyx_n_u_estimate __pyx_string_tab[35]
-#define __pyx_n_u_filter_labels __pyx_string_tab[36]
-#define __pyx_n_u_filtered_boxes __pyx_string_tab[37]
-#define __pyx_n_u_filtered_ids __pyx_string_tab[38]
-#define __pyx_n_u_filtered_labels __pyx_string_tab[39]
-#define __pyx_n_u_frigate_video_detect_cython __pyx_string_tab[40]
-#define __pyx_n_u_func __pyx_string_tab[41]
-#define __pyx_n_u_get __pyx_string_tab[42]
-#define __pyx_n_u_id __pyx_string_tab[43]
-#define __pyx_n_u_intersects_any __pyx_string_tab[44]
-#define __pyx_n_u_is_coroutine __pyx_string_tab[45]
-#define __pyx_n_u_is_stationary __pyx_string_tab[46]
-#define __pyx_n_u_items __pyx_string_tab[47]
-#define __pyx_n_u_label __pyx_string_tab[48]
-#define __pyx_n_u_main __pyx_string_tab[49]
-#define __pyx_n_u_module __pyx_string_tab[50]
-#define __pyx_n_u_motion_boxes __pyx_string_tab[51]
-#define __pyx_n_u_motionless __pyx_string_tab[52]
-#define __pyx_n_u_motionless_count __pyx_string_tab[53]
-#define __pyx_n_u_name __pyx_string_tab[54]
-#define __pyx_n_u_np __pyx_string_tab[55]
-#define __pyx_n_u_numpy __pyx_string_tab[56]
-#define __pyx_n_u_obj __pyx_string_tab[57]
-#define __pyx_n_u_obj_id __pyx_string_tab[58]
-#define __pyx_n_u_obj_key __pyx_string_tab[59]
-#define __pyx_n_u_pop __pyx_string_tab[60]
-#define __pyx_n_u_qualname __pyx_string_tab[61]
-#define __pyx_n_u_ratio __pyx_string_tab[62]
-#define __pyx_n_u_reduce_detections __pyx_string_tab[63]
-#define __pyx_n_u_reduce_overlapping_detections __pyx_string_tab[64]
-#define __pyx_n_u_region __pyx_string_tab[65]
-#define __pyx_n_u_result __pyx_string_tab[66]
-#define __pyx_n_u_score __pyx_string_tab[67]
-#define __pyx_n_u_set_name __pyx_string_tab[68]
-#define __pyx_n_u_setdefault __pyx_string_tab[69]
-#define __pyx_n_u_stationary_ids __pyx_string_tab[70]
-#define __pyx_n_u_stationary_object_ids __pyx_string_tab[71]
-#define __pyx_n_u_stationary_threshold __pyx_string_tab[72]
-#define __pyx_n_u_test __pyx_string_tab[73]
-#define __pyx_n_u_tracked_boxes __pyx_string_tab[74]
-#define __pyx_n_u_tracked_dets __pyx_string_tab[75]
-#define __pyx_n_u_tracked_objects __pyx_string_tab[76]
-#define __pyx_n_u_typing __pyx_string_tab[77]
-#define __pyx_n_u_values __pyx_string_tab[78]
-#define __pyx_kp_b_iso88591_8_a_A_q_1_oQa_AQ_T_7_1_q_1A_6_A __pyx_string_tab[79]
-#define __pyx_kp_b_iso88591_A_uAS_uAS __pyx_string_tab[80]
-#define __pyx_kp_b_iso88591_Z_d_XXY_Q_A_1_oQa_AQ_S_axq_c_d __pyx_string_tab[81]
-#define __pyx_kp_b_iso88591_a_q_1A_6_1 __pyx_string_tab[82]
-#define __pyx_int_0 __pyx_number_tab[0]
+#define __pyx_kp_u_disable __pyx_string_tab[2]
+#define __pyx_kp_u_enable __pyx_string_tab[3]
+#define __pyx_kp_u_frigate_comms_inter_process __pyx_string_tab[4]
+#define __pyx_kp_u_frigate_video_detect_cython_pyx __pyx_string_tab[5]
+#define __pyx_kp_u_gc __pyx_string_tab[6]
+#define __pyx_kp_u_isenabled __pyx_string_tab[7]
+#define __pyx_kp_u_numpy__core_multiarray_failed_to __pyx_string_tab[8]
+#define __pyx_kp_u_numpy__core_umath_failed_to_impo __pyx_string_tab[9]
+#define __pyx_n_u_Any __pyx_string_tab[10]
+#define __pyx_n_u_CameraTypeEnum __pyx_string_tab[11]
+#define __pyx_n_u_Empty __pyx_string_tab[12]
+#define __pyx_n_u_EventsPerSecond __pyx_string_tab[13]
+#define __pyx_n_u_InterProcessRequestor __pyx_string_tab[14]
+#define __pyx_n_u_Pyx_PyDict_NextRef __pyx_string_tab[15]
+#define __pyx_n_u_REQUEST_REGION_GRID __pyx_string_tab[16]
+#define __pyx_n_u_UTC __pyx_string_tab[17]
+#define __pyx_n_u__4 __pyx_string_tab[18]
+#define __pyx_n_u_all_attributes __pyx_string_tab[19]
+#define __pyx_n_u_annotate __pyx_string_tab[20]
+#define __pyx_n_u_append __pyx_string_tab[21]
+#define __pyx_n_u_area __pyx_string_tab[22]
+#define __pyx_n_u_areas __pyx_string_tab[23]
+#define __pyx_n_u_array __pyx_string_tab[24]
+#define __pyx_n_u_astimezone __pyx_string_tab[25]
+#define __pyx_n_u_asyncio_coroutines __pyx_string_tab[26]
+#define __pyx_n_u_attr __pyx_string_tab[27]
+#define __pyx_n_u_attr_box __pyx_string_tab[28]
+#define __pyx_n_u_attr_data __pyx_string_tab[29]
+#define __pyx_n_u_attr_dets __pyx_string_tab[30]
+#define __pyx_n_u_attr_label __pyx_string_tab[31]
+#define __pyx_n_u_attributes __pyx_string_tab[32]
+#define __pyx_n_u_attributes_map __pyx_string_tab[33]
+#define __pyx_n_u_batch_results __pyx_string_tab[34]
+#define __pyx_n_u_best_id __pyx_string_tab[35]
+#define __pyx_n_u_best_label __pyx_string_tab[36]
+#define __pyx_n_u_box __pyx_string_tab[37]
+#define __pyx_n_u_box_data __pyx_string_tab[38]
+#define __pyx_n_u_boxes __pyx_string_tab[39]
+#define __pyx_n_u_camera_config __pyx_string_tab[40]
+#define __pyx_n_u_camera_enabled __pyx_string_tab[41]
+#define __pyx_n_u_camera_metrics __pyx_string_tab[42]
+#define __pyx_n_u_candidate __pyx_string_tab[43]
+#define __pyx_n_u_car __pyx_string_tab[44]
+#define __pyx_n_u_check_for_updates __pyx_string_tab[45]
+#define __pyx_n_u_class __pyx_string_tab[46]
+#define __pyx_n_u_class_getitem __pyx_string_tab[47]
+#define __pyx_n_u_clear __pyx_string_tab[48]
+#define __pyx_n_u_cline_in_traceback __pyx_string_tab[49]
+#define __pyx_n_u_close __pyx_string_tab[50]
+#define __pyx_n_u_config __pyx_string_tab[51]
+#define __pyx_n_u_config_subscriber __pyx_string_tab[52]
+#define __pyx_n_u_consolidate_detections __pyx_string_tab[53]
+#define __pyx_n_u_consolidated_detections __pyx_string_tab[54]
+#define __pyx_n_u_convert_detection_boxes __pyx_string_tab[55]
+#define __pyx_n_u_converted __pyx_string_tab[56]
+#define __pyx_n_u_cython_build_detections_with_att __pyx_string_tab[57]
+#define __pyx_n_u_cython_extract_tracked_box __pyx_string_tab[58]
+#define __pyx_n_u_cython_filter_detections_by_labe __pyx_string_tab[59]
+#define __pyx_n_u_cython_filter_motion_boxes __pyx_string_tab[60]
+#define __pyx_n_u_cython_find_best_object __pyx_string_tab[61]
+#define __pyx_n_u_cython_process_frames __pyx_string_tab[62]
+#define __pyx_n_u_cython_process_frames_locals_gen __pyx_string_tab[63]
+#define __pyx_n_u_cython_process_tracked_objects __pyx_string_tab[64]
+#define __pyx_n_u_d __pyx_string_tab[65]
+#define __pyx_n_u_datetime __pyx_string_tab[66]
+#define __pyx_n_u_datetime_module __pyx_string_tab[67]
+#define __pyx_n_u_det __pyx_string_tab[68]
+#define __pyx_n_u_detect __pyx_string_tab[69]
+#define __pyx_n_u_detect_batch __pyx_string_tab[70]
+#define __pyx_n_u_detected_objects_queue __pyx_string_tab[71]
+#define __pyx_n_u_detection_fps __pyx_string_tab[72]
+#define __pyx_n_u_detection_frame __pyx_string_tab[73]
+#define __pyx_n_u_detections __pyx_string_tab[74]
+#define __pyx_n_u_disappeared __pyx_string_tab[75]
+#define __pyx_n_u_disp __pyx_string_tab[76]
+#define __pyx_n_u_do_detect __pyx_string_tab[77]
+#define __pyx_n_u_dtype __pyx_string_tab[78]
+#define __pyx_n_u_empty __pyx_string_tab[79]
+#define __pyx_n_u_enabled __pyx_string_tab[80]
+#define __pyx_n_u_enumerate __pyx_string_tab[81]
+#define __pyx_n_u_eps __pyx_string_tab[82]
+#define __pyx_n_u_estimate __pyx_string_tab[83]
+#define __pyx_n_u_exit_on_empty __pyx_string_tab[84]
+#define __pyx_n_u_filter_labels __pyx_string_tab[85]
+#define __pyx_n_u_filtered __pyx_string_tab[86]
+#define __pyx_n_u_filtered_boxes __pyx_string_tab[87]
+#define __pyx_n_u_filtered_ids __pyx_string_tab[88]
+#define __pyx_n_u_filtered_labels __pyx_string_tab[89]
+#define __pyx_n_u_filters __pyx_string_tab[90]
+#define __pyx_n_u_float32 __pyx_string_tab[91]
+#define __pyx_n_u_fps __pyx_string_tab[92]
+#define __pyx_n_u_fps_tracker __pyx_string_tab[93]
+#define __pyx_n_u_frame __pyx_string_tab[94]
+#define __pyx_n_u_frame_manager __pyx_string_tab[95]
+#define __pyx_n_u_frame_name __pyx_string_tab[96]
+#define __pyx_n_u_frame_queue __pyx_string_tab[97]
+#define __pyx_n_u_frame_shape __pyx_string_tab[98]
+#define __pyx_n_u_frame_time __pyx_string_tab[99]
+#define __pyx_n_u_frigate_config_camera_camera __pyx_string_tab[100]
+#define __pyx_n_u_frigate_detectors_detection_cyth __pyx_string_tab[101]
+#define __pyx_n_u_frigate_motion_motion_cython __pyx_string_tab[102]
+#define __pyx_n_u_frigate_util_builtin __pyx_string_tab[103]
+#define __pyx_n_u_frigate_util_object __pyx_string_tab[104]
+#define __pyx_n_u_frigate_video_detect_cython __pyx_string_tab[105]
+#define __pyx_n_u_fromlist __pyx_string_tab[106]
+#define __pyx_n_u_full __pyx_string_tab[107]
+#define __pyx_n_u_func __pyx_string_tab[108]
+#define __pyx_n_u_genexpr __pyx_string_tab[109]
+#define __pyx_n_u_get __pyx_string_tab[110]
+#define __pyx_n_u_get_cluster_candidates __pyx_string_tab[111]
+#define __pyx_n_u_get_cluster_region __pyx_string_tab[112]
+#define __pyx_n_u_get_cluster_region_from_grid __pyx_string_tab[113]
+#define __pyx_n_u_get_startup_regions __pyx_string_tab[114]
+#define __pyx_n_u_height __pyx_string_tab[115]
+#define __pyx_n_u_hours __pyx_string_tab[116]
+#define __pyx_n_u_i __pyx_string_tab[117]
+#define __pyx_n_u_id __pyx_string_tab[118]
+#define __pyx_n_u_import __pyx_string_tab[119]
+#define __pyx_n_u_intersects_any __pyx_string_tab[120]
+#define __pyx_n_u_interval __pyx_string_tab[121]
+#define __pyx_n_u_is_calibrating __pyx_string_tab[122]
+#define __pyx_n_u_is_coroutine __pyx_string_tab[123]
+#define __pyx_n_u_is_lpr __pyx_string_tab[124]
+#define __pyx_n_u_is_object_filtered_batch __pyx_string_tab[125]
+#define __pyx_n_u_is_set __pyx_string_tab[126]
+#define __pyx_n_u_is_stationary __pyx_string_tab[127]
+#define __pyx_n_u_items __pyx_string_tab[128]
+#define __pyx_n_u_j __pyx_string_tab[129]
+#define __pyx_n_u_label __pyx_string_tab[130]
+#define __pyx_n_u_labels __pyx_string_tab[131]
+#define __pyx_n_u_largest_dimension __pyx_string_tab[132]
+#define __pyx_n_u_license_plate __pyx_string_tab[133]
+#define __pyx_n_u_lpr __pyx_string_tab[134]
+#define __pyx_n_u_m_count __pyx_string_tab[135]
+#define __pyx_n_u_main __pyx_string_tab[136]
+#define __pyx_n_u_match_and_update __pyx_string_tab[137]
+#define __pyx_n_u_model_config __pyx_string_tab[138]
+#define __pyx_n_u_modified_attributes_map __pyx_string_tab[139]
+#define __pyx_n_u_module __pyx_string_tab[140]
+#define __pyx_n_u_motion __pyx_string_tab[141]
+#define __pyx_n_u_motion_boxes __pyx_string_tab[142]
+#define __pyx_n_u_motion_boxes_array __pyx_string_tab[143]
+#define __pyx_n_u_motion_boxes_buf __pyx_string_tab[144]
+#define __pyx_n_u_motion_boxes_for_check __pyx_string_tab[145]
+#define __pyx_n_u_motion_clusters __pyx_string_tab[146]
+#define __pyx_n_u_motion_detector __pyx_string_tab[147]
+#define __pyx_n_u_motion_regions __pyx_string_tab[148]
+#define __pyx_n_u_motionless __pyx_string_tab[149]
+#define __pyx_n_u_motionless_count __pyx_string_tab[150]
+#define __pyx_n_u_name __pyx_string_tab[151]
+#define __pyx_n_u_name_2 __pyx_string_tab[152]
+#define __pyx_n_u_next __pyx_string_tab[153]
+#define __pyx_n_u_next_region_update __pyx_string_tab[154]
+#define __pyx_n_u_now __pyx_string_tab[155]
+#define __pyx_n_u_np __pyx_string_tab[156]
+#define __pyx_n_u_numpy __pyx_string_tab[157]
+#define __pyx_n_u_obj __pyx_string_tab[158]
+#define __pyx_n_u_obj_id __pyx_string_tab[159]
+#define __pyx_n_u_obj_key __pyx_string_tab[160]
+#define __pyx_n_u_object_boxes __pyx_string_tab[161]
+#define __pyx_n_u_object_detector __pyx_string_tab[162]
+#define __pyx_n_u_object_tracker __pyx_string_tab[163]
+#define __pyx_n_u_objects __pyx_string_tab[164]
+#define __pyx_n_u_pop __pyx_string_tab[165]
+#define __pyx_n_u_positions __pyx_string_tab[166]
+#define __pyx_n_u_prev_enabled __pyx_string_tab[167]
+#define __pyx_n_u_process_fps __pyx_string_tab[168]
+#define __pyx_n_u_ptz_metrics __pyx_string_tab[169]
+#define __pyx_n_u_ptz_moving __pyx_string_tab[170]
+#define __pyx_n_u_put __pyx_string_tab[171]
+#define __pyx_n_u_qualname __pyx_string_tab[172]
+#define __pyx_n_u_queue __pyx_string_tab[173]
+#define __pyx_n_u_queue_module __pyx_string_tab[174]
+#define __pyx_n_u_r_count __pyx_string_tab[175]
+#define __pyx_n_u_ratio __pyx_string_tab[176]
+#define __pyx_n_u_ratios __pyx_string_tab[177]
+#define __pyx_n_u_reduce_detections __pyx_string_tab[178]
+#define __pyx_n_u_reduce_overlapping_detections __pyx_string_tab[179]
+#define __pyx_n_u_region __pyx_string_tab[180]
+#define __pyx_n_u_region_detections __pyx_string_tab[181]
+#define __pyx_n_u_region_grid __pyx_string_tab[182]
+#define __pyx_n_u_region_min_size __pyx_string_tab[183]
+#define __pyx_n_u_regions __pyx_string_tab[184]
+#define __pyx_n_u_regions_array __pyx_string_tab[185]
+#define __pyx_n_u_regions_buf __pyx_string_tab[186]
+#define __pyx_n_u_request_module __pyx_string_tab[187]
+#define __pyx_n_u_requestor __pyx_string_tab[188]
+#define __pyx_n_u_reshape __pyx_string_tab[189]
+#define __pyx_n_u_result __pyx_string_tab[190]
+#define __pyx_n_u_score __pyx_string_tab[191]
+#define __pyx_n_u_scores __pyx_string_tab[192]
+#define __pyx_n_u_send __pyx_string_tab[193]
+#define __pyx_n_u_send_data __pyx_string_tab[194]
+#define __pyx_n_u_set_name __pyx_string_tab[195]
+#define __pyx_n_u_setdefault __pyx_string_tab[196]
+#define __pyx_n_u_shape __pyx_string_tab[197]
+#define __pyx_n_u_sleep __pyx_string_tab[198]
+#define __pyx_n_u_split __pyx_string_tab[199]
+#define __pyx_n_u_standalone_motion_array __pyx_string_tab[200]
+#define __pyx_n_u_standalone_motion_boxes __pyx_string_tab[201]
+#define __pyx_n_u_start __pyx_string_tab[202]
+#define __pyx_n_u_start_time __pyx_string_tab[203]
+#define __pyx_n_u_startup_scan __pyx_string_tab[204]
+#define __pyx_n_u_stationary __pyx_string_tab[205]
+#define __pyx_n_u_stationary_box_history __pyx_string_tab[206]
+#define __pyx_n_u_stationary_frame_counter __pyx_string_tab[207]
+#define __pyx_n_u_stationary_ids __pyx_string_tab[208]
+#define __pyx_n_u_stationary_interval __pyx_string_tab[209]
+#define __pyx_n_u_stationary_object_ids __pyx_string_tab[210]
+#define __pyx_n_u_stationary_threshold __pyx_string_tab[211]
+#define __pyx_n_u_stop __pyx_string_tab[212]
+#define __pyx_n_u_stop_event __pyx_string_tab[213]
+#define __pyx_n_u_stop_time __pyx_string_tab[214]
+#define __pyx_n_u_test __pyx_string_tab[215]
+#define __pyx_n_u_threshold __pyx_string_tab[216]
+#define __pyx_n_u_throw __pyx_string_tab[217]
+#define __pyx_n_u_time __pyx_string_tab[218]
+#define __pyx_n_u_time_module __pyx_string_tab[219]
+#define __pyx_n_u_time_val __pyx_string_tab[220]
+#define __pyx_n_u_timedelta __pyx_string_tab[221]
+#define __pyx_n_u_track __pyx_string_tab[222]
+#define __pyx_n_u_track_id_map __pyx_string_tab[223]
+#define __pyx_n_u_tracked_boxes __pyx_string_tab[224]
+#define __pyx_n_u_tracked_detections __pyx_string_tab[225]
+#define __pyx_n_u_tracked_dets __pyx_string_tab[226]
+#define __pyx_n_u_tracked_object_boxes __pyx_string_tab[227]
+#define __pyx_n_u_tracked_objects __pyx_string_tab[228]
+#define __pyx_n_u_type __pyx_string_tab[229]
+#define __pyx_n_u_typing __pyx_string_tab[230]
+#define __pyx_n_u_untracked_object_boxes __pyx_string_tab[231]
+#define __pyx_n_u_update __pyx_string_tab[232]
+#define __pyx_n_u_update_frame_times __pyx_string_tab[233]
+#define __pyx_n_u_update_mask __pyx_string_tab[234]
+#define __pyx_n_u_updated_configs __pyx_string_tab[235]
+#define __pyx_n_u_v __pyx_string_tab[236]
+#define __pyx_n_u_value __pyx_string_tab[237]
+#define __pyx_n_u_values __pyx_string_tab[238]
+#define __pyx_n_u_width __pyx_string_tab[239]
+#define __pyx_kp_b_iso88591_8_a_A_q_1_oQa_AQ_T_7_1_q_1A_6_A __pyx_string_tab[240]
+#define __pyx_kp_b_iso88591_A_uAS_uAS __pyx_string_tab[241]
+#define __pyx_kp_b_iso88591_Z_1_AQ_j_Zq_y_Qa_R_q_z_j_6_aq_o __pyx_string_tab[242]
+#define __pyx_kp_b_iso88591_Z_d_XXY_Q_A_1_oQa_AQ_S_axq_c_d __pyx_string_tab[243]
+#define __pyx_kp_b_iso88591__3 __pyx_string_tab[244]
+#define __pyx_kp_b_iso88591_a_q_1A_6_1 __pyx_string_tab[245]
+#define __pyx_float_0_1 __pyx_number_tab[0]
+#define __pyx_int_0 __pyx_number_tab[1]
+#define __pyx_int_neg_1 __pyx_number_tab[2]
+#define __pyx_int_1 __pyx_number_tab[3]
+#define __pyx_int_2 __pyx_number_tab[4]
+#define __pyx_int_3 __pyx_number_tab[5]
+#define __pyx_int_4 __pyx_number_tab[6]
+#define __pyx_int_10 __pyx_number_tab[7]
+#define __pyx_int_22 __pyx_number_tab[8]
+#define __pyx_int_30 __pyx_number_tab[9]
+#define __pyx_int_100 __pyx_number_tab[10]
+#define __pyx_int_320 __pyx_number_tab[11]
+#define __pyx_int_500 __pyx_number_tab[12]
 /* #### Code section: module_state_clear ### */
 #if CYTHON_USE_MODULE_STATE
 static CYTHON_SMALL_CODE int __pyx_m_clear(PyObject *m) {
@@ -2996,15 +3486,21 @@ static CYTHON_SMALL_CODE int __pyx_m_clear(PyObject *m) {
   Py_CLEAR(clear_module_state->__pyx_ptype_5numpy_flexible);
   Py_CLEAR(clear_module_state->__pyx_ptype_5numpy_character);
   Py_CLEAR(clear_module_state->__pyx_ptype_5numpy_ufunc);
-  for (int i=0; i<4; ++i) { Py_CLEAR(clear_module_state->__pyx_codeobj_tab[i]); }
-  for (int i=0; i<83; ++i) { Py_CLEAR(clear_module_state->__pyx_string_tab[i]); }
-  for (int i=0; i<1; ++i) { Py_CLEAR(clear_module_state->__pyx_number_tab[i]); }
+  Py_CLEAR(clear_module_state->__pyx_ptype_7frigate_5video_13detect_cython___pyx_scope_struct__genexpr);
+  Py_CLEAR(clear_module_state->__pyx_type_7frigate_5video_13detect_cython___pyx_scope_struct__genexpr);
+  for (int i=0; i<4; ++i) { Py_CLEAR(clear_module_state->__pyx_tuple[i]); }
+  for (int i=0; i<6; ++i) { Py_CLEAR(clear_module_state->__pyx_codeobj_tab[i]); }
+  for (int i=0; i<246; ++i) { Py_CLEAR(clear_module_state->__pyx_string_tab[i]); }
+  for (int i=0; i<13; ++i) { Py_CLEAR(clear_module_state->__pyx_number_tab[i]); }
 /* #### Code section: module_state_clear_contents ### */
 /* CommonTypesMetaclass.module_state_clear */
 Py_CLEAR(clear_module_state->__pyx_CommonTypesMetaclassType);
 
 /* CythonFunctionShared.module_state_clear */
 Py_CLEAR(clear_module_state->__pyx_CyFunctionType);
+
+/* Generator.module_state_clear */
+Py_CLEAR(clear_module_state->__pyx_GeneratorType);
 
 /* #### Code section: module_state_clear_end ### */
 return 0;
@@ -3037,15 +3533,21 @@ static CYTHON_SMALL_CODE int __pyx_m_traverse(PyObject *m, visitproc visit, void
   Py_VISIT(traverse_module_state->__pyx_ptype_5numpy_flexible);
   Py_VISIT(traverse_module_state->__pyx_ptype_5numpy_character);
   Py_VISIT(traverse_module_state->__pyx_ptype_5numpy_ufunc);
-  for (int i=0; i<4; ++i) { __Pyx_VISIT_CONST(traverse_module_state->__pyx_codeobj_tab[i]); }
-  for (int i=0; i<83; ++i) { __Pyx_VISIT_CONST(traverse_module_state->__pyx_string_tab[i]); }
-  for (int i=0; i<1; ++i) { __Pyx_VISIT_CONST(traverse_module_state->__pyx_number_tab[i]); }
+  Py_VISIT(traverse_module_state->__pyx_ptype_7frigate_5video_13detect_cython___pyx_scope_struct__genexpr);
+  Py_VISIT(traverse_module_state->__pyx_type_7frigate_5video_13detect_cython___pyx_scope_struct__genexpr);
+  for (int i=0; i<4; ++i) { __Pyx_VISIT_CONST(traverse_module_state->__pyx_tuple[i]); }
+  for (int i=0; i<6; ++i) { __Pyx_VISIT_CONST(traverse_module_state->__pyx_codeobj_tab[i]); }
+  for (int i=0; i<246; ++i) { __Pyx_VISIT_CONST(traverse_module_state->__pyx_string_tab[i]); }
+  for (int i=0; i<13; ++i) { __Pyx_VISIT_CONST(traverse_module_state->__pyx_number_tab[i]); }
 /* #### Code section: module_state_traverse_contents ### */
 /* CommonTypesMetaclass.module_state_traverse */
 Py_VISIT(traverse_module_state->__pyx_CommonTypesMetaclassType);
 
 /* CythonFunctionShared.module_state_traverse */
 Py_VISIT(traverse_module_state->__pyx_CyFunctionType);
+
+/* Generator.module_state_traverse */
+Py_VISIT(traverse_module_state->__pyx_GeneratorType);
 
 /* #### Code section: module_state_traverse_end ### */
 return 0;
@@ -6740,7 +7242,7602 @@ static PyObject *__pyx_pf_7frigate_5video_13detect_cython_4cython_extract_tracke
   return __pyx_r;
 }
 
-/* "frigate/video/detect_cython.pyx":174
+/* "frigate/video/detect_cython.pyx":179
+ * 
+ * 
+ * def cython_process_frames(             # <<<<<<<<<<<<<<
+ *     object requestor,
+ *     object frame_queue,
+*/
+
+/* Python wrapper */
+static PyObject *__pyx_pw_7frigate_5video_13detect_cython_7cython_process_frames(PyObject *__pyx_self, 
+#if CYTHON_METH_FASTCALL
+PyObject *const *__pyx_args, Py_ssize_t __pyx_nargs, PyObject *__pyx_kwds
+#else
+PyObject *__pyx_args, PyObject *__pyx_kwds
+#endif
+); /*proto*/
+PyDoc_STRVAR(__pyx_doc_7frigate_5video_13detect_cython_6cython_process_frames, "Consolidated Cython implementation of process_frames().\n\n    Replaces the pure-Python loop in video/detect.py:process_frames() with\n    a single Cython pass that minimizes Python object allocations:\n    - Typed memoryviews for frame/motion_boxes/regions arrays\n    - Pre-allocated result lists with known capacity\n    - Inline coordinate calculations (no np.diff/np.array)\n    - Reduced function call overhead for tight loops\n\n    This runs every frame on every camera's detection subprocess.\n    At 30fps with 4 cameras = 120 calls/sec.\n\n    Args:\n        requestor: InterProcessRequestor for region grid updates\n        frame_queue: Queue for incoming frames\n        frame_shape: (height, width) tuple\n        model_config: ModelConfig for detection parameters\n        camera_config: CameraConfig for camera-specific settings\n        frame_manager: FrameManager for YUV frame access\n        motion_detector: MotionDetector for motion detection\n        object_detector: RemoteObjectDetector for detection IPC\n        object_tracker: ObjectTracker for tracked object state\n        detected_objects_queue: Queue for output detections\n        camera_metrics: CameraMetrics for FPS tracking\n        stop_event: multiprocessing Event for shutdown signaling\n        ptz_metrics: PTZMetrics for autotracking state\n        region_grid: list[list[dict]] of region sizes\n        exit_on_empty: If True, break on queue.Empty\n\n    Returns:\n        None (modifies state in-place)\n    ");
+static PyMethodDef __pyx_mdef_7frigate_5video_13detect_cython_7cython_process_frames = {"cython_process_frames", (PyCFunction)(void(*)(void))(__Pyx_PyCFunction_FastCallWithKeywords)__pyx_pw_7frigate_5video_13detect_cython_7cython_process_frames, __Pyx_METH_FASTCALL|METH_KEYWORDS, __pyx_doc_7frigate_5video_13detect_cython_6cython_process_frames};
+static PyObject *__pyx_pw_7frigate_5video_13detect_cython_7cython_process_frames(PyObject *__pyx_self, 
+#if CYTHON_METH_FASTCALL
+PyObject *const *__pyx_args, Py_ssize_t __pyx_nargs, PyObject *__pyx_kwds
+#else
+PyObject *__pyx_args, PyObject *__pyx_kwds
+#endif
+) {
+  PyObject *__pyx_v_requestor = 0;
+  PyObject *__pyx_v_frame_queue = 0;
+  PyObject *__pyx_v_frame_shape = 0;
+  PyObject *__pyx_v_model_config = 0;
+  PyObject *__pyx_v_camera_config = 0;
+  PyObject *__pyx_v_frame_manager = 0;
+  PyObject *__pyx_v_motion_detector = 0;
+  PyObject *__pyx_v_object_detector = 0;
+  PyObject *__pyx_v_object_tracker = 0;
+  PyObject *__pyx_v_detected_objects_queue = 0;
+  PyObject *__pyx_v_camera_metrics = 0;
+  PyObject *__pyx_v_stop_event = 0;
+  PyObject *__pyx_v_ptz_metrics = 0;
+  PyObject *__pyx_v_region_grid = 0;
+  int __pyx_v_exit_on_empty;
+  #if !CYTHON_METH_FASTCALL
+  CYTHON_UNUSED Py_ssize_t __pyx_nargs;
+  #endif
+  CYTHON_UNUSED PyObject *const *__pyx_kwvalues;
+  PyObject* values[15] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+  int __pyx_lineno = 0;
+  const char *__pyx_filename = NULL;
+  int __pyx_clineno = 0;
+  PyObject *__pyx_r = 0;
+  __Pyx_RefNannyDeclarations
+  __Pyx_RefNannySetupContext("cython_process_frames (wrapper)", 0);
+  #if !CYTHON_METH_FASTCALL
+  #if CYTHON_ASSUME_SAFE_SIZE
+  __pyx_nargs = PyTuple_GET_SIZE(__pyx_args);
+  #else
+  __pyx_nargs = PyTuple_Size(__pyx_args); if (unlikely(__pyx_nargs < 0)) return NULL;
+  #endif
+  #endif
+  __pyx_kwvalues = __Pyx_KwValues_FASTCALL(__pyx_args, __pyx_nargs);
+  {
+    PyObject ** const __pyx_pyargnames[] = {&__pyx_mstate_global->__pyx_n_u_requestor,&__pyx_mstate_global->__pyx_n_u_frame_queue,&__pyx_mstate_global->__pyx_n_u_frame_shape,&__pyx_mstate_global->__pyx_n_u_model_config,&__pyx_mstate_global->__pyx_n_u_camera_config,&__pyx_mstate_global->__pyx_n_u_frame_manager,&__pyx_mstate_global->__pyx_n_u_motion_detector,&__pyx_mstate_global->__pyx_n_u_object_detector,&__pyx_mstate_global->__pyx_n_u_object_tracker,&__pyx_mstate_global->__pyx_n_u_detected_objects_queue,&__pyx_mstate_global->__pyx_n_u_camera_metrics,&__pyx_mstate_global->__pyx_n_u_stop_event,&__pyx_mstate_global->__pyx_n_u_ptz_metrics,&__pyx_mstate_global->__pyx_n_u_region_grid,&__pyx_mstate_global->__pyx_n_u_exit_on_empty,0};
+    const Py_ssize_t __pyx_kwds_len = (__pyx_kwds) ? __Pyx_NumKwargs_FASTCALL(__pyx_kwds) : 0;
+    if (unlikely(__pyx_kwds_len < 0)) __PYX_ERR(0, 179, __pyx_L3_error)
+    if (__pyx_kwds_len > 0) {
+      switch (__pyx_nargs) {
+        case 15:
+        values[14] = __Pyx_ArgRef_FASTCALL(__pyx_args, 14);
+        if (!CYTHON_ASSUME_SAFE_MACROS && unlikely(!values[14])) __PYX_ERR(0, 179, __pyx_L3_error)
+        CYTHON_FALLTHROUGH;
+        case 14:
+        values[13] = __Pyx_ArgRef_FASTCALL(__pyx_args, 13);
+        if (!CYTHON_ASSUME_SAFE_MACROS && unlikely(!values[13])) __PYX_ERR(0, 179, __pyx_L3_error)
+        CYTHON_FALLTHROUGH;
+        case 13:
+        values[12] = __Pyx_ArgRef_FASTCALL(__pyx_args, 12);
+        if (!CYTHON_ASSUME_SAFE_MACROS && unlikely(!values[12])) __PYX_ERR(0, 179, __pyx_L3_error)
+        CYTHON_FALLTHROUGH;
+        case 12:
+        values[11] = __Pyx_ArgRef_FASTCALL(__pyx_args, 11);
+        if (!CYTHON_ASSUME_SAFE_MACROS && unlikely(!values[11])) __PYX_ERR(0, 179, __pyx_L3_error)
+        CYTHON_FALLTHROUGH;
+        case 11:
+        values[10] = __Pyx_ArgRef_FASTCALL(__pyx_args, 10);
+        if (!CYTHON_ASSUME_SAFE_MACROS && unlikely(!values[10])) __PYX_ERR(0, 179, __pyx_L3_error)
+        CYTHON_FALLTHROUGH;
+        case 10:
+        values[9] = __Pyx_ArgRef_FASTCALL(__pyx_args, 9);
+        if (!CYTHON_ASSUME_SAFE_MACROS && unlikely(!values[9])) __PYX_ERR(0, 179, __pyx_L3_error)
+        CYTHON_FALLTHROUGH;
+        case  9:
+        values[8] = __Pyx_ArgRef_FASTCALL(__pyx_args, 8);
+        if (!CYTHON_ASSUME_SAFE_MACROS && unlikely(!values[8])) __PYX_ERR(0, 179, __pyx_L3_error)
+        CYTHON_FALLTHROUGH;
+        case  8:
+        values[7] = __Pyx_ArgRef_FASTCALL(__pyx_args, 7);
+        if (!CYTHON_ASSUME_SAFE_MACROS && unlikely(!values[7])) __PYX_ERR(0, 179, __pyx_L3_error)
+        CYTHON_FALLTHROUGH;
+        case  7:
+        values[6] = __Pyx_ArgRef_FASTCALL(__pyx_args, 6);
+        if (!CYTHON_ASSUME_SAFE_MACROS && unlikely(!values[6])) __PYX_ERR(0, 179, __pyx_L3_error)
+        CYTHON_FALLTHROUGH;
+        case  6:
+        values[5] = __Pyx_ArgRef_FASTCALL(__pyx_args, 5);
+        if (!CYTHON_ASSUME_SAFE_MACROS && unlikely(!values[5])) __PYX_ERR(0, 179, __pyx_L3_error)
+        CYTHON_FALLTHROUGH;
+        case  5:
+        values[4] = __Pyx_ArgRef_FASTCALL(__pyx_args, 4);
+        if (!CYTHON_ASSUME_SAFE_MACROS && unlikely(!values[4])) __PYX_ERR(0, 179, __pyx_L3_error)
+        CYTHON_FALLTHROUGH;
+        case  4:
+        values[3] = __Pyx_ArgRef_FASTCALL(__pyx_args, 3);
+        if (!CYTHON_ASSUME_SAFE_MACROS && unlikely(!values[3])) __PYX_ERR(0, 179, __pyx_L3_error)
+        CYTHON_FALLTHROUGH;
+        case  3:
+        values[2] = __Pyx_ArgRef_FASTCALL(__pyx_args, 2);
+        if (!CYTHON_ASSUME_SAFE_MACROS && unlikely(!values[2])) __PYX_ERR(0, 179, __pyx_L3_error)
+        CYTHON_FALLTHROUGH;
+        case  2:
+        values[1] = __Pyx_ArgRef_FASTCALL(__pyx_args, 1);
+        if (!CYTHON_ASSUME_SAFE_MACROS && unlikely(!values[1])) __PYX_ERR(0, 179, __pyx_L3_error)
+        CYTHON_FALLTHROUGH;
+        case  1:
+        values[0] = __Pyx_ArgRef_FASTCALL(__pyx_args, 0);
+        if (!CYTHON_ASSUME_SAFE_MACROS && unlikely(!values[0])) __PYX_ERR(0, 179, __pyx_L3_error)
+        CYTHON_FALLTHROUGH;
+        case  0: break;
+        default: goto __pyx_L5_argtuple_error;
+      }
+      const Py_ssize_t kwd_pos_args = __pyx_nargs;
+      if (__Pyx_ParseKeywords(__pyx_kwds, __pyx_kwvalues, __pyx_pyargnames, 0, values, kwd_pos_args, __pyx_kwds_len, "cython_process_frames", 0) < (0)) __PYX_ERR(0, 179, __pyx_L3_error)
+      for (Py_ssize_t i = __pyx_nargs; i < 14; i++) {
+        if (unlikely(!values[i])) { __Pyx_RaiseArgtupleInvalid("cython_process_frames", 0, 14, 15, i); __PYX_ERR(0, 179, __pyx_L3_error) }
+      }
+    } else {
+      switch (__pyx_nargs) {
+        case 15:
+        values[14] = __Pyx_ArgRef_FASTCALL(__pyx_args, 14);
+        if (!CYTHON_ASSUME_SAFE_MACROS && unlikely(!values[14])) __PYX_ERR(0, 179, __pyx_L3_error)
+        CYTHON_FALLTHROUGH;
+        case 14:
+        values[13] = __Pyx_ArgRef_FASTCALL(__pyx_args, 13);
+        if (!CYTHON_ASSUME_SAFE_MACROS && unlikely(!values[13])) __PYX_ERR(0, 179, __pyx_L3_error)
+        values[12] = __Pyx_ArgRef_FASTCALL(__pyx_args, 12);
+        if (!CYTHON_ASSUME_SAFE_MACROS && unlikely(!values[12])) __PYX_ERR(0, 179, __pyx_L3_error)
+        values[11] = __Pyx_ArgRef_FASTCALL(__pyx_args, 11);
+        if (!CYTHON_ASSUME_SAFE_MACROS && unlikely(!values[11])) __PYX_ERR(0, 179, __pyx_L3_error)
+        values[10] = __Pyx_ArgRef_FASTCALL(__pyx_args, 10);
+        if (!CYTHON_ASSUME_SAFE_MACROS && unlikely(!values[10])) __PYX_ERR(0, 179, __pyx_L3_error)
+        values[9] = __Pyx_ArgRef_FASTCALL(__pyx_args, 9);
+        if (!CYTHON_ASSUME_SAFE_MACROS && unlikely(!values[9])) __PYX_ERR(0, 179, __pyx_L3_error)
+        values[8] = __Pyx_ArgRef_FASTCALL(__pyx_args, 8);
+        if (!CYTHON_ASSUME_SAFE_MACROS && unlikely(!values[8])) __PYX_ERR(0, 179, __pyx_L3_error)
+        values[7] = __Pyx_ArgRef_FASTCALL(__pyx_args, 7);
+        if (!CYTHON_ASSUME_SAFE_MACROS && unlikely(!values[7])) __PYX_ERR(0, 179, __pyx_L3_error)
+        values[6] = __Pyx_ArgRef_FASTCALL(__pyx_args, 6);
+        if (!CYTHON_ASSUME_SAFE_MACROS && unlikely(!values[6])) __PYX_ERR(0, 179, __pyx_L3_error)
+        values[5] = __Pyx_ArgRef_FASTCALL(__pyx_args, 5);
+        if (!CYTHON_ASSUME_SAFE_MACROS && unlikely(!values[5])) __PYX_ERR(0, 179, __pyx_L3_error)
+        values[4] = __Pyx_ArgRef_FASTCALL(__pyx_args, 4);
+        if (!CYTHON_ASSUME_SAFE_MACROS && unlikely(!values[4])) __PYX_ERR(0, 179, __pyx_L3_error)
+        values[3] = __Pyx_ArgRef_FASTCALL(__pyx_args, 3);
+        if (!CYTHON_ASSUME_SAFE_MACROS && unlikely(!values[3])) __PYX_ERR(0, 179, __pyx_L3_error)
+        values[2] = __Pyx_ArgRef_FASTCALL(__pyx_args, 2);
+        if (!CYTHON_ASSUME_SAFE_MACROS && unlikely(!values[2])) __PYX_ERR(0, 179, __pyx_L3_error)
+        values[1] = __Pyx_ArgRef_FASTCALL(__pyx_args, 1);
+        if (!CYTHON_ASSUME_SAFE_MACROS && unlikely(!values[1])) __PYX_ERR(0, 179, __pyx_L3_error)
+        values[0] = __Pyx_ArgRef_FASTCALL(__pyx_args, 0);
+        if (!CYTHON_ASSUME_SAFE_MACROS && unlikely(!values[0])) __PYX_ERR(0, 179, __pyx_L3_error)
+        break;
+        default: goto __pyx_L5_argtuple_error;
+      }
+    }
+    __pyx_v_requestor = values[0];
+    __pyx_v_frame_queue = values[1];
+    __pyx_v_frame_shape = values[2];
+    __pyx_v_model_config = values[3];
+    __pyx_v_camera_config = values[4];
+    __pyx_v_frame_manager = values[5];
+    __pyx_v_motion_detector = values[6];
+    __pyx_v_object_detector = values[7];
+    __pyx_v_object_tracker = values[8];
+    __pyx_v_detected_objects_queue = values[9];
+    __pyx_v_camera_metrics = values[10];
+    __pyx_v_stop_event = values[11];
+    __pyx_v_ptz_metrics = values[12];
+    __pyx_v_region_grid = values[13];
+    if (values[14]) {
+      __pyx_v_exit_on_empty = __Pyx_PyObject_IsTrue(values[14]); if (unlikely((__pyx_v_exit_on_empty == (int)-1) && PyErr_Occurred())) __PYX_ERR(0, 194, __pyx_L3_error)
+    } else {
+
+      /* "frigate/video/detect_cython.pyx":194
+ *     object ptz_metrics,
+ *     object region_grid,
+ *     bint exit_on_empty=False,             # <<<<<<<<<<<<<<
+ * ):
+ *     """Consolidated Cython implementation of process_frames().
+*/
+      __pyx_v_exit_on_empty = ((int)((int)0));
+    }
+  }
+  goto __pyx_L6_skip;
+  __pyx_L5_argtuple_error:;
+  __Pyx_RaiseArgtupleInvalid("cython_process_frames", 0, 14, 15, __pyx_nargs); __PYX_ERR(0, 179, __pyx_L3_error)
+  __pyx_L6_skip:;
+  goto __pyx_L4_argument_unpacking_done;
+  __pyx_L3_error:;
+  for (Py_ssize_t __pyx_temp=0; __pyx_temp < (Py_ssize_t)(sizeof(values)/sizeof(values[0])); ++__pyx_temp) {
+    Py_XDECREF(values[__pyx_temp]);
+  }
+  __Pyx_AddTraceback("frigate.video.detect_cython.cython_process_frames", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_RefNannyFinishContext();
+  return NULL;
+  __pyx_L4_argument_unpacking_done:;
+  __pyx_r = __pyx_pf_7frigate_5video_13detect_cython_6cython_process_frames(__pyx_self, __pyx_v_requestor, __pyx_v_frame_queue, __pyx_v_frame_shape, __pyx_v_model_config, __pyx_v_camera_config, __pyx_v_frame_manager, __pyx_v_motion_detector, __pyx_v_object_detector, __pyx_v_object_tracker, __pyx_v_detected_objects_queue, __pyx_v_camera_metrics, __pyx_v_stop_event, __pyx_v_ptz_metrics, __pyx_v_region_grid, __pyx_v_exit_on_empty);
+
+  /* "frigate/video/detect_cython.pyx":179
+ * 
+ * 
+ * def cython_process_frames(             # <<<<<<<<<<<<<<
+ *     object requestor,
+ *     object frame_queue,
+*/
+
+  /* function exit code */
+  for (Py_ssize_t __pyx_temp=0; __pyx_temp < (Py_ssize_t)(sizeof(values)/sizeof(values[0])); ++__pyx_temp) {
+    Py_XDECREF(values[__pyx_temp]);
+  }
+  __Pyx_RefNannyFinishContext();
+  return __pyx_r;
+}
+static PyObject *__pyx_gb_7frigate_5video_13detect_cython_21cython_process_frames_8genexpr3_2generator(__pyx_CoroutineObject *__pyx_generator, CYTHON_UNUSED PyThreadState *__pyx_tstate, PyObject *__pyx_sent_value); /* proto */
+
+/* "frigate/video/detect_cython.pyx":524
+ * 
+ *                             standalone_motion_boxes = [
+ *                                 tuple(int(v) for v in box) for box in standalone_motion_array             # <<<<<<<<<<<<<<
+ *                             ]
+ * 
+*/
+
+static PyObject *__pyx_pf_7frigate_5video_13detect_cython_21cython_process_frames_8genexpr3_genexpr(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_genexpr_arg_0) {
+  struct __pyx_obj_7frigate_5video_13detect_cython___pyx_scope_struct__genexpr *__pyx_cur_scope;
+  PyObject *__pyx_r = NULL;
+  __Pyx_RefNannyDeclarations
+  int __pyx_lineno = 0;
+  const char *__pyx_filename = NULL;
+  int __pyx_clineno = 0;
+  __Pyx_RefNannySetupContext("genexpr", 0);
+  __pyx_cur_scope = (struct __pyx_obj_7frigate_5video_13detect_cython___pyx_scope_struct__genexpr *)__pyx_tp_new_7frigate_5video_13detect_cython___pyx_scope_struct__genexpr(__pyx_mstate_global->__pyx_ptype_7frigate_5video_13detect_cython___pyx_scope_struct__genexpr, __pyx_mstate_global->__pyx_empty_tuple, NULL);
+  if (unlikely(!__pyx_cur_scope)) {
+    __pyx_cur_scope = ((struct __pyx_obj_7frigate_5video_13detect_cython___pyx_scope_struct__genexpr *)Py_None);
+    __Pyx_INCREF(Py_None);
+    __PYX_ERR(0, 524, __pyx_L1_error)
+  } else {
+    __Pyx_GOTREF((PyObject *)__pyx_cur_scope);
+  }
+  __pyx_cur_scope->__pyx_genexpr_arg_0 = __pyx_genexpr_arg_0;
+  __Pyx_INCREF(__pyx_cur_scope->__pyx_genexpr_arg_0);
+  __Pyx_GIVEREF(__pyx_cur_scope->__pyx_genexpr_arg_0);
+  {
+    __pyx_CoroutineObject *gen = __Pyx_Generator_New((__pyx_coroutine_body_t) __pyx_gb_7frigate_5video_13detect_cython_21cython_process_frames_8genexpr3_2generator, ((PyObject *)__pyx_mstate_global->__pyx_codeobj_tab[0]), (PyObject *) __pyx_cur_scope, __pyx_mstate_global->__pyx_n_u_genexpr, __pyx_mstate_global->__pyx_n_u_cython_process_frames_locals_gen, __pyx_mstate_global->__pyx_n_u_frigate_video_detect_cython); if (unlikely(!gen)) __PYX_ERR(0, 524, __pyx_L1_error)
+    __Pyx_DECREF(__pyx_cur_scope);
+    __Pyx_RefNannyFinishContext();
+    return (PyObject *) gen;
+  }
+
+  /* function exit code */
+  __pyx_L1_error:;
+  __Pyx_AddTraceback("frigate.video.detect_cython.cython_process_frames.genexpr", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __pyx_r = NULL;
+  __Pyx_DECREF((PyObject *)__pyx_cur_scope);
+  __Pyx_XGIVEREF(__pyx_r);
+  __Pyx_RefNannyFinishContext();
+  return __pyx_r;
+}
+
+static PyObject *__pyx_gb_7frigate_5video_13detect_cython_21cython_process_frames_8genexpr3_2generator(__pyx_CoroutineObject *__pyx_generator, CYTHON_UNUSED PyThreadState *__pyx_tstate, PyObject *__pyx_sent_value) /* generator body */
+{
+  struct __pyx_obj_7frigate_5video_13detect_cython___pyx_scope_struct__genexpr *__pyx_cur_scope = ((struct __pyx_obj_7frigate_5video_13detect_cython___pyx_scope_struct__genexpr *)__pyx_generator->closure);
+  PyObject *__pyx_r = NULL;
+  PyObject *__pyx_t_1 = NULL;
+  Py_ssize_t __pyx_t_2;
+  PyObject *(*__pyx_t_3)(PyObject *);
+  PyObject *__pyx_t_4 = NULL;
+  int __pyx_lineno = 0;
+  const char *__pyx_filename = NULL;
+  int __pyx_clineno = 0;
+  __Pyx_RefNannyDeclarations
+  __Pyx_RefNannySetupContext("genexpr", 0);
+  switch (__pyx_generator->resume_label) {
+    case 0: goto __pyx_L3_first_run;
+    case 1: goto __pyx_L6_resume_from_yield;
+    default: /* CPython raises the right error here */
+    __Pyx_RefNannyFinishContext();
+    return NULL;
+  }
+  __pyx_L3_first_run:;
+  if (unlikely(__pyx_sent_value != Py_None)) {
+    if (unlikely(__pyx_sent_value)) PyErr_SetString(PyExc_TypeError, "can't send non-None value to a just-started generator");
+    __PYX_ERR(0, 524, __pyx_L1_error)
+  }
+  if (unlikely(!__pyx_cur_scope->__pyx_genexpr_arg_0)) { __Pyx_RaiseUnboundLocalError(".0"); __PYX_ERR(0, 524, __pyx_L1_error) }
+  if (likely(PyList_CheckExact(__pyx_cur_scope->__pyx_genexpr_arg_0)) || PyTuple_CheckExact(__pyx_cur_scope->__pyx_genexpr_arg_0)) {
+    __pyx_t_1 = __pyx_cur_scope->__pyx_genexpr_arg_0; __Pyx_INCREF(__pyx_t_1);
+    __pyx_t_2 = 0;
+    __pyx_t_3 = NULL;
+  } else {
+    __pyx_t_2 = -1; __pyx_t_1 = PyObject_GetIter(__pyx_cur_scope->__pyx_genexpr_arg_0); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 524, __pyx_L1_error)
+    __Pyx_GOTREF(__pyx_t_1);
+    __pyx_t_3 = (CYTHON_COMPILING_IN_LIMITED_API) ? PyIter_Next : __Pyx_PyObject_GetIterNextFunc(__pyx_t_1); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 524, __pyx_L1_error)
+  }
+  for (;;) {
+    if (likely(!__pyx_t_3)) {
+      if (likely(PyList_CheckExact(__pyx_t_1))) {
+        {
+          Py_ssize_t __pyx_temp = __Pyx_PyList_GET_SIZE(__pyx_t_1);
+          #if !CYTHON_ASSUME_SAFE_SIZE
+          if (unlikely((__pyx_temp < 0))) __PYX_ERR(0, 524, __pyx_L1_error)
+          #endif
+          if (__pyx_t_2 >= __pyx_temp) break;
+        }
+        __pyx_t_4 = __Pyx_PyList_GET_ITEM_REF(__pyx_t_1, __pyx_t_2, __Pyx_ReferenceSharing_OwnStrongReference);
+        ++__pyx_t_2;
+      } else {
+        {
+          Py_ssize_t __pyx_temp = __Pyx_PyTuple_GET_SIZE(__pyx_t_1);
+          #if !CYTHON_ASSUME_SAFE_SIZE
+          if (unlikely((__pyx_temp < 0))) __PYX_ERR(0, 524, __pyx_L1_error)
+          #endif
+          if (__pyx_t_2 >= __pyx_temp) break;
+        }
+        #if CYTHON_ASSUME_SAFE_MACROS && !CYTHON_AVOID_BORROWED_REFS
+        __pyx_t_4 = __Pyx_NewRef(PyTuple_GET_ITEM(__pyx_t_1, __pyx_t_2));
+        #else
+        __pyx_t_4 = __Pyx_PySequence_ITEM(__pyx_t_1, __pyx_t_2);
+        #endif
+        ++__pyx_t_2;
+      }
+      if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 524, __pyx_L1_error)
+    } else {
+      __pyx_t_4 = __pyx_t_3(__pyx_t_1);
+      if (unlikely(!__pyx_t_4)) {
+        PyObject* exc_type = PyErr_Occurred();
+        if (exc_type) {
+          if (unlikely(!__Pyx_PyErr_GivenExceptionMatches(exc_type, PyExc_StopIteration))) __PYX_ERR(0, 524, __pyx_L1_error)
+          PyErr_Clear();
+        }
+        break;
+      }
+    }
+    __Pyx_GOTREF(__pyx_t_4);
+    __Pyx_XGOTREF(__pyx_cur_scope->__pyx_v_v);
+    __Pyx_XDECREF_SET(__pyx_cur_scope->__pyx_v_v, __pyx_t_4);
+    __Pyx_GIVEREF(__pyx_t_4);
+    __pyx_t_4 = 0;
+    __pyx_t_4 = __Pyx_PyNumber_Int(__pyx_cur_scope->__pyx_v_v); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 524, __pyx_L1_error)
+    __Pyx_GOTREF(__pyx_t_4);
+    __pyx_r = __pyx_t_4;
+    __pyx_t_4 = 0;
+    __Pyx_XGIVEREF(__pyx_t_1);
+    __pyx_cur_scope->__pyx_t_0 = __pyx_t_1;
+    __pyx_cur_scope->__pyx_t_1 = __pyx_t_2;
+    __pyx_cur_scope->__pyx_t_2 = __pyx_t_3;
+    __Pyx_XGIVEREF(__pyx_r);
+    __Pyx_RefNannyFinishContext();
+    __Pyx_Coroutine_ResetAndClearException(__pyx_generator);
+    /* return from generator, yielding value */
+    __pyx_generator->resume_label = 1;
+    return __pyx_r;
+    __pyx_L6_resume_from_yield:;
+    __pyx_t_1 = __pyx_cur_scope->__pyx_t_0;
+    __pyx_cur_scope->__pyx_t_0 = 0;
+    __Pyx_XGOTREF(__pyx_t_1);
+    __pyx_t_2 = __pyx_cur_scope->__pyx_t_1;
+    __pyx_t_3 = __pyx_cur_scope->__pyx_t_2;
+    if (unlikely(!__pyx_sent_value)) __PYX_ERR(0, 524, __pyx_L1_error)
+  }
+  __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
+  CYTHON_MAYBE_UNUSED_VAR(__pyx_cur_scope);
+
+  /* function exit code */
+  __pyx_r = Py_None; __Pyx_INCREF(Py_None);
+  goto __pyx_L0;
+  __pyx_L1_error:;
+  __Pyx_XDECREF(__pyx_t_1);
+  __Pyx_XDECREF(__pyx_t_4);
+  if (__Pyx_PyErr_Occurred()) {
+    __Pyx_Generator_Replace_StopIteration(0);
+    __Pyx_AddTraceback("genexpr", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  }
+  __pyx_L0:;
+  __Pyx_XGIVEREF(__pyx_r);
+  #if !CYTHON_USE_EXC_INFO_STACK
+  __Pyx_Coroutine_ResetAndClearException(__pyx_generator);
+  #endif
+  __pyx_generator->resume_label = -1;
+  __Pyx_Coroutine_clear((PyObject*)__pyx_generator);
+  __Pyx_RefNannyFinishContext();
+  return __pyx_r;
+}
+
+/* "frigate/video/detect_cython.pyx":179
+ * 
+ * 
+ * def cython_process_frames(             # <<<<<<<<<<<<<<
+ *     object requestor,
+ *     object frame_queue,
+*/
+
+static PyObject *__pyx_pf_7frigate_5video_13detect_cython_6cython_process_frames(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_requestor, PyObject *__pyx_v_frame_queue, PyObject *__pyx_v_frame_shape, PyObject *__pyx_v_model_config, PyObject *__pyx_v_camera_config, PyObject *__pyx_v_frame_manager, PyObject *__pyx_v_motion_detector, PyObject *__pyx_v_object_detector, PyObject *__pyx_v_object_tracker, PyObject *__pyx_v_detected_objects_queue, PyObject *__pyx_v_camera_metrics, PyObject *__pyx_v_stop_event, PyObject *__pyx_v_ptz_metrics, PyObject *__pyx_v_region_grid, int __pyx_v_exit_on_empty) {
+  PyObject *__pyx_v_next_region_update = 0;
+  PyObject *__pyx_v_config_subscriber = 0;
+  PyObject *__pyx_v_fps_tracker = 0;
+  int __pyx_v_startup_scan;
+  int __pyx_v_stationary_frame_counter;
+  int __pyx_v_camera_enabled;
+  int __pyx_v_region_min_size;
+  PyObject *__pyx_v_attributes_map = 0;
+  PyObject *__pyx_v_all_attributes = 0;
+  PyObject *__pyx_v_motion_boxes_buf = 0;
+  PyObject *__pyx_v_regions_buf = 0;
+  PyObject *__pyx_v_updated_configs = 0;
+  PyObject *__pyx_v_frame_name = 0;
+  PyObject *__pyx_v_frame_time = 0;
+  PyObject *__pyx_v_frame = 0;
+  PyObject *__pyx_v_motion_boxes = 0;
+  PyObject *__pyx_v_regions = 0;
+  PyObject *__pyx_v_consolidated_detections = 0;
+  PyObject *__pyx_v_detections = 0;
+  PyObject *__pyx_v_tracked_detections = 0;
+  PyObject *__pyx_v_batch_results = 0;
+  PyObject *__pyx_v_region = 0;
+  PyObject *__pyx_v_region_detections = 0;
+  PyObject *__pyx_v_converted = 0;
+  PyObject *__pyx_v_filtered = 0;
+  PyObject *__pyx_v_standalone_motion_array = 0;
+  PyObject *__pyx_v_standalone_motion_boxes = 0;
+  PyObject *__pyx_v_motion_clusters = 0;
+  PyObject *__pyx_v_motion_regions = 0;
+  int __pyx_v_do_detect;
+  int __pyx_v_m_count;
+  int __pyx_v_r_count;
+  int __pyx_v_i;
+  int __pyx_v_j;
+  PyObject *__pyx_v_prev_enabled = 0;
+  PyObject *__pyx_v_time_module = 0;
+  PyObject *__pyx_v_datetime_module = 0;
+  CYTHON_UNUSED PyObject *__pyx_v_request_module = 0;
+  PyObject *__pyx_v_queue_module = 0;
+  PyObject *__pyx_v_time_val = 0;
+  int __pyx_v_is_lpr;
+  PyObject *__pyx_v_reduce_detections = 0;
+  PyObject *__pyx_v_cython_find_best_object = 0;
+  PyObject *__pyx_v_EventsPerSecond = NULL;
+  PyObject *__pyx_v_largest_dimension = NULL;
+  PyObject *__pyx_v_CameraTypeEnum = NULL;
+  PyObject *__pyx_v_modified_attributes_map = NULL;
+  PyObject *__pyx_v_stationary_object_ids = NULL;
+  PyObject *__pyx_v_stationary_threshold = NULL;
+  PyObject *__pyx_v_stationary_interval = NULL;
+  PyObject *__pyx_v_is_calibrating = NULL;
+  PyObject *__pyx_v_motion_boxes_for_check = NULL;
+  PyObject *__pyx_v_cython_process_tracked_objects = NULL;
+  PyObject *__pyx_v_tracked_object_boxes = NULL;
+  CYTHON_UNUSED PyObject *__pyx_v__ = NULL;
+  PyObject *__pyx_v_object_boxes = NULL;
+  PyObject *__pyx_v_get_cluster_candidates = NULL;
+  PyObject *__pyx_v_get_cluster_region = NULL;
+  int __pyx_v_ptz_moving;
+  PyObject *__pyx_v_cython_filter_motion_boxes = NULL;
+  PyObject *__pyx_v_motion_boxes_array = NULL;
+  PyObject *__pyx_v_regions_array = NULL;
+  PyObject *__pyx_v_get_cluster_region_from_grid = NULL;
+  PyObject *__pyx_v_get_startup_regions = NULL;
+  PyObject *__pyx_v_convert_detection_boxes = NULL;
+  PyObject *__pyx_v_is_object_filtered_batch = NULL;
+  PyObject *__pyx_v_labels = NULL;
+  PyObject *__pyx_v_scores = NULL;
+  PyObject *__pyx_v_boxes = NULL;
+  PyObject *__pyx_v_areas = NULL;
+  PyObject *__pyx_v_ratios = NULL;
+  PyObject *__pyx_v_d = NULL;
+  PyObject *__pyx_7genexpr__pyx_v_attr = NULL;
+  PyObject *__pyx_8genexpr1__pyx_v_attr = NULL;
+  PyObject *__pyx_8genexpr2__pyx_v_candidate = NULL;
+  PyObject *__pyx_8genexpr3__pyx_v_box = NULL;
+  PyObject *__pyx_8genexpr3__pyx_v_0 = NULL;
+  PyObject *__pyx_8genexpr5__pyx_v_candidate = NULL;
+  PyObject *__pyx_8genexpr6__pyx_v_d = NULL;
+  PyObject *__pyx_8genexpr7__pyx_v_d = NULL;
+  PyObject *__pyx_8genexpr8__pyx_v_d = NULL;
+  PyObject *__pyx_8genexpr9__pyx_v_d = NULL;
+  PyObject *__pyx_9genexpr10__pyx_v_d = NULL;
+  PyObject *__pyx_r = NULL;
+  __Pyx_RefNannyDeclarations
+  PyObject *__pyx_t_1 = NULL;
+  PyObject *__pyx_t_2 = NULL;
+  size_t __pyx_t_3;
+  PyObject *__pyx_t_4 = NULL;
+  PyObject *__pyx_t_5 = NULL;
+  PyObject *__pyx_t_6 = NULL;
+  PyObject *__pyx_t_7 = NULL;
+  PyObject *__pyx_t_8 = NULL;
+  PyObject *__pyx_t_9 = NULL;
+  PyObject *__pyx_t_10 = NULL;
+  Py_ssize_t __pyx_t_11;
+  int __pyx_t_12;
+  int __pyx_t_13;
+  int __pyx_t_14;
+  PyObject *(*__pyx_t_15)(PyObject *);
+  PyObject *(*__pyx_t_16)(PyObject *);
+  PyObject *__pyx_t_17 = NULL;
+  PyObject *__pyx_t_18 = NULL;
+  PyObject *__pyx_t_19 = NULL;
+  int __pyx_t_20;
+  Py_ssize_t __pyx_t_21;
+  PyObject *__pyx_t_22 = NULL;
+  PyObject *__pyx_t_23 = NULL;
+  PyObject *__pyx_t_24 = NULL;
+  PyObject *__pyx_t_25 = NULL;
+  PyObject *__pyx_t_26 = NULL;
+  PyObject *(*__pyx_t_27)(PyObject *);
+  int __pyx_t_28;
+  int __pyx_lineno = 0;
+  const char *__pyx_filename = NULL;
+  int __pyx_clineno = 0;
+  __Pyx_RefNannySetupContext("cython_process_frames", 0);
+  __Pyx_INCREF(__pyx_v_region_grid);
+
+  /* "frigate/video/detect_cython.pyx":271
+ *         object time_val
+ *         bint is_lpr
+ *         object reduce_detections = None             # <<<<<<<<<<<<<<
+ *         object cython_find_best_object = None
+ * 
+*/
+  __Pyx_INCREF(Py_None);
+  __pyx_v_reduce_detections = Py_None;
+
+  /* "frigate/video/detect_cython.pyx":272
+ *         bint is_lpr
+ *         object reduce_detections = None
+ *         object cython_find_best_object = None             # <<<<<<<<<<<<<<
+ * 
+ *     # Import modules needed at runtime
+*/
+  __Pyx_INCREF(Py_None);
+  __pyx_v_cython_find_best_object = Py_None;
+
+  /* "frigate/video/detect_cython.pyx":275
+ * 
+ *     # Import modules needed at runtime
+ *     time_module = __import__("time")             # <<<<<<<<<<<<<<
+ *     datetime_module = __import__("datetime")
+ *     request_module = __import__("frigate.comms.inter_process", fromlist=["InterProcessRequestor"])
+*/
+  __pyx_t_2 = NULL;
+  __pyx_t_3 = 1;
+  {
+    PyObject *__pyx_callargs[2] = {__pyx_t_2, __pyx_mstate_global->__pyx_n_u_time};
+    __pyx_t_1 = __Pyx_PyObject_FastCall((PyObject*)__pyx_builtin___import__, __pyx_callargs+__pyx_t_3, (2-__pyx_t_3) | (__pyx_t_3*__Pyx_PY_VECTORCALL_ARGUMENTS_OFFSET));
+    __Pyx_XDECREF(__pyx_t_2); __pyx_t_2 = 0;
+    if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 275, __pyx_L1_error)
+    __Pyx_GOTREF(__pyx_t_1);
+  }
+  __pyx_v_time_module = __pyx_t_1;
+  __pyx_t_1 = 0;
+
+  /* "frigate/video/detect_cython.pyx":276
+ *     # Import modules needed at runtime
+ *     time_module = __import__("time")
+ *     datetime_module = __import__("datetime")             # <<<<<<<<<<<<<<
+ *     request_module = __import__("frigate.comms.inter_process", fromlist=["InterProcessRequestor"])
+ *     queue_module = __import__("queue")
+*/
+  __pyx_t_2 = NULL;
+  __pyx_t_3 = 1;
+  {
+    PyObject *__pyx_callargs[2] = {__pyx_t_2, __pyx_mstate_global->__pyx_n_u_datetime};
+    __pyx_t_1 = __Pyx_PyObject_FastCall((PyObject*)__pyx_builtin___import__, __pyx_callargs+__pyx_t_3, (2-__pyx_t_3) | (__pyx_t_3*__Pyx_PY_VECTORCALL_ARGUMENTS_OFFSET));
+    __Pyx_XDECREF(__pyx_t_2); __pyx_t_2 = 0;
+    if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 276, __pyx_L1_error)
+    __Pyx_GOTREF(__pyx_t_1);
+  }
+  __pyx_v_datetime_module = __pyx_t_1;
+  __pyx_t_1 = 0;
+
+  /* "frigate/video/detect_cython.pyx":277
+ *     time_module = __import__("time")
+ *     datetime_module = __import__("datetime")
+ *     request_module = __import__("frigate.comms.inter_process", fromlist=["InterProcessRequestor"])             # <<<<<<<<<<<<<<
+ *     queue_module = __import__("queue")
+ * 
+*/
+  __pyx_t_2 = NULL;
+  __pyx_t_4 = PyList_New(1); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 277, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_4);
+  __Pyx_INCREF(__pyx_mstate_global->__pyx_n_u_InterProcessRequestor);
+  __Pyx_GIVEREF(__pyx_mstate_global->__pyx_n_u_InterProcessRequestor);
+  if (__Pyx_PyList_SET_ITEM(__pyx_t_4, 0, __pyx_mstate_global->__pyx_n_u_InterProcessRequestor) != (0)) __PYX_ERR(0, 277, __pyx_L1_error);
+  __pyx_t_3 = 1;
+  {
+    PyObject *__pyx_callargs[2 + ((CYTHON_VECTORCALL) ? 1 : 0)] = {__pyx_t_2, __pyx_mstate_global->__pyx_kp_u_frigate_comms_inter_process};
+    __pyx_t_5 = __Pyx_MakeVectorcallBuilderKwds(1); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 277, __pyx_L1_error)
+    __Pyx_GOTREF(__pyx_t_5);
+    if (__Pyx_VectorcallBuilder_AddArg(__pyx_mstate_global->__pyx_n_u_fromlist, __pyx_t_4, __pyx_t_5, __pyx_callargs+2, 0) < (0)) __PYX_ERR(0, 277, __pyx_L1_error)
+    __pyx_t_1 = __Pyx_Object_Vectorcall_CallFromBuilder((PyObject*)__pyx_builtin___import__, __pyx_callargs+__pyx_t_3, (2-__pyx_t_3) | (__pyx_t_3*__Pyx_PY_VECTORCALL_ARGUMENTS_OFFSET), __pyx_t_5);
+    __Pyx_XDECREF(__pyx_t_2); __pyx_t_2 = 0;
+    __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
+    __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
+    if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 277, __pyx_L1_error)
+    __Pyx_GOTREF(__pyx_t_1);
+  }
+  __pyx_v_request_module = __pyx_t_1;
+  __pyx_t_1 = 0;
+
+  /* "frigate/video/detect_cython.pyx":278
+ *     datetime_module = __import__("datetime")
+ *     request_module = __import__("frigate.comms.inter_process", fromlist=["InterProcessRequestor"])
+ *     queue_module = __import__("queue")             # <<<<<<<<<<<<<<
+ * 
+ *     # Initialize state (one-time setup, outside loop)
+*/
+  __pyx_t_5 = NULL;
+  __pyx_t_3 = 1;
+  {
+    PyObject *__pyx_callargs[2] = {__pyx_t_5, __pyx_mstate_global->__pyx_n_u_queue};
+    __pyx_t_1 = __Pyx_PyObject_FastCall((PyObject*)__pyx_builtin___import__, __pyx_callargs+__pyx_t_3, (2-__pyx_t_3) | (__pyx_t_3*__Pyx_PY_VECTORCALL_ARGUMENTS_OFFSET));
+    __Pyx_XDECREF(__pyx_t_5); __pyx_t_5 = 0;
+    if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 278, __pyx_L1_error)
+    __Pyx_GOTREF(__pyx_t_1);
+  }
+  __pyx_v_queue_module = __pyx_t_1;
+  __pyx_t_1 = 0;
+
+  /* "frigate/video/detect_cython.pyx":281
+ * 
+ *     # Initialize state (one-time setup, outside loop)
+ *     next_region_update = datetime_module.datetime.now().astimezone(             # <<<<<<<<<<<<<<
+ *         datetime_module.UTC
+ *     ) + datetime_module.timedelta(hours=22)  # ~2am next day
+*/
+  __pyx_t_6 = __Pyx_PyObject_GetAttrStr(__pyx_v_datetime_module, __pyx_mstate_global->__pyx_n_u_datetime); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 281, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_6);
+  __pyx_t_2 = __pyx_t_6;
+  __Pyx_INCREF(__pyx_t_2);
+  __pyx_t_3 = 0;
+  {
+    PyObject *__pyx_callargs[2] = {__pyx_t_2, NULL};
+    __pyx_t_4 = __Pyx_PyObject_FastCallMethod((PyObject*)__pyx_mstate_global->__pyx_n_u_now, __pyx_callargs+__pyx_t_3, (1-__pyx_t_3) | (1*__Pyx_PY_VECTORCALL_ARGUMENTS_OFFSET));
+    __Pyx_XDECREF(__pyx_t_2); __pyx_t_2 = 0;
+    __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
+    if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 281, __pyx_L1_error)
+    __Pyx_GOTREF(__pyx_t_4);
+  }
+  __pyx_t_5 = __pyx_t_4;
+  __Pyx_INCREF(__pyx_t_5);
+
+  /* "frigate/video/detect_cython.pyx":282
+ *     # Initialize state (one-time setup, outside loop)
+ *     next_region_update = datetime_module.datetime.now().astimezone(
+ *         datetime_module.UTC             # <<<<<<<<<<<<<<
+ *     ) + datetime_module.timedelta(hours=22)  # ~2am next day
+ * 
+*/
+  __pyx_t_6 = __Pyx_PyObject_GetAttrStr(__pyx_v_datetime_module, __pyx_mstate_global->__pyx_n_u_UTC); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 282, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_6);
+  __pyx_t_3 = 0;
+  {
+    PyObject *__pyx_callargs[2] = {__pyx_t_5, __pyx_t_6};
+    __pyx_t_1 = __Pyx_PyObject_FastCallMethod((PyObject*)__pyx_mstate_global->__pyx_n_u_astimezone, __pyx_callargs+__pyx_t_3, (2-__pyx_t_3) | (1*__Pyx_PY_VECTORCALL_ARGUMENTS_OFFSET));
+    __Pyx_XDECREF(__pyx_t_5); __pyx_t_5 = 0;
+    __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
+    __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
+    if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 281, __pyx_L1_error)
+    __Pyx_GOTREF(__pyx_t_1);
+  }
+
+  /* "frigate/video/detect_cython.pyx":283
+ *     next_region_update = datetime_module.datetime.now().astimezone(
+ *         datetime_module.UTC
+ *     ) + datetime_module.timedelta(hours=22)  # ~2am next day             # <<<<<<<<<<<<<<
+ * 
+ *     config_subscriber = object_tracker.__class__.__module__.split('.')[0]  # placeholder
+*/
+  __pyx_t_6 = __pyx_v_datetime_module;
+  __Pyx_INCREF(__pyx_t_6);
+  __pyx_t_3 = 0;
+  {
+    PyObject *__pyx_callargs[2 + ((CYTHON_VECTORCALL) ? 1 : 0)] = {__pyx_t_6, NULL};
+    __pyx_t_5 = __Pyx_MakeVectorcallBuilderKwds(1); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 283, __pyx_L1_error)
+    __Pyx_GOTREF(__pyx_t_5);
+    if (__Pyx_VectorcallBuilder_AddArg(__pyx_mstate_global->__pyx_n_u_hours, __pyx_mstate_global->__pyx_int_22, __pyx_t_5, __pyx_callargs+1, 0) < (0)) __PYX_ERR(0, 283, __pyx_L1_error)
+    __pyx_t_4 = __Pyx_Object_VectorcallMethod_CallFromBuilder((PyObject*)__pyx_mstate_global->__pyx_n_u_timedelta, __pyx_callargs+__pyx_t_3, (1-__pyx_t_3) | (1*__Pyx_PY_VECTORCALL_ARGUMENTS_OFFSET), __pyx_t_5);
+    __Pyx_XDECREF(__pyx_t_6); __pyx_t_6 = 0;
+    __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
+    if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 283, __pyx_L1_error)
+    __Pyx_GOTREF(__pyx_t_4);
+  }
+  __pyx_t_5 = PyNumber_Add(__pyx_t_1, __pyx_t_4); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 283, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_5);
+  __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
+  __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
+  __pyx_v_next_region_update = __pyx_t_5;
+  __pyx_t_5 = 0;
+
+  /* "frigate/video/detect_cython.pyx":285
+ *     ) + datetime_module.timedelta(hours=22)  # ~2am next day
+ * 
+ *     config_subscriber = object_tracker.__class__.__module__.split('.')[0]  # placeholder             # <<<<<<<<<<<<<<
+ * 
+ *     fps_tracker = None
+*/
+  __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_v_object_tracker, __pyx_mstate_global->__pyx_n_u_class); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 285, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_1);
+  __pyx_t_6 = __Pyx_PyObject_GetAttrStr(__pyx_t_1, __pyx_mstate_global->__pyx_n_u_module); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 285, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_6);
+  __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
+  __pyx_t_4 = __pyx_t_6;
+  __Pyx_INCREF(__pyx_t_4);
+  __pyx_t_3 = 0;
+  {
+    PyObject *__pyx_callargs[2] = {__pyx_t_4, __pyx_mstate_global->__pyx_kp_u_};
+    __pyx_t_5 = __Pyx_PyObject_FastCallMethod((PyObject*)__pyx_mstate_global->__pyx_n_u_split, __pyx_callargs+__pyx_t_3, (2-__pyx_t_3) | (1*__Pyx_PY_VECTORCALL_ARGUMENTS_OFFSET));
+    __Pyx_XDECREF(__pyx_t_4); __pyx_t_4 = 0;
+    __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
+    if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 285, __pyx_L1_error)
+    __Pyx_GOTREF(__pyx_t_5);
+  }
+  __pyx_t_6 = __Pyx_GetItemInt(__pyx_t_5, 0, long, 1, __Pyx_PyLong_From_long, 0, 0, 0, 1, __Pyx_ReferenceSharing_OwnStrongReference); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 285, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_6);
+  __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
+  __pyx_v_config_subscriber = __pyx_t_6;
+  __pyx_t_6 = 0;
+
+  /* "frigate/video/detect_cython.pyx":287
+ *     config_subscriber = object_tracker.__class__.__module__.split('.')[0]  # placeholder
+ * 
+ *     fps_tracker = None             # <<<<<<<<<<<<<<
+ *     # Initialize FPS tracker if needed
+ *     try:
+*/
+  __Pyx_INCREF(Py_None);
+  __pyx_v_fps_tracker = Py_None;
+
+  /* "frigate/video/detect_cython.pyx":289
+ *     fps_tracker = None
+ *     # Initialize FPS tracker if needed
+ *     try:             # <<<<<<<<<<<<<<
+ *         from frigate.util.builtin import EventsPerSecond
+ *         fps_tracker = EventsPerSecond()
+*/
+  {
+    __Pyx_PyThreadState_declare
+    __Pyx_PyThreadState_assign
+    __Pyx_ExceptionSave(&__pyx_t_7, &__pyx_t_8, &__pyx_t_9);
+    __Pyx_XGOTREF(__pyx_t_7);
+    __Pyx_XGOTREF(__pyx_t_8);
+    __Pyx_XGOTREF(__pyx_t_9);
+    /*try:*/ {
+
+      /* "frigate/video/detect_cython.pyx":290
+ *     # Initialize FPS tracker if needed
+ *     try:
+ *         from frigate.util.builtin import EventsPerSecond             # <<<<<<<<<<<<<<
+ *         fps_tracker = EventsPerSecond()
+ *         fps_tracker.start()
+*/
+      {
+        PyObject* const __pyx_imported_names[] = {__pyx_mstate_global->__pyx_n_u_EventsPerSecond};
+        __pyx_t_10 = __Pyx_Import(__pyx_mstate_global->__pyx_n_u_frigate_util_builtin, __pyx_imported_names, 1, NULL, 0); if (unlikely(!__pyx_t_10)) __PYX_ERR(0, 290, __pyx_L3_error)
+      }
+      __pyx_t_6 = __pyx_t_10;
+      __Pyx_GOTREF(__pyx_t_6);
+      {
+        PyObject* const __pyx_imported_names[] = {__pyx_mstate_global->__pyx_n_u_EventsPerSecond};
+        __pyx_t_11 = 0; {
+          __pyx_t_5 = __Pyx_ImportFrom(__pyx_t_6, __pyx_imported_names[__pyx_t_11]); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 290, __pyx_L3_error)
+          __Pyx_GOTREF(__pyx_t_5);
+          switch (__pyx_t_11) {
+            case 0:
+            __Pyx_INCREF(__pyx_t_5);
+            __pyx_v_EventsPerSecond = __pyx_t_5;
+            break;
+            default:;
+          }
+          __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
+        }
+      }
+      __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
+
+      /* "frigate/video/detect_cython.pyx":291
+ *     try:
+ *         from frigate.util.builtin import EventsPerSecond
+ *         fps_tracker = EventsPerSecond()             # <<<<<<<<<<<<<<
+ *         fps_tracker.start()
+ *     except Exception:
+*/
+      __pyx_t_5 = NULL;
+      __Pyx_INCREF(__pyx_v_EventsPerSecond);
+      __pyx_t_4 = __pyx_v_EventsPerSecond; 
+      __pyx_t_3 = 1;
+      #if CYTHON_UNPACK_METHODS
+      if (unlikely(PyMethod_Check(__pyx_t_4))) {
+        __pyx_t_5 = PyMethod_GET_SELF(__pyx_t_4);
+        assert(__pyx_t_5);
+        PyObject* __pyx__function = PyMethod_GET_FUNCTION(__pyx_t_4);
+        __Pyx_INCREF(__pyx_t_5);
+        __Pyx_INCREF(__pyx__function);
+        __Pyx_DECREF_SET(__pyx_t_4, __pyx__function);
+        __pyx_t_3 = 0;
+      }
+      #endif
+      {
+        PyObject *__pyx_callargs[2] = {__pyx_t_5, NULL};
+        __pyx_t_6 = __Pyx_PyObject_FastCall((PyObject*)__pyx_t_4, __pyx_callargs+__pyx_t_3, (1-__pyx_t_3) | (__pyx_t_3*__Pyx_PY_VECTORCALL_ARGUMENTS_OFFSET));
+        __Pyx_XDECREF(__pyx_t_5); __pyx_t_5 = 0;
+        __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
+        if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 291, __pyx_L3_error)
+        __Pyx_GOTREF(__pyx_t_6);
+      }
+      __Pyx_DECREF_SET(__pyx_v_fps_tracker, __pyx_t_6);
+      __pyx_t_6 = 0;
+
+      /* "frigate/video/detect_cython.pyx":292
+ *         from frigate.util.builtin import EventsPerSecond
+ *         fps_tracker = EventsPerSecond()
+ *         fps_tracker.start()             # <<<<<<<<<<<<<<
+ *     except Exception:
+ *         pass
+*/
+      __pyx_t_4 = __pyx_v_fps_tracker;
+      __Pyx_INCREF(__pyx_t_4);
+      __pyx_t_3 = 0;
+      {
+        PyObject *__pyx_callargs[2] = {__pyx_t_4, NULL};
+        __pyx_t_6 = __Pyx_PyObject_FastCallMethod((PyObject*)__pyx_mstate_global->__pyx_n_u_start, __pyx_callargs+__pyx_t_3, (1-__pyx_t_3) | (1*__Pyx_PY_VECTORCALL_ARGUMENTS_OFFSET));
+        __Pyx_XDECREF(__pyx_t_4); __pyx_t_4 = 0;
+        if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 292, __pyx_L3_error)
+        __Pyx_GOTREF(__pyx_t_6);
+      }
+      __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
+
+      /* "frigate/video/detect_cython.pyx":289
+ *     fps_tracker = None
+ *     # Initialize FPS tracker if needed
+ *     try:             # <<<<<<<<<<<<<<
+ *         from frigate.util.builtin import EventsPerSecond
+ *         fps_tracker = EventsPerSecond()
+*/
+    }
+    __Pyx_XDECREF(__pyx_t_7); __pyx_t_7 = 0;
+    __Pyx_XDECREF(__pyx_t_8); __pyx_t_8 = 0;
+    __Pyx_XDECREF(__pyx_t_9); __pyx_t_9 = 0;
+    goto __pyx_L8_try_end;
+    __pyx_L3_error:;
+    __Pyx_XDECREF(__pyx_t_1); __pyx_t_1 = 0;
+    __Pyx_XDECREF(__pyx_t_2); __pyx_t_2 = 0;
+    __Pyx_XDECREF(__pyx_t_4); __pyx_t_4 = 0;
+    __Pyx_XDECREF(__pyx_t_5); __pyx_t_5 = 0;
+    __Pyx_XDECREF(__pyx_t_6); __pyx_t_6 = 0;
+
+    /* "frigate/video/detect_cython.pyx":293
+ *         fps_tracker = EventsPerSecond()
+ *         fps_tracker.start()
+ *     except Exception:             # <<<<<<<<<<<<<<
+ *         pass
+ * 
+*/
+    __pyx_t_12 = __Pyx_PyErr_ExceptionMatches(((PyObject *)(((PyTypeObject*)PyExc_Exception))));
+    if (__pyx_t_12) {
+      __Pyx_ErrRestore(0,0,0);
+      goto __pyx_L4_exception_handled;
+    }
+    goto __pyx_L5_except_error;
+
+    /* "frigate/video/detect_cython.pyx":289
+ *     fps_tracker = None
+ *     # Initialize FPS tracker if needed
+ *     try:             # <<<<<<<<<<<<<<
+ *         from frigate.util.builtin import EventsPerSecond
+ *         fps_tracker = EventsPerSecond()
+*/
+    __pyx_L5_except_error:;
+    __Pyx_XGIVEREF(__pyx_t_7);
+    __Pyx_XGIVEREF(__pyx_t_8);
+    __Pyx_XGIVEREF(__pyx_t_9);
+    __Pyx_ExceptionReset(__pyx_t_7, __pyx_t_8, __pyx_t_9);
+    goto __pyx_L1_error;
+    __pyx_L4_exception_handled:;
+    __Pyx_XGIVEREF(__pyx_t_7);
+    __Pyx_XGIVEREF(__pyx_t_8);
+    __Pyx_XGIVEREF(__pyx_t_9);
+    __Pyx_ExceptionReset(__pyx_t_7, __pyx_t_8, __pyx_t_9);
+    __pyx_L8_try_end:;
+  }
+
+  /* "frigate/video/detect_cython.pyx":296
+ *         pass
+ * 
+ *     startup_scan = True             # <<<<<<<<<<<<<<
+ *     stationary_frame_counter = 0
+ *     camera_enabled = True
+*/
+  __pyx_v_startup_scan = 1;
+
+  /* "frigate/video/detect_cython.pyx":297
+ * 
+ *     startup_scan = True
+ *     stationary_frame_counter = 0             # <<<<<<<<<<<<<<
+ *     camera_enabled = True
+ * 
+*/
+  __pyx_v_stationary_frame_counter = 0;
+
+  /* "frigate/video/detect_cython.pyx":298
+ *     startup_scan = True
+ *     stationary_frame_counter = 0
+ *     camera_enabled = True             # <<<<<<<<<<<<<<
+ * 
+ *     # Compute region_min_size from model_config
+*/
+  __pyx_v_camera_enabled = 1;
+
+  /* "frigate/video/detect_cython.pyx":301
+ * 
+ *     # Compute region_min_size from model_config
+ *     try:             # <<<<<<<<<<<<<<
+ *         largest_dimension = max(model_config.height, model_config.width)
+ *         if largest_dimension < 320:
+*/
+  {
+    __Pyx_PyThreadState_declare
+    __Pyx_PyThreadState_assign
+    __Pyx_ExceptionSave(&__pyx_t_9, &__pyx_t_8, &__pyx_t_7);
+    __Pyx_XGOTREF(__pyx_t_9);
+    __Pyx_XGOTREF(__pyx_t_8);
+    __Pyx_XGOTREF(__pyx_t_7);
+    /*try:*/ {
+
+      /* "frigate/video/detect_cython.pyx":302
+ *     # Compute region_min_size from model_config
+ *     try:
+ *         largest_dimension = max(model_config.height, model_config.width)             # <<<<<<<<<<<<<<
+ *         if largest_dimension < 320:
+ *             if largest_dimension % 4 == 0:
+*/
+      __pyx_t_6 = __Pyx_PyObject_GetAttrStr(__pyx_v_model_config, __pyx_mstate_global->__pyx_n_u_width); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 302, __pyx_L11_error)
+      __Pyx_GOTREF(__pyx_t_6);
+      __pyx_t_4 = __Pyx_PyObject_GetAttrStr(__pyx_v_model_config, __pyx_mstate_global->__pyx_n_u_height); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 302, __pyx_L11_error)
+      __Pyx_GOTREF(__pyx_t_4);
+      __pyx_t_1 = PyObject_RichCompare(__pyx_t_6, __pyx_t_4, Py_GT); __Pyx_XGOTREF(__pyx_t_1); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 302, __pyx_L11_error)
+      __pyx_t_13 = __Pyx_PyObject_IsTrue(__pyx_t_1); if (unlikely((__pyx_t_13 < 0))) __PYX_ERR(0, 302, __pyx_L11_error)
+      __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
+      if (__pyx_t_13) {
+        __Pyx_INCREF(__pyx_t_6);
+        __pyx_t_5 = __pyx_t_6;
+      } else {
+        __Pyx_INCREF(__pyx_t_4);
+        __pyx_t_5 = __pyx_t_4;
+      }
+      __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
+      __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
+      __pyx_t_6 = __pyx_t_5;
+      __Pyx_INCREF(__pyx_t_6);
+      __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
+      __pyx_v_largest_dimension = __pyx_t_6;
+      __pyx_t_6 = 0;
+
+      /* "frigate/video/detect_cython.pyx":303
+ *     try:
+ *         largest_dimension = max(model_config.height, model_config.width)
+ *         if largest_dimension < 320:             # <<<<<<<<<<<<<<
+ *             if largest_dimension % 4 == 0:
+ *                 region_min_size = largest_dimension
+*/
+      __pyx_t_6 = PyObject_RichCompare(__pyx_v_largest_dimension, __pyx_mstate_global->__pyx_int_320, Py_LT); __Pyx_XGOTREF(__pyx_t_6); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 303, __pyx_L11_error)
+      __pyx_t_13 = __Pyx_PyObject_IsTrue(__pyx_t_6); if (unlikely((__pyx_t_13 < 0))) __PYX_ERR(0, 303, __pyx_L11_error)
+      __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
+      if (__pyx_t_13) {
+
+        /* "frigate/video/detect_cython.pyx":304
+ *         largest_dimension = max(model_config.height, model_config.width)
+ *         if largest_dimension < 320:
+ *             if largest_dimension % 4 == 0:             # <<<<<<<<<<<<<<
+ *                 region_min_size = largest_dimension
+ *             else:
+*/
+        __pyx_t_6 = __Pyx_PyLong_RemainderObjC(__pyx_v_largest_dimension, __pyx_mstate_global->__pyx_int_4, 4, 0, 0); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 304, __pyx_L11_error)
+        __Pyx_GOTREF(__pyx_t_6);
+        __pyx_t_13 = (__Pyx_PyLong_BoolEqObjC(__pyx_t_6, __pyx_mstate_global->__pyx_int_0, 0, 0)); if (unlikely((__pyx_t_13 < 0))) __PYX_ERR(0, 304, __pyx_L11_error)
+        __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
+        if (__pyx_t_13) {
+
+          /* "frigate/video/detect_cython.pyx":305
+ *         if largest_dimension < 320:
+ *             if largest_dimension % 4 == 0:
+ *                 region_min_size = largest_dimension             # <<<<<<<<<<<<<<
+ *             else:
+ *                 region_min_size = int((largest_dimension + 3) / 4) * 4
+*/
+          __pyx_t_12 = __Pyx_PyLong_As_int(__pyx_v_largest_dimension); if (unlikely((__pyx_t_12 == (int)-1) && PyErr_Occurred())) __PYX_ERR(0, 305, __pyx_L11_error)
+          __pyx_v_region_min_size = __pyx_t_12;
+
+          /* "frigate/video/detect_cython.pyx":304
+ *         largest_dimension = max(model_config.height, model_config.width)
+ *         if largest_dimension < 320:
+ *             if largest_dimension % 4 == 0:             # <<<<<<<<<<<<<<
+ *                 region_min_size = largest_dimension
+ *             else:
+*/
+          goto __pyx_L18;
+        }
+
+        /* "frigate/video/detect_cython.pyx":307
+ *                 region_min_size = largest_dimension
+ *             else:
+ *                 region_min_size = int((largest_dimension + 3) / 4) * 4             # <<<<<<<<<<<<<<
+ *         else:
+ *             region_min_size = 320
+*/
+        /*else*/ {
+          __pyx_t_6 = __Pyx_PyLong_AddObjC(__pyx_v_largest_dimension, __pyx_mstate_global->__pyx_int_3, 3, 0, 0); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 307, __pyx_L11_error)
+          __Pyx_GOTREF(__pyx_t_6);
+          __pyx_t_5 = __Pyx_PyLong_TrueDivideObjC(__pyx_t_6, __pyx_mstate_global->__pyx_int_4, 4, 0, 0); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 307, __pyx_L11_error)
+          __Pyx_GOTREF(__pyx_t_5);
+          __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
+          __pyx_t_6 = __Pyx_PyNumber_Int(__pyx_t_5); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 307, __pyx_L11_error)
+          __Pyx_GOTREF(__pyx_t_6);
+          __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
+          __pyx_t_5 = __Pyx_PyLong_MultiplyObjC(__pyx_t_6, __pyx_mstate_global->__pyx_int_4, 4, 0, 0); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 307, __pyx_L11_error)
+          __Pyx_GOTREF(__pyx_t_5);
+          __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
+          __pyx_t_12 = __Pyx_PyLong_As_int(__pyx_t_5); if (unlikely((__pyx_t_12 == (int)-1) && PyErr_Occurred())) __PYX_ERR(0, 307, __pyx_L11_error)
+          __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
+          __pyx_v_region_min_size = __pyx_t_12;
+        }
+        __pyx_L18:;
+
+        /* "frigate/video/detect_cython.pyx":303
+ *     try:
+ *         largest_dimension = max(model_config.height, model_config.width)
+ *         if largest_dimension < 320:             # <<<<<<<<<<<<<<
+ *             if largest_dimension % 4 == 0:
+ *                 region_min_size = largest_dimension
+*/
+        goto __pyx_L17;
+      }
+
+      /* "frigate/video/detect_cython.pyx":309
+ *                 region_min_size = int((largest_dimension + 3) / 4) * 4
+ *         else:
+ *             region_min_size = 320             # <<<<<<<<<<<<<<
+ *     except Exception:
+ *         region_min_size = 320
+*/
+      /*else*/ {
+        __pyx_v_region_min_size = 0x140;
+      }
+      __pyx_L17:;
+
+      /* "frigate/video/detect_cython.pyx":301
+ * 
+ *     # Compute region_min_size from model_config
+ *     try:             # <<<<<<<<<<<<<<
+ *         largest_dimension = max(model_config.height, model_config.width)
+ *         if largest_dimension < 320:
+*/
+    }
+    __Pyx_XDECREF(__pyx_t_9); __pyx_t_9 = 0;
+    __Pyx_XDECREF(__pyx_t_8); __pyx_t_8 = 0;
+    __Pyx_XDECREF(__pyx_t_7); __pyx_t_7 = 0;
+    goto __pyx_L16_try_end;
+    __pyx_L11_error:;
+    __Pyx_XDECREF(__pyx_t_1); __pyx_t_1 = 0;
+    __Pyx_XDECREF(__pyx_t_2); __pyx_t_2 = 0;
+    __Pyx_XDECREF(__pyx_t_4); __pyx_t_4 = 0;
+    __Pyx_XDECREF(__pyx_t_5); __pyx_t_5 = 0;
+    __Pyx_XDECREF(__pyx_t_6); __pyx_t_6 = 0;
+
+    /* "frigate/video/detect_cython.pyx":310
+ *         else:
+ *             region_min_size = 320
+ *     except Exception:             # <<<<<<<<<<<<<<
+ *         region_min_size = 320
+ * 
+*/
+    __pyx_t_12 = __Pyx_PyErr_ExceptionMatches(((PyObject *)(((PyTypeObject*)PyExc_Exception))));
+    if (__pyx_t_12) {
+      __Pyx_ErrRestore(0,0,0);
+
+      /* "frigate/video/detect_cython.pyx":311
+ *             region_min_size = 320
+ *     except Exception:
+ *         region_min_size = 320             # <<<<<<<<<<<<<<
+ * 
+ *     # Pre-allocate reusable buffers
+*/
+      __pyx_v_region_min_size = 0x140;
+      goto __pyx_L12_exception_handled;
+    }
+    goto __pyx_L13_except_error;
+
+    /* "frigate/video/detect_cython.pyx":301
+ * 
+ *     # Compute region_min_size from model_config
+ *     try:             # <<<<<<<<<<<<<<
+ *         largest_dimension = max(model_config.height, model_config.width)
+ *         if largest_dimension < 320:
+*/
+    __pyx_L13_except_error:;
+    __Pyx_XGIVEREF(__pyx_t_9);
+    __Pyx_XGIVEREF(__pyx_t_8);
+    __Pyx_XGIVEREF(__pyx_t_7);
+    __Pyx_ExceptionReset(__pyx_t_9, __pyx_t_8, __pyx_t_7);
+    goto __pyx_L1_error;
+    __pyx_L12_exception_handled:;
+    __Pyx_XGIVEREF(__pyx_t_9);
+    __Pyx_XGIVEREF(__pyx_t_8);
+    __Pyx_XGIVEREF(__pyx_t_7);
+    __Pyx_ExceptionReset(__pyx_t_9, __pyx_t_8, __pyx_t_7);
+    __pyx_L16_try_end:;
+  }
+
+  /* "frigate/video/detect_cython.pyx":314
+ * 
+ *     # Pre-allocate reusable buffers
+ *     motion_boxes_buf = np.empty((500, 4), dtype=np.float32)             # <<<<<<<<<<<<<<
+ *     regions_buf = np.empty((100, 4), dtype=np.float32)
+ * 
+*/
+  __pyx_t_6 = NULL;
+  __Pyx_GetModuleGlobalName(__pyx_t_4, __pyx_mstate_global->__pyx_n_u_np); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 314, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_4);
+  __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_t_4, __pyx_mstate_global->__pyx_n_u_empty); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 314, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_1);
+  __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
+  __Pyx_GetModuleGlobalName(__pyx_t_4, __pyx_mstate_global->__pyx_n_u_np); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 314, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_4);
+  __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_t_4, __pyx_mstate_global->__pyx_n_u_float32); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 314, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_2);
+  __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
+  __pyx_t_3 = 1;
+  #if CYTHON_UNPACK_METHODS
+  if (unlikely(PyMethod_Check(__pyx_t_1))) {
+    __pyx_t_6 = PyMethod_GET_SELF(__pyx_t_1);
+    assert(__pyx_t_6);
+    PyObject* __pyx__function = PyMethod_GET_FUNCTION(__pyx_t_1);
+    __Pyx_INCREF(__pyx_t_6);
+    __Pyx_INCREF(__pyx__function);
+    __Pyx_DECREF_SET(__pyx_t_1, __pyx__function);
+    __pyx_t_3 = 0;
+  }
+  #endif
+  {
+    PyObject *__pyx_callargs[2 + ((CYTHON_VECTORCALL) ? 1 : 0)] = {__pyx_t_6, __pyx_mstate_global->__pyx_tuple[0]};
+    __pyx_t_4 = __Pyx_MakeVectorcallBuilderKwds(1); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 314, __pyx_L1_error)
+    __Pyx_GOTREF(__pyx_t_4);
+    if (__Pyx_VectorcallBuilder_AddArg(__pyx_mstate_global->__pyx_n_u_dtype, __pyx_t_2, __pyx_t_4, __pyx_callargs+2, 0) < (0)) __PYX_ERR(0, 314, __pyx_L1_error)
+    __pyx_t_5 = __Pyx_Object_Vectorcall_CallFromBuilder((PyObject*)__pyx_t_1, __pyx_callargs+__pyx_t_3, (2-__pyx_t_3) | (__pyx_t_3*__Pyx_PY_VECTORCALL_ARGUMENTS_OFFSET), __pyx_t_4);
+    __Pyx_XDECREF(__pyx_t_6); __pyx_t_6 = 0;
+    __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
+    __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
+    __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
+    if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 314, __pyx_L1_error)
+    __Pyx_GOTREF(__pyx_t_5);
+  }
+  __pyx_v_motion_boxes_buf = __pyx_t_5;
+  __pyx_t_5 = 0;
+
+  /* "frigate/video/detect_cython.pyx":315
+ *     # Pre-allocate reusable buffers
+ *     motion_boxes_buf = np.empty((500, 4), dtype=np.float32)
+ *     regions_buf = np.empty((100, 4), dtype=np.float32)             # <<<<<<<<<<<<<<
+ * 
+ *     # Check if camera is dedicated LPR cam
+*/
+  __pyx_t_1 = NULL;
+  __Pyx_GetModuleGlobalName(__pyx_t_4, __pyx_mstate_global->__pyx_n_u_np); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 315, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_4);
+  __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_t_4, __pyx_mstate_global->__pyx_n_u_empty); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 315, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_2);
+  __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
+  __Pyx_GetModuleGlobalName(__pyx_t_4, __pyx_mstate_global->__pyx_n_u_np); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 315, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_4);
+  __pyx_t_6 = __Pyx_PyObject_GetAttrStr(__pyx_t_4, __pyx_mstate_global->__pyx_n_u_float32); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 315, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_6);
+  __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
+  __pyx_t_3 = 1;
+  #if CYTHON_UNPACK_METHODS
+  if (unlikely(PyMethod_Check(__pyx_t_2))) {
+    __pyx_t_1 = PyMethod_GET_SELF(__pyx_t_2);
+    assert(__pyx_t_1);
+    PyObject* __pyx__function = PyMethod_GET_FUNCTION(__pyx_t_2);
+    __Pyx_INCREF(__pyx_t_1);
+    __Pyx_INCREF(__pyx__function);
+    __Pyx_DECREF_SET(__pyx_t_2, __pyx__function);
+    __pyx_t_3 = 0;
+  }
+  #endif
+  {
+    PyObject *__pyx_callargs[2 + ((CYTHON_VECTORCALL) ? 1 : 0)] = {__pyx_t_1, __pyx_mstate_global->__pyx_tuple[1]};
+    __pyx_t_4 = __Pyx_MakeVectorcallBuilderKwds(1); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 315, __pyx_L1_error)
+    __Pyx_GOTREF(__pyx_t_4);
+    if (__Pyx_VectorcallBuilder_AddArg(__pyx_mstate_global->__pyx_n_u_dtype, __pyx_t_6, __pyx_t_4, __pyx_callargs+2, 0) < (0)) __PYX_ERR(0, 315, __pyx_L1_error)
+    __pyx_t_5 = __Pyx_Object_Vectorcall_CallFromBuilder((PyObject*)__pyx_t_2, __pyx_callargs+__pyx_t_3, (2-__pyx_t_3) | (__pyx_t_3*__Pyx_PY_VECTORCALL_ARGUMENTS_OFFSET), __pyx_t_4);
+    __Pyx_XDECREF(__pyx_t_1); __pyx_t_1 = 0;
+    __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
+    __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
+    __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
+    if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 315, __pyx_L1_error)
+    __Pyx_GOTREF(__pyx_t_5);
+  }
+  __pyx_v_regions_buf = __pyx_t_5;
+  __pyx_t_5 = 0;
+
+  /* "frigate/video/detect_cython.pyx":318
+ * 
+ *     # Check if camera is dedicated LPR cam
+ *     try:             # <<<<<<<<<<<<<<
+ *         from frigate.config.camera.camera import CameraTypeEnum
+ *         is_lpr = camera_config.type == CameraTypeEnum.lpr
+*/
+  {
+    __Pyx_PyThreadState_declare
+    __Pyx_PyThreadState_assign
+    __Pyx_ExceptionSave(&__pyx_t_7, &__pyx_t_8, &__pyx_t_9);
+    __Pyx_XGOTREF(__pyx_t_7);
+    __Pyx_XGOTREF(__pyx_t_8);
+    __Pyx_XGOTREF(__pyx_t_9);
+    /*try:*/ {
+
+      /* "frigate/video/detect_cython.pyx":319
+ *     # Check if camera is dedicated LPR cam
+ *     try:
+ *         from frigate.config.camera.camera import CameraTypeEnum             # <<<<<<<<<<<<<<
+ *         is_lpr = camera_config.type == CameraTypeEnum.lpr
+ *     except Exception:
+*/
+      {
+        PyObject* const __pyx_imported_names[] = {__pyx_mstate_global->__pyx_n_u_CameraTypeEnum};
+        __pyx_t_10 = __Pyx_Import(__pyx_mstate_global->__pyx_n_u_frigate_config_camera_camera, __pyx_imported_names, 1, NULL, 0); if (unlikely(!__pyx_t_10)) __PYX_ERR(0, 319, __pyx_L21_error)
+      }
+      __pyx_t_5 = __pyx_t_10;
+      __Pyx_GOTREF(__pyx_t_5);
+      {
+        PyObject* const __pyx_imported_names[] = {__pyx_mstate_global->__pyx_n_u_CameraTypeEnum};
+        __pyx_t_11 = 0; {
+          __pyx_t_2 = __Pyx_ImportFrom(__pyx_t_5, __pyx_imported_names[__pyx_t_11]); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 319, __pyx_L21_error)
+          __Pyx_GOTREF(__pyx_t_2);
+          switch (__pyx_t_11) {
+            case 0:
+            __Pyx_INCREF(__pyx_t_2);
+            __pyx_v_CameraTypeEnum = __pyx_t_2;
+            break;
+            default:;
+          }
+          __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
+        }
+      }
+      __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
+
+      /* "frigate/video/detect_cython.pyx":320
+ *     try:
+ *         from frigate.config.camera.camera import CameraTypeEnum
+ *         is_lpr = camera_config.type == CameraTypeEnum.lpr             # <<<<<<<<<<<<<<
+ *     except Exception:
+ *         is_lpr = False
+*/
+      __pyx_t_5 = __Pyx_PyObject_GetAttrStr(__pyx_v_camera_config, __pyx_mstate_global->__pyx_n_u_type); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 320, __pyx_L21_error)
+      __Pyx_GOTREF(__pyx_t_5);
+      __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_v_CameraTypeEnum, __pyx_mstate_global->__pyx_n_u_lpr); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 320, __pyx_L21_error)
+      __Pyx_GOTREF(__pyx_t_2);
+      __pyx_t_4 = PyObject_RichCompare(__pyx_t_5, __pyx_t_2, Py_EQ); __Pyx_XGOTREF(__pyx_t_4); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 320, __pyx_L21_error)
+      __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
+      __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
+      __pyx_t_13 = __Pyx_PyObject_IsTrue(__pyx_t_4); if (unlikely((__pyx_t_13 == (int)-1) && PyErr_Occurred())) __PYX_ERR(0, 320, __pyx_L21_error)
+      __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
+      __pyx_v_is_lpr = __pyx_t_13;
+
+      /* "frigate/video/detect_cython.pyx":318
+ * 
+ *     # Check if camera is dedicated LPR cam
+ *     try:             # <<<<<<<<<<<<<<
+ *         from frigate.config.camera.camera import CameraTypeEnum
+ *         is_lpr = camera_config.type == CameraTypeEnum.lpr
+*/
+    }
+    __Pyx_XDECREF(__pyx_t_7); __pyx_t_7 = 0;
+    __Pyx_XDECREF(__pyx_t_8); __pyx_t_8 = 0;
+    __Pyx_XDECREF(__pyx_t_9); __pyx_t_9 = 0;
+    goto __pyx_L26_try_end;
+    __pyx_L21_error:;
+    __Pyx_XDECREF(__pyx_t_1); __pyx_t_1 = 0;
+    __Pyx_XDECREF(__pyx_t_2); __pyx_t_2 = 0;
+    __Pyx_XDECREF(__pyx_t_4); __pyx_t_4 = 0;
+    __Pyx_XDECREF(__pyx_t_5); __pyx_t_5 = 0;
+    __Pyx_XDECREF(__pyx_t_6); __pyx_t_6 = 0;
+
+    /* "frigate/video/detect_cython.pyx":321
+ *         from frigate.config.camera.camera import CameraTypeEnum
+ *         is_lpr = camera_config.type == CameraTypeEnum.lpr
+ *     except Exception:             # <<<<<<<<<<<<<<
+ *         is_lpr = False
+ * 
+*/
+    __pyx_t_12 = __Pyx_PyErr_ExceptionMatches(((PyObject *)(((PyTypeObject*)PyExc_Exception))));
+    if (__pyx_t_12) {
+      __Pyx_ErrRestore(0,0,0);
+
+      /* "frigate/video/detect_cython.pyx":322
+ *         is_lpr = camera_config.type == CameraTypeEnum.lpr
+ *     except Exception:
+ *         is_lpr = False             # <<<<<<<<<<<<<<
+ * 
+ *     if is_lpr:
+*/
+      __pyx_v_is_lpr = 0;
+      goto __pyx_L22_exception_handled;
+    }
+    goto __pyx_L23_except_error;
+
+    /* "frigate/video/detect_cython.pyx":318
+ * 
+ *     # Check if camera is dedicated LPR cam
+ *     try:             # <<<<<<<<<<<<<<
+ *         from frigate.config.camera.camera import CameraTypeEnum
+ *         is_lpr = camera_config.type == CameraTypeEnum.lpr
+*/
+    __pyx_L23_except_error:;
+    __Pyx_XGIVEREF(__pyx_t_7);
+    __Pyx_XGIVEREF(__pyx_t_8);
+    __Pyx_XGIVEREF(__pyx_t_9);
+    __Pyx_ExceptionReset(__pyx_t_7, __pyx_t_8, __pyx_t_9);
+    goto __pyx_L1_error;
+    __pyx_L22_exception_handled:;
+    __Pyx_XGIVEREF(__pyx_t_7);
+    __Pyx_XGIVEREF(__pyx_t_8);
+    __Pyx_XGIVEREF(__pyx_t_9);
+    __Pyx_ExceptionReset(__pyx_t_7, __pyx_t_8, __pyx_t_9);
+    __pyx_L26_try_end:;
+  }
+
+  /* "frigate/video/detect_cython.pyx":324
+ *         is_lpr = False
+ * 
+ *     if is_lpr:             # <<<<<<<<<<<<<<
+ *         try:
+ *             modified_attributes_map = dict(model_config.attributes_map) if model_config.attributes_map else {}
+*/
+  if (__pyx_v_is_lpr) {
+
+    /* "frigate/video/detect_cython.pyx":325
+ * 
+ *     if is_lpr:
+ *         try:             # <<<<<<<<<<<<<<
+ *             modified_attributes_map = dict(model_config.attributes_map) if model_config.attributes_map else {}
+ *             if "car" in modified_attributes_map and "license_plate" in modified_attributes_map["car"]:
+*/
+    {
+      __Pyx_PyThreadState_declare
+      __Pyx_PyThreadState_assign
+      __Pyx_ExceptionSave(&__pyx_t_9, &__pyx_t_8, &__pyx_t_7);
+      __Pyx_XGOTREF(__pyx_t_9);
+      __Pyx_XGOTREF(__pyx_t_8);
+      __Pyx_XGOTREF(__pyx_t_7);
+      /*try:*/ {
+
+        /* "frigate/video/detect_cython.pyx":326
+ *     if is_lpr:
+ *         try:
+ *             modified_attributes_map = dict(model_config.attributes_map) if model_config.attributes_map else {}             # <<<<<<<<<<<<<<
+ *             if "car" in modified_attributes_map and "license_plate" in modified_attributes_map["car"]:
+ *                 modified_attributes_map["car"] = [
+*/
+        __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_v_model_config, __pyx_mstate_global->__pyx_n_u_attributes_map); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 326, __pyx_L30_error)
+        __Pyx_GOTREF(__pyx_t_2);
+        __pyx_t_13 = __Pyx_PyObject_IsTrue(__pyx_t_2); if (unlikely((__pyx_t_13 < 0))) __PYX_ERR(0, 326, __pyx_L30_error)
+        __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
+        if (__pyx_t_13) {
+          __pyx_t_5 = NULL;
+          __pyx_t_6 = __Pyx_PyObject_GetAttrStr(__pyx_v_model_config, __pyx_mstate_global->__pyx_n_u_attributes_map); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 326, __pyx_L30_error)
+          __Pyx_GOTREF(__pyx_t_6);
+          __pyx_t_3 = 1;
+          {
+            PyObject *__pyx_callargs[2] = {__pyx_t_5, __pyx_t_6};
+            __pyx_t_2 = __Pyx_PyObject_FastCall((PyObject*)(&PyDict_Type), __pyx_callargs+__pyx_t_3, (2-__pyx_t_3) | (__pyx_t_3*__Pyx_PY_VECTORCALL_ARGUMENTS_OFFSET));
+            __Pyx_XDECREF(__pyx_t_5); __pyx_t_5 = 0;
+            __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
+            if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 326, __pyx_L30_error)
+            __Pyx_GOTREF(__pyx_t_2);
+          }
+          __pyx_t_4 = __pyx_t_2;
+          __pyx_t_2 = 0;
+        } else {
+          __pyx_t_2 = __Pyx_PyDict_NewPresized(0); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 326, __pyx_L30_error)
+          __Pyx_GOTREF(__pyx_t_2);
+          __pyx_t_4 = __pyx_t_2;
+          __pyx_t_2 = 0;
+        }
+        __pyx_v_modified_attributes_map = ((PyObject*)__pyx_t_4);
+        __pyx_t_4 = 0;
+
+        /* "frigate/video/detect_cython.pyx":327
+ *         try:
+ *             modified_attributes_map = dict(model_config.attributes_map) if model_config.attributes_map else {}
+ *             if "car" in modified_attributes_map and "license_plate" in modified_attributes_map["car"]:             # <<<<<<<<<<<<<<
+ *                 modified_attributes_map["car"] = [
+ *                     attr for attr in modified_attributes_map["car"] if attr != "license_plate"
+*/
+        if (unlikely(__pyx_v_modified_attributes_map == Py_None)) {
+          PyErr_SetString(PyExc_TypeError, "'NoneType' object is not iterable");
+          __PYX_ERR(0, 327, __pyx_L30_error)
+        }
+        __pyx_t_14 = (__Pyx_PyDict_ContainsTF(__pyx_mstate_global->__pyx_n_u_car, __pyx_v_modified_attributes_map, Py_EQ)); if (unlikely((__pyx_t_14 < 0))) __PYX_ERR(0, 327, __pyx_L30_error)
+        if (__pyx_t_14) {
+        } else {
+          __pyx_t_13 = __pyx_t_14;
+          goto __pyx_L37_bool_binop_done;
+        }
+        if (unlikely(__pyx_v_modified_attributes_map == Py_None)) {
+          PyErr_SetString(PyExc_TypeError, "'NoneType' object is not subscriptable");
+          __PYX_ERR(0, 327, __pyx_L30_error)
+        }
+        __pyx_t_4 = __Pyx_PyDict_GetItem(__pyx_v_modified_attributes_map, __pyx_mstate_global->__pyx_n_u_car); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 327, __pyx_L30_error)
+        __Pyx_GOTREF(__pyx_t_4);
+        __pyx_t_14 = (__Pyx_PySequence_ContainsTF(__pyx_mstate_global->__pyx_n_u_license_plate, __pyx_t_4, Py_EQ)); if (unlikely((__pyx_t_14 < 0))) __PYX_ERR(0, 327, __pyx_L30_error)
+        __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
+        __pyx_t_13 = __pyx_t_14;
+        __pyx_L37_bool_binop_done:;
+        if (__pyx_t_13) {
+
+          /* "frigate/video/detect_cython.pyx":328
+ *             modified_attributes_map = dict(model_config.attributes_map) if model_config.attributes_map else {}
+ *             if "car" in modified_attributes_map and "license_plate" in modified_attributes_map["car"]:
+ *                 modified_attributes_map["car"] = [             # <<<<<<<<<<<<<<
+ *                     attr for attr in modified_attributes_map["car"] if attr != "license_plate"
+ *                 ]
+*/
+          { /* enter inner scope */
+            __pyx_t_4 = PyList_New(0); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 328, __pyx_L41_error)
+            __Pyx_GOTREF(__pyx_t_4);
+
+            /* "frigate/video/detect_cython.pyx":329
+ *             if "car" in modified_attributes_map and "license_plate" in modified_attributes_map["car"]:
+ *                 modified_attributes_map["car"] = [
+ *                     attr for attr in modified_attributes_map["car"] if attr != "license_plate"             # <<<<<<<<<<<<<<
+ *                 ]
+ *             attributes_map = modified_attributes_map
+*/
+            if (unlikely(__pyx_v_modified_attributes_map == Py_None)) {
+              PyErr_SetString(PyExc_TypeError, "'NoneType' object is not subscriptable");
+              __PYX_ERR(0, 329, __pyx_L41_error)
+            }
+            __pyx_t_2 = __Pyx_PyDict_GetItem(__pyx_v_modified_attributes_map, __pyx_mstate_global->__pyx_n_u_car); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 329, __pyx_L41_error)
+            __Pyx_GOTREF(__pyx_t_2);
+            if (likely(PyList_CheckExact(__pyx_t_2)) || PyTuple_CheckExact(__pyx_t_2)) {
+              __pyx_t_6 = __pyx_t_2; __Pyx_INCREF(__pyx_t_6);
+              __pyx_t_11 = 0;
+              __pyx_t_15 = NULL;
+            } else {
+              __pyx_t_11 = -1; __pyx_t_6 = PyObject_GetIter(__pyx_t_2); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 329, __pyx_L41_error)
+              __Pyx_GOTREF(__pyx_t_6);
+              __pyx_t_15 = (CYTHON_COMPILING_IN_LIMITED_API) ? PyIter_Next : __Pyx_PyObject_GetIterNextFunc(__pyx_t_6); if (unlikely(!__pyx_t_15)) __PYX_ERR(0, 329, __pyx_L41_error)
+            }
+            __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
+            for (;;) {
+              if (likely(!__pyx_t_15)) {
+                if (likely(PyList_CheckExact(__pyx_t_6))) {
+                  {
+                    Py_ssize_t __pyx_temp = __Pyx_PyList_GET_SIZE(__pyx_t_6);
+                    #if !CYTHON_ASSUME_SAFE_SIZE
+                    if (unlikely((__pyx_temp < 0))) __PYX_ERR(0, 329, __pyx_L41_error)
+                    #endif
+                    if (__pyx_t_11 >= __pyx_temp) break;
+                  }
+                  __pyx_t_2 = __Pyx_PyList_GET_ITEM_REF(__pyx_t_6, __pyx_t_11, __Pyx_ReferenceSharing_OwnStrongReference);
+                  ++__pyx_t_11;
+                } else {
+                  {
+                    Py_ssize_t __pyx_temp = __Pyx_PyTuple_GET_SIZE(__pyx_t_6);
+                    #if !CYTHON_ASSUME_SAFE_SIZE
+                    if (unlikely((__pyx_temp < 0))) __PYX_ERR(0, 329, __pyx_L41_error)
+                    #endif
+                    if (__pyx_t_11 >= __pyx_temp) break;
+                  }
+                  #if CYTHON_ASSUME_SAFE_MACROS && !CYTHON_AVOID_BORROWED_REFS
+                  __pyx_t_2 = __Pyx_NewRef(PyTuple_GET_ITEM(__pyx_t_6, __pyx_t_11));
+                  #else
+                  __pyx_t_2 = __Pyx_PySequence_ITEM(__pyx_t_6, __pyx_t_11);
+                  #endif
+                  ++__pyx_t_11;
+                }
+                if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 329, __pyx_L41_error)
+              } else {
+                __pyx_t_2 = __pyx_t_15(__pyx_t_6);
+                if (unlikely(!__pyx_t_2)) {
+                  PyObject* exc_type = PyErr_Occurred();
+                  if (exc_type) {
+                    if (unlikely(!__Pyx_PyErr_GivenExceptionMatches(exc_type, PyExc_StopIteration))) __PYX_ERR(0, 329, __pyx_L41_error)
+                    PyErr_Clear();
+                  }
+                  break;
+                }
+              }
+              __Pyx_GOTREF(__pyx_t_2);
+              __Pyx_XDECREF_SET(__pyx_7genexpr__pyx_v_attr, __pyx_t_2);
+              __pyx_t_2 = 0;
+              __pyx_t_13 = (__Pyx_PyUnicode_Equals(__pyx_7genexpr__pyx_v_attr, __pyx_mstate_global->__pyx_n_u_license_plate, Py_NE)); if (unlikely((__pyx_t_13 < 0))) __PYX_ERR(0, 329, __pyx_L41_error)
+              if (__pyx_t_13) {
+                if (unlikely(__Pyx_ListComp_Append(__pyx_t_4, (PyObject*)__pyx_7genexpr__pyx_v_attr))) __PYX_ERR(0, 328, __pyx_L41_error)
+              }
+            }
+            __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
+            __Pyx_XDECREF(__pyx_7genexpr__pyx_v_attr); __pyx_7genexpr__pyx_v_attr = 0;
+            goto __pyx_L46_exit_scope;
+            __pyx_L41_error:;
+            __Pyx_XDECREF(__pyx_7genexpr__pyx_v_attr); __pyx_7genexpr__pyx_v_attr = 0;
+            goto __pyx_L30_error;
+            __pyx_L46_exit_scope:;
+          } /* exit inner scope */
+
+          /* "frigate/video/detect_cython.pyx":328
+ *             modified_attributes_map = dict(model_config.attributes_map) if model_config.attributes_map else {}
+ *             if "car" in modified_attributes_map and "license_plate" in modified_attributes_map["car"]:
+ *                 modified_attributes_map["car"] = [             # <<<<<<<<<<<<<<
+ *                     attr for attr in modified_attributes_map["car"] if attr != "license_plate"
+ *                 ]
+*/
+          if (unlikely(__pyx_v_modified_attributes_map == Py_None)) {
+            PyErr_SetString(PyExc_TypeError, "'NoneType' object is not subscriptable");
+            __PYX_ERR(0, 328, __pyx_L30_error)
+          }
+          if (unlikely((PyDict_SetItem(__pyx_v_modified_attributes_map, __pyx_mstate_global->__pyx_n_u_car, __pyx_t_4) < 0))) __PYX_ERR(0, 328, __pyx_L30_error)
+          __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
+
+          /* "frigate/video/detect_cython.pyx":327
+ *         try:
+ *             modified_attributes_map = dict(model_config.attributes_map) if model_config.attributes_map else {}
+ *             if "car" in modified_attributes_map and "license_plate" in modified_attributes_map["car"]:             # <<<<<<<<<<<<<<
+ *                 modified_attributes_map["car"] = [
+ *                     attr for attr in modified_attributes_map["car"] if attr != "license_plate"
+*/
+        }
+
+        /* "frigate/video/detect_cython.pyx":331
+ *                     attr for attr in modified_attributes_map["car"] if attr != "license_plate"
+ *                 ]
+ *             attributes_map = modified_attributes_map             # <<<<<<<<<<<<<<
+ *             all_attributes = [
+ *                 attr for attr in model_config.all_attributes if attr != "license_plate"
+*/
+        __Pyx_INCREF(__pyx_v_modified_attributes_map);
+        __pyx_v_attributes_map = __pyx_v_modified_attributes_map;
+
+        /* "frigate/video/detect_cython.pyx":332
+ *                 ]
+ *             attributes_map = modified_attributes_map
+ *             all_attributes = [             # <<<<<<<<<<<<<<
+ *                 attr for attr in model_config.all_attributes if attr != "license_plate"
+ *             ]
+*/
+        { /* enter inner scope */
+          __pyx_t_4 = PyList_New(0); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 332, __pyx_L49_error)
+          __Pyx_GOTREF(__pyx_t_4);
+
+          /* "frigate/video/detect_cython.pyx":333
+ *             attributes_map = modified_attributes_map
+ *             all_attributes = [
+ *                 attr for attr in model_config.all_attributes if attr != "license_plate"             # <<<<<<<<<<<<<<
+ *             ]
+ *         except Exception:
+*/
+          __pyx_t_6 = __Pyx_PyObject_GetAttrStr(__pyx_v_model_config, __pyx_mstate_global->__pyx_n_u_all_attributes); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 333, __pyx_L49_error)
+          __Pyx_GOTREF(__pyx_t_6);
+          if (likely(PyList_CheckExact(__pyx_t_6)) || PyTuple_CheckExact(__pyx_t_6)) {
+            __pyx_t_2 = __pyx_t_6; __Pyx_INCREF(__pyx_t_2);
+            __pyx_t_11 = 0;
+            __pyx_t_15 = NULL;
+          } else {
+            __pyx_t_11 = -1; __pyx_t_2 = PyObject_GetIter(__pyx_t_6); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 333, __pyx_L49_error)
+            __Pyx_GOTREF(__pyx_t_2);
+            __pyx_t_15 = (CYTHON_COMPILING_IN_LIMITED_API) ? PyIter_Next : __Pyx_PyObject_GetIterNextFunc(__pyx_t_2); if (unlikely(!__pyx_t_15)) __PYX_ERR(0, 333, __pyx_L49_error)
+          }
+          __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
+          for (;;) {
+            if (likely(!__pyx_t_15)) {
+              if (likely(PyList_CheckExact(__pyx_t_2))) {
+                {
+                  Py_ssize_t __pyx_temp = __Pyx_PyList_GET_SIZE(__pyx_t_2);
+                  #if !CYTHON_ASSUME_SAFE_SIZE
+                  if (unlikely((__pyx_temp < 0))) __PYX_ERR(0, 333, __pyx_L49_error)
+                  #endif
+                  if (__pyx_t_11 >= __pyx_temp) break;
+                }
+                __pyx_t_6 = __Pyx_PyList_GET_ITEM_REF(__pyx_t_2, __pyx_t_11, __Pyx_ReferenceSharing_OwnStrongReference);
+                ++__pyx_t_11;
+              } else {
+                {
+                  Py_ssize_t __pyx_temp = __Pyx_PyTuple_GET_SIZE(__pyx_t_2);
+                  #if !CYTHON_ASSUME_SAFE_SIZE
+                  if (unlikely((__pyx_temp < 0))) __PYX_ERR(0, 333, __pyx_L49_error)
+                  #endif
+                  if (__pyx_t_11 >= __pyx_temp) break;
+                }
+                #if CYTHON_ASSUME_SAFE_MACROS && !CYTHON_AVOID_BORROWED_REFS
+                __pyx_t_6 = __Pyx_NewRef(PyTuple_GET_ITEM(__pyx_t_2, __pyx_t_11));
+                #else
+                __pyx_t_6 = __Pyx_PySequence_ITEM(__pyx_t_2, __pyx_t_11);
+                #endif
+                ++__pyx_t_11;
+              }
+              if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 333, __pyx_L49_error)
+            } else {
+              __pyx_t_6 = __pyx_t_15(__pyx_t_2);
+              if (unlikely(!__pyx_t_6)) {
+                PyObject* exc_type = PyErr_Occurred();
+                if (exc_type) {
+                  if (unlikely(!__Pyx_PyErr_GivenExceptionMatches(exc_type, PyExc_StopIteration))) __PYX_ERR(0, 333, __pyx_L49_error)
+                  PyErr_Clear();
+                }
+                break;
+              }
+            }
+            __Pyx_GOTREF(__pyx_t_6);
+            __Pyx_XDECREF_SET(__pyx_8genexpr1__pyx_v_attr, __pyx_t_6);
+            __pyx_t_6 = 0;
+            __pyx_t_13 = (__Pyx_PyUnicode_Equals(__pyx_8genexpr1__pyx_v_attr, __pyx_mstate_global->__pyx_n_u_license_plate, Py_NE)); if (unlikely((__pyx_t_13 < 0))) __PYX_ERR(0, 333, __pyx_L49_error)
+            if (__pyx_t_13) {
+              if (unlikely(__Pyx_ListComp_Append(__pyx_t_4, (PyObject*)__pyx_8genexpr1__pyx_v_attr))) __PYX_ERR(0, 332, __pyx_L49_error)
+            }
+          }
+          __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
+          __Pyx_XDECREF(__pyx_8genexpr1__pyx_v_attr); __pyx_8genexpr1__pyx_v_attr = 0;
+          goto __pyx_L54_exit_scope;
+          __pyx_L49_error:;
+          __Pyx_XDECREF(__pyx_8genexpr1__pyx_v_attr); __pyx_8genexpr1__pyx_v_attr = 0;
+          goto __pyx_L30_error;
+          __pyx_L54_exit_scope:;
+        } /* exit inner scope */
+        __pyx_v_all_attributes = __pyx_t_4;
+        __pyx_t_4 = 0;
+
+        /* "frigate/video/detect_cython.pyx":325
+ * 
+ *     if is_lpr:
+ *         try:             # <<<<<<<<<<<<<<
+ *             modified_attributes_map = dict(model_config.attributes_map) if model_config.attributes_map else {}
+ *             if "car" in modified_attributes_map and "license_plate" in modified_attributes_map["car"]:
+*/
+      }
+      __Pyx_XDECREF(__pyx_t_9); __pyx_t_9 = 0;
+      __Pyx_XDECREF(__pyx_t_8); __pyx_t_8 = 0;
+      __Pyx_XDECREF(__pyx_t_7); __pyx_t_7 = 0;
+      goto __pyx_L35_try_end;
+      __pyx_L30_error:;
+      __Pyx_XDECREF(__pyx_t_1); __pyx_t_1 = 0;
+      __Pyx_XDECREF(__pyx_t_2); __pyx_t_2 = 0;
+      __Pyx_XDECREF(__pyx_t_4); __pyx_t_4 = 0;
+      __Pyx_XDECREF(__pyx_t_5); __pyx_t_5 = 0;
+      __Pyx_XDECREF(__pyx_t_6); __pyx_t_6 = 0;
+
+      /* "frigate/video/detect_cython.pyx":335
+ *                 attr for attr in model_config.all_attributes if attr != "license_plate"
+ *             ]
+ *         except Exception:             # <<<<<<<<<<<<<<
+ *             attributes_map = model_config.attributes_map
+ *             all_attributes = model_config.all_attributes
+*/
+      __pyx_t_12 = __Pyx_PyErr_ExceptionMatches(((PyObject *)(((PyTypeObject*)PyExc_Exception))));
+      if (__pyx_t_12) {
+        __Pyx_AddTraceback("frigate.video.detect_cython.cython_process_frames", __pyx_clineno, __pyx_lineno, __pyx_filename);
+        if (__Pyx_GetException(&__pyx_t_4, &__pyx_t_2, &__pyx_t_6) < 0) __PYX_ERR(0, 335, __pyx_L32_except_error)
+        __Pyx_XGOTREF(__pyx_t_4);
+        __Pyx_XGOTREF(__pyx_t_2);
+        __Pyx_XGOTREF(__pyx_t_6);
+
+        /* "frigate/video/detect_cython.pyx":336
+ *             ]
+ *         except Exception:
+ *             attributes_map = model_config.attributes_map             # <<<<<<<<<<<<<<
+ *             all_attributes = model_config.all_attributes
+ *     else:
+*/
+        __pyx_t_5 = __Pyx_PyObject_GetAttrStr(__pyx_v_model_config, __pyx_mstate_global->__pyx_n_u_attributes_map); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 336, __pyx_L32_except_error)
+        __Pyx_GOTREF(__pyx_t_5);
+        __Pyx_XDECREF_SET(__pyx_v_attributes_map, __pyx_t_5);
+        __pyx_t_5 = 0;
+
+        /* "frigate/video/detect_cython.pyx":337
+ *         except Exception:
+ *             attributes_map = model_config.attributes_map
+ *             all_attributes = model_config.all_attributes             # <<<<<<<<<<<<<<
+ *     else:
+ *         attributes_map = model_config.attributes_map
+*/
+        __pyx_t_5 = __Pyx_PyObject_GetAttrStr(__pyx_v_model_config, __pyx_mstate_global->__pyx_n_u_all_attributes); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 337, __pyx_L32_except_error)
+        __Pyx_GOTREF(__pyx_t_5);
+        __Pyx_XDECREF_SET(__pyx_v_all_attributes, __pyx_t_5);
+        __pyx_t_5 = 0;
+        __Pyx_XDECREF(__pyx_t_4); __pyx_t_4 = 0;
+        __Pyx_XDECREF(__pyx_t_2); __pyx_t_2 = 0;
+        __Pyx_XDECREF(__pyx_t_6); __pyx_t_6 = 0;
+        goto __pyx_L31_exception_handled;
+      }
+      goto __pyx_L32_except_error;
+
+      /* "frigate/video/detect_cython.pyx":325
+ * 
+ *     if is_lpr:
+ *         try:             # <<<<<<<<<<<<<<
+ *             modified_attributes_map = dict(model_config.attributes_map) if model_config.attributes_map else {}
+ *             if "car" in modified_attributes_map and "license_plate" in modified_attributes_map["car"]:
+*/
+      __pyx_L32_except_error:;
+      __Pyx_XGIVEREF(__pyx_t_9);
+      __Pyx_XGIVEREF(__pyx_t_8);
+      __Pyx_XGIVEREF(__pyx_t_7);
+      __Pyx_ExceptionReset(__pyx_t_9, __pyx_t_8, __pyx_t_7);
+      goto __pyx_L1_error;
+      __pyx_L31_exception_handled:;
+      __Pyx_XGIVEREF(__pyx_t_9);
+      __Pyx_XGIVEREF(__pyx_t_8);
+      __Pyx_XGIVEREF(__pyx_t_7);
+      __Pyx_ExceptionReset(__pyx_t_9, __pyx_t_8, __pyx_t_7);
+      __pyx_L35_try_end:;
+    }
+
+    /* "frigate/video/detect_cython.pyx":324
+ *         is_lpr = False
+ * 
+ *     if is_lpr:             # <<<<<<<<<<<<<<
+ *         try:
+ *             modified_attributes_map = dict(model_config.attributes_map) if model_config.attributes_map else {}
+*/
+    goto __pyx_L29;
+  }
+
+  /* "frigate/video/detect_cython.pyx":339
+ *             all_attributes = model_config.all_attributes
+ *     else:
+ *         attributes_map = model_config.attributes_map             # <<<<<<<<<<<<<<
+ *         all_attributes = model_config.all_attributes
+ * 
+*/
+  /*else*/ {
+    __pyx_t_6 = __Pyx_PyObject_GetAttrStr(__pyx_v_model_config, __pyx_mstate_global->__pyx_n_u_attributes_map); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 339, __pyx_L1_error)
+    __Pyx_GOTREF(__pyx_t_6);
+    __pyx_v_attributes_map = __pyx_t_6;
+    __pyx_t_6 = 0;
+
+    /* "frigate/video/detect_cython.pyx":340
+ *     else:
+ *         attributes_map = model_config.attributes_map
+ *         all_attributes = model_config.all_attributes             # <<<<<<<<<<<<<<
+ * 
+ *     # Main loop
+*/
+    __pyx_t_6 = __Pyx_PyObject_GetAttrStr(__pyx_v_model_config, __pyx_mstate_global->__pyx_n_u_all_attributes); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 340, __pyx_L1_error)
+    __Pyx_GOTREF(__pyx_t_6);
+    __pyx_v_all_attributes = __pyx_t_6;
+    __pyx_t_6 = 0;
+  }
+  __pyx_L29:;
+
+  /* "frigate/video/detect_cython.pyx":343
+ * 
+ *     # Main loop
+ *     while not stop_event.is_set():             # <<<<<<<<<<<<<<
+ *         # Check for config updates
+ *         try:
+*/
+  while (1) {
+    __pyx_t_2 = __pyx_v_stop_event;
+    __Pyx_INCREF(__pyx_t_2);
+    __pyx_t_3 = 0;
+    {
+      PyObject *__pyx_callargs[2] = {__pyx_t_2, NULL};
+      __pyx_t_6 = __Pyx_PyObject_FastCallMethod((PyObject*)__pyx_mstate_global->__pyx_n_u_is_set, __pyx_callargs+__pyx_t_3, (1-__pyx_t_3) | (1*__Pyx_PY_VECTORCALL_ARGUMENTS_OFFSET));
+      __Pyx_XDECREF(__pyx_t_2); __pyx_t_2 = 0;
+      if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 343, __pyx_L1_error)
+      __Pyx_GOTREF(__pyx_t_6);
+    }
+    __pyx_t_13 = __Pyx_PyObject_IsTrue(__pyx_t_6); if (unlikely((__pyx_t_13 < 0))) __PYX_ERR(0, 343, __pyx_L1_error)
+    __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
+    __pyx_t_14 = (!__pyx_t_13);
+    if (!__pyx_t_14) break;
+
+    /* "frigate/video/detect_cython.pyx":345
+ *     while not stop_event.is_set():
+ *         # Check for config updates
+ *         try:             # <<<<<<<<<<<<<<
+ *             updated_configs = config_subscriber.check_for_updates() if hasattr(config_subscriber, 'check_for_updates') else {}
+ *             if "enabled" in updated_configs:
+*/
+    {
+      __Pyx_PyThreadState_declare
+      __Pyx_PyThreadState_assign
+      __Pyx_ExceptionSave(&__pyx_t_7, &__pyx_t_8, &__pyx_t_9);
+      __Pyx_XGOTREF(__pyx_t_7);
+      __Pyx_XGOTREF(__pyx_t_8);
+      __Pyx_XGOTREF(__pyx_t_9);
+      /*try:*/ {
+
+        /* "frigate/video/detect_cython.pyx":346
+ *         # Check for config updates
+ *         try:
+ *             updated_configs = config_subscriber.check_for_updates() if hasattr(config_subscriber, 'check_for_updates') else {}             # <<<<<<<<<<<<<<
+ *             if "enabled" in updated_configs:
+ *                 prev_enabled = camera_enabled
+*/
+        __pyx_t_14 = __Pyx_HasAttr(__pyx_v_config_subscriber, __pyx_mstate_global->__pyx_n_u_check_for_updates); if (unlikely(__pyx_t_14 == ((int)-1))) __PYX_ERR(0, 346, __pyx_L59_error)
+        if (__pyx_t_14) {
+          __pyx_t_4 = __pyx_v_config_subscriber;
+          __Pyx_INCREF(__pyx_t_4);
+          __pyx_t_3 = 0;
+          {
+            PyObject *__pyx_callargs[2] = {__pyx_t_4, NULL};
+            __pyx_t_2 = __Pyx_PyObject_FastCallMethod((PyObject*)__pyx_mstate_global->__pyx_n_u_check_for_updates, __pyx_callargs+__pyx_t_3, (1-__pyx_t_3) | (1*__Pyx_PY_VECTORCALL_ARGUMENTS_OFFSET));
+            __Pyx_XDECREF(__pyx_t_4); __pyx_t_4 = 0;
+            if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 346, __pyx_L59_error)
+            __Pyx_GOTREF(__pyx_t_2);
+          }
+          __pyx_t_6 = __pyx_t_2;
+          __pyx_t_2 = 0;
+        } else {
+          __pyx_t_2 = __Pyx_PyDict_NewPresized(0); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 346, __pyx_L59_error)
+          __Pyx_GOTREF(__pyx_t_2);
+          __pyx_t_6 = __pyx_t_2;
+          __pyx_t_2 = 0;
+        }
+        __Pyx_XDECREF_SET(__pyx_v_updated_configs, __pyx_t_6);
+        __pyx_t_6 = 0;
+
+        /* "frigate/video/detect_cython.pyx":347
+ *         try:
+ *             updated_configs = config_subscriber.check_for_updates() if hasattr(config_subscriber, 'check_for_updates') else {}
+ *             if "enabled" in updated_configs:             # <<<<<<<<<<<<<<
+ *                 prev_enabled = camera_enabled
+ *                 camera_enabled = camera_config.enabled
+*/
+        __pyx_t_14 = (__Pyx_PySequence_ContainsTF(__pyx_mstate_global->__pyx_n_u_enabled, __pyx_v_updated_configs, Py_EQ)); if (unlikely((__pyx_t_14 < 0))) __PYX_ERR(0, 347, __pyx_L59_error)
+        if (__pyx_t_14) {
+
+          /* "frigate/video/detect_cython.pyx":348
+ *             updated_configs = config_subscriber.check_for_updates() if hasattr(config_subscriber, 'check_for_updates') else {}
+ *             if "enabled" in updated_configs:
+ *                 prev_enabled = camera_enabled             # <<<<<<<<<<<<<<
+ *                 camera_enabled = camera_config.enabled
+ *             if "motion" in updated_configs:
+*/
+          __pyx_t_6 = __Pyx_PyBool_FromLong(__pyx_v_camera_enabled); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 348, __pyx_L59_error)
+          __Pyx_GOTREF(__pyx_t_6);
+          __Pyx_XDECREF_SET(__pyx_v_prev_enabled, __pyx_t_6);
+          __pyx_t_6 = 0;
+
+          /* "frigate/video/detect_cython.pyx":349
+ *             if "enabled" in updated_configs:
+ *                 prev_enabled = camera_enabled
+ *                 camera_enabled = camera_config.enabled             # <<<<<<<<<<<<<<
+ *             if "motion" in updated_configs:
+ *                 motion_detector.config = camera_config.motion
+*/
+          __pyx_t_6 = __Pyx_PyObject_GetAttrStr(__pyx_v_camera_config, __pyx_mstate_global->__pyx_n_u_enabled); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 349, __pyx_L59_error)
+          __Pyx_GOTREF(__pyx_t_6);
+          __pyx_t_14 = __Pyx_PyObject_IsTrue(__pyx_t_6); if (unlikely((__pyx_t_14 == (int)-1) && PyErr_Occurred())) __PYX_ERR(0, 349, __pyx_L59_error)
+          __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
+          __pyx_v_camera_enabled = __pyx_t_14;
+
+          /* "frigate/video/detect_cython.pyx":347
+ *         try:
+ *             updated_configs = config_subscriber.check_for_updates() if hasattr(config_subscriber, 'check_for_updates') else {}
+ *             if "enabled" in updated_configs:             # <<<<<<<<<<<<<<
+ *                 prev_enabled = camera_enabled
+ *                 camera_enabled = camera_config.enabled
+*/
+        }
+
+        /* "frigate/video/detect_cython.pyx":350
+ *                 prev_enabled = camera_enabled
+ *                 camera_enabled = camera_config.enabled
+ *             if "motion" in updated_configs:             # <<<<<<<<<<<<<<
+ *                 motion_detector.config = camera_config.motion
+ *                 motion_detector.update_mask()
+*/
+        __pyx_t_14 = (__Pyx_PySequence_ContainsTF(__pyx_mstate_global->__pyx_n_u_motion, __pyx_v_updated_configs, Py_EQ)); if (unlikely((__pyx_t_14 < 0))) __PYX_ERR(0, 350, __pyx_L59_error)
+        if (__pyx_t_14) {
+
+          /* "frigate/video/detect_cython.pyx":351
+ *                 camera_enabled = camera_config.enabled
+ *             if "motion" in updated_configs:
+ *                 motion_detector.config = camera_config.motion             # <<<<<<<<<<<<<<
+ *                 motion_detector.update_mask()
+ *         except Exception:
+*/
+          __pyx_t_6 = __Pyx_PyObject_GetAttrStr(__pyx_v_camera_config, __pyx_mstate_global->__pyx_n_u_motion); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 351, __pyx_L59_error)
+          __Pyx_GOTREF(__pyx_t_6);
+          if (__Pyx_PyObject_SetAttrStr(__pyx_v_motion_detector, __pyx_mstate_global->__pyx_n_u_config, __pyx_t_6) < (0)) __PYX_ERR(0, 351, __pyx_L59_error)
+          __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
+
+          /* "frigate/video/detect_cython.pyx":352
+ *             if "motion" in updated_configs:
+ *                 motion_detector.config = camera_config.motion
+ *                 motion_detector.update_mask()             # <<<<<<<<<<<<<<
+ *         except Exception:
+ *             pass
+*/
+          __pyx_t_2 = __pyx_v_motion_detector;
+          __Pyx_INCREF(__pyx_t_2);
+          __pyx_t_3 = 0;
+          {
+            PyObject *__pyx_callargs[2] = {__pyx_t_2, NULL};
+            __pyx_t_6 = __Pyx_PyObject_FastCallMethod((PyObject*)__pyx_mstate_global->__pyx_n_u_update_mask, __pyx_callargs+__pyx_t_3, (1-__pyx_t_3) | (1*__Pyx_PY_VECTORCALL_ARGUMENTS_OFFSET));
+            __Pyx_XDECREF(__pyx_t_2); __pyx_t_2 = 0;
+            if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 352, __pyx_L59_error)
+            __Pyx_GOTREF(__pyx_t_6);
+          }
+          __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
+
+          /* "frigate/video/detect_cython.pyx":350
+ *                 prev_enabled = camera_enabled
+ *                 camera_enabled = camera_config.enabled
+ *             if "motion" in updated_configs:             # <<<<<<<<<<<<<<
+ *                 motion_detector.config = camera_config.motion
+ *                 motion_detector.update_mask()
+*/
+        }
+
+        /* "frigate/video/detect_cython.pyx":345
+ *     while not stop_event.is_set():
+ *         # Check for config updates
+ *         try:             # <<<<<<<<<<<<<<
+ *             updated_configs = config_subscriber.check_for_updates() if hasattr(config_subscriber, 'check_for_updates') else {}
+ *             if "enabled" in updated_configs:
+*/
+      }
+      __Pyx_XDECREF(__pyx_t_7); __pyx_t_7 = 0;
+      __Pyx_XDECREF(__pyx_t_8); __pyx_t_8 = 0;
+      __Pyx_XDECREF(__pyx_t_9); __pyx_t_9 = 0;
+      goto __pyx_L66_try_end;
+      __pyx_L59_error:;
+      __Pyx_XDECREF(__pyx_t_1); __pyx_t_1 = 0;
+      __Pyx_XDECREF(__pyx_t_2); __pyx_t_2 = 0;
+      __Pyx_XDECREF(__pyx_t_4); __pyx_t_4 = 0;
+      __Pyx_XDECREF(__pyx_t_5); __pyx_t_5 = 0;
+      __Pyx_XDECREF(__pyx_t_6); __pyx_t_6 = 0;
+
+      /* "frigate/video/detect_cython.pyx":353
+ *                 motion_detector.config = camera_config.motion
+ *                 motion_detector.update_mask()
+ *         except Exception:             # <<<<<<<<<<<<<<
+ *             pass
+ * 
+*/
+      __pyx_t_12 = __Pyx_PyErr_ExceptionMatches(((PyObject *)(((PyTypeObject*)PyExc_Exception))));
+      if (__pyx_t_12) {
+        __Pyx_ErrRestore(0,0,0);
+        goto __pyx_L60_exception_handled;
+      }
+      goto __pyx_L61_except_error;
+
+      /* "frigate/video/detect_cython.pyx":345
+ *     while not stop_event.is_set():
+ *         # Check for config updates
+ *         try:             # <<<<<<<<<<<<<<
+ *             updated_configs = config_subscriber.check_for_updates() if hasattr(config_subscriber, 'check_for_updates') else {}
+ *             if "enabled" in updated_configs:
+*/
+      __pyx_L61_except_error:;
+      __Pyx_XGIVEREF(__pyx_t_7);
+      __Pyx_XGIVEREF(__pyx_t_8);
+      __Pyx_XGIVEREF(__pyx_t_9);
+      __Pyx_ExceptionReset(__pyx_t_7, __pyx_t_8, __pyx_t_9);
+      goto __pyx_L1_error;
+      __pyx_L60_exception_handled:;
+      __Pyx_XGIVEREF(__pyx_t_7);
+      __Pyx_XGIVEREF(__pyx_t_8);
+      __Pyx_XGIVEREF(__pyx_t_9);
+      __Pyx_ExceptionReset(__pyx_t_7, __pyx_t_8, __pyx_t_9);
+      __pyx_L66_try_end:;
+    }
+
+    /* "frigate/video/detect_cython.pyx":356
+ *             pass
+ * 
+ *         if not camera_enabled:             # <<<<<<<<<<<<<<
+ *             if prev_enabled != camera_enabled:
+ *                 try:
+*/
+    __pyx_t_14 = (!__pyx_v_camera_enabled);
+    if (__pyx_t_14) {
+
+      /* "frigate/video/detect_cython.pyx":357
+ * 
+ *         if not camera_enabled:
+ *             if prev_enabled != camera_enabled:             # <<<<<<<<<<<<<<
+ *                 try:
+ *                     object_tracker.tracked_objects.clear()
+*/
+      if (unlikely(!__pyx_v_prev_enabled)) { __Pyx_RaiseUnboundLocalError("prev_enabled"); __PYX_ERR(0, 357, __pyx_L1_error) }
+      __pyx_t_6 = __Pyx_PyBool_FromLong(__pyx_v_camera_enabled); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 357, __pyx_L1_error)
+      __Pyx_GOTREF(__pyx_t_6);
+      __pyx_t_2 = PyObject_RichCompare(__pyx_v_prev_enabled, __pyx_t_6, Py_NE); __Pyx_XGOTREF(__pyx_t_2); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 357, __pyx_L1_error)
+      __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
+      __pyx_t_14 = __Pyx_PyObject_IsTrue(__pyx_t_2); if (unlikely((__pyx_t_14 < 0))) __PYX_ERR(0, 357, __pyx_L1_error)
+      __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
+      if (__pyx_t_14) {
+
+        /* "frigate/video/detect_cython.pyx":358
+ *         if not camera_enabled:
+ *             if prev_enabled != camera_enabled:
+ *                 try:             # <<<<<<<<<<<<<<
+ *                     object_tracker.tracked_objects.clear()
+ *                     object_tracker.disappeared.clear()
+*/
+        {
+          __Pyx_PyThreadState_declare
+          __Pyx_PyThreadState_assign
+          __Pyx_ExceptionSave(&__pyx_t_9, &__pyx_t_8, &__pyx_t_7);
+          __Pyx_XGOTREF(__pyx_t_9);
+          __Pyx_XGOTREF(__pyx_t_8);
+          __Pyx_XGOTREF(__pyx_t_7);
+          /*try:*/ {
+
+            /* "frigate/video/detect_cython.pyx":359
+ *             if prev_enabled != camera_enabled:
+ *                 try:
+ *                     object_tracker.tracked_objects.clear()             # <<<<<<<<<<<<<<
+ *                     object_tracker.disappeared.clear()
+ *                     object_tracker.stationary_box_history.clear()
+*/
+            __pyx_t_4 = __Pyx_PyObject_GetAttrStr(__pyx_v_object_tracker, __pyx_mstate_global->__pyx_n_u_tracked_objects); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 359, __pyx_L73_error)
+            __Pyx_GOTREF(__pyx_t_4);
+            __pyx_t_6 = __pyx_t_4;
+            __Pyx_INCREF(__pyx_t_6);
+            __pyx_t_3 = 0;
+            {
+              PyObject *__pyx_callargs[2] = {__pyx_t_6, NULL};
+              __pyx_t_2 = __Pyx_PyObject_FastCallMethod((PyObject*)__pyx_mstate_global->__pyx_n_u_clear, __pyx_callargs+__pyx_t_3, (1-__pyx_t_3) | (1*__Pyx_PY_VECTORCALL_ARGUMENTS_OFFSET));
+              __Pyx_XDECREF(__pyx_t_6); __pyx_t_6 = 0;
+              __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
+              if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 359, __pyx_L73_error)
+              __Pyx_GOTREF(__pyx_t_2);
+            }
+            __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
+
+            /* "frigate/video/detect_cython.pyx":360
+ *                 try:
+ *                     object_tracker.tracked_objects.clear()
+ *                     object_tracker.disappeared.clear()             # <<<<<<<<<<<<<<
+ *                     object_tracker.stationary_box_history.clear()
+ *                     object_tracker.positions.clear()
+*/
+            __pyx_t_6 = __Pyx_PyObject_GetAttrStr(__pyx_v_object_tracker, __pyx_mstate_global->__pyx_n_u_disappeared); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 360, __pyx_L73_error)
+            __Pyx_GOTREF(__pyx_t_6);
+            __pyx_t_4 = __pyx_t_6;
+            __Pyx_INCREF(__pyx_t_4);
+            __pyx_t_3 = 0;
+            {
+              PyObject *__pyx_callargs[2] = {__pyx_t_4, NULL};
+              __pyx_t_2 = __Pyx_PyObject_FastCallMethod((PyObject*)__pyx_mstate_global->__pyx_n_u_clear, __pyx_callargs+__pyx_t_3, (1-__pyx_t_3) | (1*__Pyx_PY_VECTORCALL_ARGUMENTS_OFFSET));
+              __Pyx_XDECREF(__pyx_t_4); __pyx_t_4 = 0;
+              __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
+              if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 360, __pyx_L73_error)
+              __Pyx_GOTREF(__pyx_t_2);
+            }
+            __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
+
+            /* "frigate/video/detect_cython.pyx":361
+ *                     object_tracker.tracked_objects.clear()
+ *                     object_tracker.disappeared.clear()
+ *                     object_tracker.stationary_box_history.clear()             # <<<<<<<<<<<<<<
+ *                     object_tracker.positions.clear()
+ *                     object_tracker.track_id_map.clear()
+*/
+            __pyx_t_4 = __Pyx_PyObject_GetAttrStr(__pyx_v_object_tracker, __pyx_mstate_global->__pyx_n_u_stationary_box_history); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 361, __pyx_L73_error)
+            __Pyx_GOTREF(__pyx_t_4);
+            __pyx_t_6 = __pyx_t_4;
+            __Pyx_INCREF(__pyx_t_6);
+            __pyx_t_3 = 0;
+            {
+              PyObject *__pyx_callargs[2] = {__pyx_t_6, NULL};
+              __pyx_t_2 = __Pyx_PyObject_FastCallMethod((PyObject*)__pyx_mstate_global->__pyx_n_u_clear, __pyx_callargs+__pyx_t_3, (1-__pyx_t_3) | (1*__Pyx_PY_VECTORCALL_ARGUMENTS_OFFSET));
+              __Pyx_XDECREF(__pyx_t_6); __pyx_t_6 = 0;
+              __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
+              if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 361, __pyx_L73_error)
+              __Pyx_GOTREF(__pyx_t_2);
+            }
+            __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
+
+            /* "frigate/video/detect_cython.pyx":362
+ *                     object_tracker.disappeared.clear()
+ *                     object_tracker.stationary_box_history.clear()
+ *                     object_tracker.positions.clear()             # <<<<<<<<<<<<<<
+ *                     object_tracker.track_id_map.clear()
+ *                 except Exception:
+*/
+            __pyx_t_6 = __Pyx_PyObject_GetAttrStr(__pyx_v_object_tracker, __pyx_mstate_global->__pyx_n_u_positions); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 362, __pyx_L73_error)
+            __Pyx_GOTREF(__pyx_t_6);
+            __pyx_t_4 = __pyx_t_6;
+            __Pyx_INCREF(__pyx_t_4);
+            __pyx_t_3 = 0;
+            {
+              PyObject *__pyx_callargs[2] = {__pyx_t_4, NULL};
+              __pyx_t_2 = __Pyx_PyObject_FastCallMethod((PyObject*)__pyx_mstate_global->__pyx_n_u_clear, __pyx_callargs+__pyx_t_3, (1-__pyx_t_3) | (1*__Pyx_PY_VECTORCALL_ARGUMENTS_OFFSET));
+              __Pyx_XDECREF(__pyx_t_4); __pyx_t_4 = 0;
+              __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
+              if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 362, __pyx_L73_error)
+              __Pyx_GOTREF(__pyx_t_2);
+            }
+            __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
+
+            /* "frigate/video/detect_cython.pyx":363
+ *                     object_tracker.stationary_box_history.clear()
+ *                     object_tracker.positions.clear()
+ *                     object_tracker.track_id_map.clear()             # <<<<<<<<<<<<<<
+ *                 except Exception:
+ *                     pass
+*/
+            __pyx_t_4 = __Pyx_PyObject_GetAttrStr(__pyx_v_object_tracker, __pyx_mstate_global->__pyx_n_u_track_id_map); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 363, __pyx_L73_error)
+            __Pyx_GOTREF(__pyx_t_4);
+            __pyx_t_6 = __pyx_t_4;
+            __Pyx_INCREF(__pyx_t_6);
+            __pyx_t_3 = 0;
+            {
+              PyObject *__pyx_callargs[2] = {__pyx_t_6, NULL};
+              __pyx_t_2 = __Pyx_PyObject_FastCallMethod((PyObject*)__pyx_mstate_global->__pyx_n_u_clear, __pyx_callargs+__pyx_t_3, (1-__pyx_t_3) | (1*__Pyx_PY_VECTORCALL_ARGUMENTS_OFFSET));
+              __Pyx_XDECREF(__pyx_t_6); __pyx_t_6 = 0;
+              __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
+              if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 363, __pyx_L73_error)
+              __Pyx_GOTREF(__pyx_t_2);
+            }
+            __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
+
+            /* "frigate/video/detect_cython.pyx":358
+ *         if not camera_enabled:
+ *             if prev_enabled != camera_enabled:
+ *                 try:             # <<<<<<<<<<<<<<
+ *                     object_tracker.tracked_objects.clear()
+ *                     object_tracker.disappeared.clear()
+*/
+          }
+          __Pyx_XDECREF(__pyx_t_9); __pyx_t_9 = 0;
+          __Pyx_XDECREF(__pyx_t_8); __pyx_t_8 = 0;
+          __Pyx_XDECREF(__pyx_t_7); __pyx_t_7 = 0;
+          goto __pyx_L80_try_end;
+          __pyx_L73_error:;
+          __Pyx_XDECREF(__pyx_t_1); __pyx_t_1 = 0;
+          __Pyx_XDECREF(__pyx_t_2); __pyx_t_2 = 0;
+          __Pyx_XDECREF(__pyx_t_4); __pyx_t_4 = 0;
+          __Pyx_XDECREF(__pyx_t_5); __pyx_t_5 = 0;
+          __Pyx_XDECREF(__pyx_t_6); __pyx_t_6 = 0;
+
+          /* "frigate/video/detect_cython.pyx":364
+ *                     object_tracker.positions.clear()
+ *                     object_tracker.track_id_map.clear()
+ *                 except Exception:             # <<<<<<<<<<<<<<
+ *                     pass
+ * 
+*/
+          __pyx_t_12 = __Pyx_PyErr_ExceptionMatches(((PyObject *)(((PyTypeObject*)PyExc_Exception))));
+          if (__pyx_t_12) {
+            __Pyx_ErrRestore(0,0,0);
+            goto __pyx_L74_exception_handled;
+          }
+          goto __pyx_L75_except_error;
+
+          /* "frigate/video/detect_cython.pyx":358
+ *         if not camera_enabled:
+ *             if prev_enabled != camera_enabled:
+ *                 try:             # <<<<<<<<<<<<<<
+ *                     object_tracker.tracked_objects.clear()
+ *                     object_tracker.disappeared.clear()
+*/
+          __pyx_L75_except_error:;
+          __Pyx_XGIVEREF(__pyx_t_9);
+          __Pyx_XGIVEREF(__pyx_t_8);
+          __Pyx_XGIVEREF(__pyx_t_7);
+          __Pyx_ExceptionReset(__pyx_t_9, __pyx_t_8, __pyx_t_7);
+          goto __pyx_L1_error;
+          __pyx_L74_exception_handled:;
+          __Pyx_XGIVEREF(__pyx_t_9);
+          __Pyx_XGIVEREF(__pyx_t_8);
+          __Pyx_XGIVEREF(__pyx_t_7);
+          __Pyx_ExceptionReset(__pyx_t_9, __pyx_t_8, __pyx_t_7);
+          __pyx_L80_try_end:;
+        }
+
+        /* "frigate/video/detect_cython.pyx":357
+ * 
+ *         if not camera_enabled:
+ *             if prev_enabled != camera_enabled:             # <<<<<<<<<<<<<<
+ *                 try:
+ *                     object_tracker.tracked_objects.clear()
+*/
+      }
+
+      /* "frigate/video/detect_cython.pyx":367
+ *                     pass
+ * 
+ *             time_module.sleep(0.1)             # <<<<<<<<<<<<<<
+ *             continue
+ * 
+*/
+      __pyx_t_4 = __pyx_v_time_module;
+      __Pyx_INCREF(__pyx_t_4);
+      __pyx_t_3 = 0;
+      {
+        PyObject *__pyx_callargs[2] = {__pyx_t_4, __pyx_mstate_global->__pyx_float_0_1};
+        __pyx_t_2 = __Pyx_PyObject_FastCallMethod((PyObject*)__pyx_mstate_global->__pyx_n_u_sleep, __pyx_callargs+__pyx_t_3, (2-__pyx_t_3) | (1*__Pyx_PY_VECTORCALL_ARGUMENTS_OFFSET));
+        __Pyx_XDECREF(__pyx_t_4); __pyx_t_4 = 0;
+        if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 367, __pyx_L1_error)
+        __Pyx_GOTREF(__pyx_t_2);
+      }
+      __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
+
+      /* "frigate/video/detect_cython.pyx":368
+ * 
+ *             time_module.sleep(0.1)
+ *             continue             # <<<<<<<<<<<<<<
+ * 
+ *         # Check for region grid update
+*/
+      goto __pyx_L57_continue;
+
+      /* "frigate/video/detect_cython.pyx":356
+ *             pass
+ * 
+ *         if not camera_enabled:             # <<<<<<<<<<<<<<
+ *             if prev_enabled != camera_enabled:
+ *                 try:
+*/
+    }
+
+    /* "frigate/video/detect_cython.pyx":371
+ * 
+ *         # Check for region grid update
+ *         try:             # <<<<<<<<<<<<<<
+ *             time_val = datetime_module.datetime.now().astimezone(datetime_module.UTC)
+ *             if time_val > next_region_update:
+*/
+    {
+      __Pyx_PyThreadState_declare
+      __Pyx_PyThreadState_assign
+      __Pyx_ExceptionSave(&__pyx_t_7, &__pyx_t_8, &__pyx_t_9);
+      __Pyx_XGOTREF(__pyx_t_7);
+      __Pyx_XGOTREF(__pyx_t_8);
+      __Pyx_XGOTREF(__pyx_t_9);
+      /*try:*/ {
+
+        /* "frigate/video/detect_cython.pyx":372
+ *         # Check for region grid update
+ *         try:
+ *             time_val = datetime_module.datetime.now().astimezone(datetime_module.UTC)             # <<<<<<<<<<<<<<
+ *             if time_val > next_region_update:
+ *                 region_grid = requestor.send_data("REQUEST_REGION_GRID", camera_config.name)
+*/
+        __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_v_datetime_module, __pyx_mstate_global->__pyx_n_u_datetime); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 372, __pyx_L83_error)
+        __Pyx_GOTREF(__pyx_t_1);
+        __pyx_t_5 = __pyx_t_1;
+        __Pyx_INCREF(__pyx_t_5);
+        __pyx_t_3 = 0;
+        {
+          PyObject *__pyx_callargs[2] = {__pyx_t_5, NULL};
+          __pyx_t_6 = __Pyx_PyObject_FastCallMethod((PyObject*)__pyx_mstate_global->__pyx_n_u_now, __pyx_callargs+__pyx_t_3, (1-__pyx_t_3) | (1*__Pyx_PY_VECTORCALL_ARGUMENTS_OFFSET));
+          __Pyx_XDECREF(__pyx_t_5); __pyx_t_5 = 0;
+          __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
+          if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 372, __pyx_L83_error)
+          __Pyx_GOTREF(__pyx_t_6);
+        }
+        __pyx_t_4 = __pyx_t_6;
+        __Pyx_INCREF(__pyx_t_4);
+        __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_v_datetime_module, __pyx_mstate_global->__pyx_n_u_UTC); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 372, __pyx_L83_error)
+        __Pyx_GOTREF(__pyx_t_1);
+        __pyx_t_3 = 0;
+        {
+          PyObject *__pyx_callargs[2] = {__pyx_t_4, __pyx_t_1};
+          __pyx_t_2 = __Pyx_PyObject_FastCallMethod((PyObject*)__pyx_mstate_global->__pyx_n_u_astimezone, __pyx_callargs+__pyx_t_3, (2-__pyx_t_3) | (1*__Pyx_PY_VECTORCALL_ARGUMENTS_OFFSET));
+          __Pyx_XDECREF(__pyx_t_4); __pyx_t_4 = 0;
+          __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
+          __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
+          if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 372, __pyx_L83_error)
+          __Pyx_GOTREF(__pyx_t_2);
+        }
+        __Pyx_XDECREF_SET(__pyx_v_time_val, __pyx_t_2);
+        __pyx_t_2 = 0;
+
+        /* "frigate/video/detect_cython.pyx":373
+ *         try:
+ *             time_val = datetime_module.datetime.now().astimezone(datetime_module.UTC)
+ *             if time_val > next_region_update:             # <<<<<<<<<<<<<<
+ *                 region_grid = requestor.send_data("REQUEST_REGION_GRID", camera_config.name)
+ *                 next_region_update = datetime_module.datetime.now().astimezone(datetime_module.UTC) + datetime_module.timedelta(hours=22)
+*/
+        __pyx_t_2 = PyObject_RichCompare(__pyx_v_time_val, __pyx_v_next_region_update, Py_GT); __Pyx_XGOTREF(__pyx_t_2); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 373, __pyx_L83_error)
+        __pyx_t_14 = __Pyx_PyObject_IsTrue(__pyx_t_2); if (unlikely((__pyx_t_14 < 0))) __PYX_ERR(0, 373, __pyx_L83_error)
+        __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
+        if (__pyx_t_14) {
+
+          /* "frigate/video/detect_cython.pyx":374
+ *             time_val = datetime_module.datetime.now().astimezone(datetime_module.UTC)
+ *             if time_val > next_region_update:
+ *                 region_grid = requestor.send_data("REQUEST_REGION_GRID", camera_config.name)             # <<<<<<<<<<<<<<
+ *                 next_region_update = datetime_module.datetime.now().astimezone(datetime_module.UTC) + datetime_module.timedelta(hours=22)
+ *         except Exception:
+*/
+          __pyx_t_6 = __pyx_v_requestor;
+          __Pyx_INCREF(__pyx_t_6);
+          __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_v_camera_config, __pyx_mstate_global->__pyx_n_u_name); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 374, __pyx_L83_error)
+          __Pyx_GOTREF(__pyx_t_1);
+          __pyx_t_3 = 0;
+          {
+            PyObject *__pyx_callargs[3] = {__pyx_t_6, __pyx_mstate_global->__pyx_n_u_REQUEST_REGION_GRID, __pyx_t_1};
+            __pyx_t_2 = __Pyx_PyObject_FastCallMethod((PyObject*)__pyx_mstate_global->__pyx_n_u_send_data, __pyx_callargs+__pyx_t_3, (3-__pyx_t_3) | (1*__Pyx_PY_VECTORCALL_ARGUMENTS_OFFSET));
+            __Pyx_XDECREF(__pyx_t_6); __pyx_t_6 = 0;
+            __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
+            if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 374, __pyx_L83_error)
+            __Pyx_GOTREF(__pyx_t_2);
+          }
+          __Pyx_DECREF_SET(__pyx_v_region_grid, __pyx_t_2);
+          __pyx_t_2 = 0;
+
+          /* "frigate/video/detect_cython.pyx":375
+ *             if time_val > next_region_update:
+ *                 region_grid = requestor.send_data("REQUEST_REGION_GRID", camera_config.name)
+ *                 next_region_update = datetime_module.datetime.now().astimezone(datetime_module.UTC) + datetime_module.timedelta(hours=22)             # <<<<<<<<<<<<<<
+ *         except Exception:
+ *             pass
+*/
+          __pyx_t_5 = __Pyx_PyObject_GetAttrStr(__pyx_v_datetime_module, __pyx_mstate_global->__pyx_n_u_datetime); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 375, __pyx_L83_error)
+          __Pyx_GOTREF(__pyx_t_5);
+          __pyx_t_4 = __pyx_t_5;
+          __Pyx_INCREF(__pyx_t_4);
+          __pyx_t_3 = 0;
+          {
+            PyObject *__pyx_callargs[2] = {__pyx_t_4, NULL};
+            __pyx_t_6 = __Pyx_PyObject_FastCallMethod((PyObject*)__pyx_mstate_global->__pyx_n_u_now, __pyx_callargs+__pyx_t_3, (1-__pyx_t_3) | (1*__Pyx_PY_VECTORCALL_ARGUMENTS_OFFSET));
+            __Pyx_XDECREF(__pyx_t_4); __pyx_t_4 = 0;
+            __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
+            if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 375, __pyx_L83_error)
+            __Pyx_GOTREF(__pyx_t_6);
+          }
+          __pyx_t_1 = __pyx_t_6;
+          __Pyx_INCREF(__pyx_t_1);
+          __pyx_t_5 = __Pyx_PyObject_GetAttrStr(__pyx_v_datetime_module, __pyx_mstate_global->__pyx_n_u_UTC); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 375, __pyx_L83_error)
+          __Pyx_GOTREF(__pyx_t_5);
+          __pyx_t_3 = 0;
+          {
+            PyObject *__pyx_callargs[2] = {__pyx_t_1, __pyx_t_5};
+            __pyx_t_2 = __Pyx_PyObject_FastCallMethod((PyObject*)__pyx_mstate_global->__pyx_n_u_astimezone, __pyx_callargs+__pyx_t_3, (2-__pyx_t_3) | (1*__Pyx_PY_VECTORCALL_ARGUMENTS_OFFSET));
+            __Pyx_XDECREF(__pyx_t_1); __pyx_t_1 = 0;
+            __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
+            __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
+            if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 375, __pyx_L83_error)
+            __Pyx_GOTREF(__pyx_t_2);
+          }
+          __pyx_t_5 = __pyx_v_datetime_module;
+          __Pyx_INCREF(__pyx_t_5);
+          __pyx_t_3 = 0;
+          {
+            PyObject *__pyx_callargs[2 + ((CYTHON_VECTORCALL) ? 1 : 0)] = {__pyx_t_5, NULL};
+            __pyx_t_1 = __Pyx_MakeVectorcallBuilderKwds(1); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 375, __pyx_L83_error)
+            __Pyx_GOTREF(__pyx_t_1);
+            if (__Pyx_VectorcallBuilder_AddArg(__pyx_mstate_global->__pyx_n_u_hours, __pyx_mstate_global->__pyx_int_22, __pyx_t_1, __pyx_callargs+1, 0) < (0)) __PYX_ERR(0, 375, __pyx_L83_error)
+            __pyx_t_6 = __Pyx_Object_VectorcallMethod_CallFromBuilder((PyObject*)__pyx_mstate_global->__pyx_n_u_timedelta, __pyx_callargs+__pyx_t_3, (1-__pyx_t_3) | (1*__Pyx_PY_VECTORCALL_ARGUMENTS_OFFSET), __pyx_t_1);
+            __Pyx_XDECREF(__pyx_t_5); __pyx_t_5 = 0;
+            __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
+            if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 375, __pyx_L83_error)
+            __Pyx_GOTREF(__pyx_t_6);
+          }
+          __pyx_t_1 = PyNumber_Add(__pyx_t_2, __pyx_t_6); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 375, __pyx_L83_error)
+          __Pyx_GOTREF(__pyx_t_1);
+          __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
+          __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
+          __Pyx_DECREF_SET(__pyx_v_next_region_update, __pyx_t_1);
+          __pyx_t_1 = 0;
+
+          /* "frigate/video/detect_cython.pyx":373
+ *         try:
+ *             time_val = datetime_module.datetime.now().astimezone(datetime_module.UTC)
+ *             if time_val > next_region_update:             # <<<<<<<<<<<<<<
+ *                 region_grid = requestor.send_data("REQUEST_REGION_GRID", camera_config.name)
+ *                 next_region_update = datetime_module.datetime.now().astimezone(datetime_module.UTC) + datetime_module.timedelta(hours=22)
+*/
+        }
+
+        /* "frigate/video/detect_cython.pyx":371
+ * 
+ *         # Check for region grid update
+ *         try:             # <<<<<<<<<<<<<<
+ *             time_val = datetime_module.datetime.now().astimezone(datetime_module.UTC)
+ *             if time_val > next_region_update:
+*/
+      }
+      __Pyx_XDECREF(__pyx_t_7); __pyx_t_7 = 0;
+      __Pyx_XDECREF(__pyx_t_8); __pyx_t_8 = 0;
+      __Pyx_XDECREF(__pyx_t_9); __pyx_t_9 = 0;
+      goto __pyx_L90_try_end;
+      __pyx_L83_error:;
+      __Pyx_XDECREF(__pyx_t_1); __pyx_t_1 = 0;
+      __Pyx_XDECREF(__pyx_t_2); __pyx_t_2 = 0;
+      __Pyx_XDECREF(__pyx_t_4); __pyx_t_4 = 0;
+      __Pyx_XDECREF(__pyx_t_5); __pyx_t_5 = 0;
+      __Pyx_XDECREF(__pyx_t_6); __pyx_t_6 = 0;
+
+      /* "frigate/video/detect_cython.pyx":376
+ *                 region_grid = requestor.send_data("REQUEST_REGION_GRID", camera_config.name)
+ *                 next_region_update = datetime_module.datetime.now().astimezone(datetime_module.UTC) + datetime_module.timedelta(hours=22)
+ *         except Exception:             # <<<<<<<<<<<<<<
+ *             pass
+ * 
+*/
+      __pyx_t_12 = __Pyx_PyErr_ExceptionMatches(((PyObject *)(((PyTypeObject*)PyExc_Exception))));
+      if (__pyx_t_12) {
+        __Pyx_ErrRestore(0,0,0);
+        goto __pyx_L84_exception_handled;
+      }
+      goto __pyx_L85_except_error;
+
+      /* "frigate/video/detect_cython.pyx":371
+ * 
+ *         # Check for region grid update
+ *         try:             # <<<<<<<<<<<<<<
+ *             time_val = datetime_module.datetime.now().astimezone(datetime_module.UTC)
+ *             if time_val > next_region_update:
+*/
+      __pyx_L85_except_error:;
+      __Pyx_XGIVEREF(__pyx_t_7);
+      __Pyx_XGIVEREF(__pyx_t_8);
+      __Pyx_XGIVEREF(__pyx_t_9);
+      __Pyx_ExceptionReset(__pyx_t_7, __pyx_t_8, __pyx_t_9);
+      goto __pyx_L1_error;
+      __pyx_L84_exception_handled:;
+      __Pyx_XGIVEREF(__pyx_t_7);
+      __Pyx_XGIVEREF(__pyx_t_8);
+      __Pyx_XGIVEREF(__pyx_t_9);
+      __Pyx_ExceptionReset(__pyx_t_7, __pyx_t_8, __pyx_t_9);
+      __pyx_L90_try_end:;
+    }
+
+    /* "frigate/video/detect_cython.pyx":380
+ * 
+ *         # Get frame from queue
+ *         try:             # <<<<<<<<<<<<<<
+ *             if exit_on_empty:
+ *                 frame_name, frame_time = frame_queue.get(False)
+*/
+    {
+      __Pyx_PyThreadState_declare
+      __Pyx_PyThreadState_assign
+      __Pyx_ExceptionSave(&__pyx_t_9, &__pyx_t_8, &__pyx_t_7);
+      __Pyx_XGOTREF(__pyx_t_9);
+      __Pyx_XGOTREF(__pyx_t_8);
+      __Pyx_XGOTREF(__pyx_t_7);
+      /*try:*/ {
+
+        /* "frigate/video/detect_cython.pyx":381
+ *         # Get frame from queue
+ *         try:
+ *             if exit_on_empty:             # <<<<<<<<<<<<<<
+ *                 frame_name, frame_time = frame_queue.get(False)
+ *             else:
+*/
+        if (__pyx_v_exit_on_empty) {
+
+          /* "frigate/video/detect_cython.pyx":382
+ *         try:
+ *             if exit_on_empty:
+ *                 frame_name, frame_time = frame_queue.get(False)             # <<<<<<<<<<<<<<
+ *             else:
+ *                 frame_name, frame_time = frame_queue.get(True, 1)
+*/
+          __pyx_t_6 = __pyx_v_frame_queue;
+          __Pyx_INCREF(__pyx_t_6);
+          __pyx_t_3 = 0;
+          {
+            PyObject *__pyx_callargs[2] = {__pyx_t_6, Py_False};
+            __pyx_t_1 = __Pyx_PyObject_FastCallMethod((PyObject*)__pyx_mstate_global->__pyx_n_u_get, __pyx_callargs+__pyx_t_3, (2-__pyx_t_3) | (1*__Pyx_PY_VECTORCALL_ARGUMENTS_OFFSET));
+            __Pyx_XDECREF(__pyx_t_6); __pyx_t_6 = 0;
+            if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 382, __pyx_L94_error)
+            __Pyx_GOTREF(__pyx_t_1);
+          }
+          if ((likely(PyTuple_CheckExact(__pyx_t_1))) || (PyList_CheckExact(__pyx_t_1))) {
+            PyObject* sequence = __pyx_t_1;
+            Py_ssize_t size = __Pyx_PySequence_SIZE(sequence);
+            if (unlikely(size != 2)) {
+              if (size > 2) __Pyx_RaiseTooManyValuesError(2);
+              else if (size >= 0) __Pyx_RaiseNeedMoreValuesError(size);
+              __PYX_ERR(0, 382, __pyx_L94_error)
+            }
+            #if CYTHON_ASSUME_SAFE_MACROS && !CYTHON_AVOID_BORROWED_REFS
+            if (likely(PyTuple_CheckExact(sequence))) {
+              __pyx_t_6 = PyTuple_GET_ITEM(sequence, 0);
+              __Pyx_INCREF(__pyx_t_6);
+              __pyx_t_2 = PyTuple_GET_ITEM(sequence, 1);
+              __Pyx_INCREF(__pyx_t_2);
+            } else {
+              __pyx_t_6 = __Pyx_PyList_GET_ITEM_REF(sequence, 0, __Pyx_ReferenceSharing_SharedReference);
+              if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 382, __pyx_L94_error)
+              __Pyx_XGOTREF(__pyx_t_6);
+              __pyx_t_2 = __Pyx_PyList_GET_ITEM_REF(sequence, 1, __Pyx_ReferenceSharing_SharedReference);
+              if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 382, __pyx_L94_error)
+              __Pyx_XGOTREF(__pyx_t_2);
+            }
+            #else
+            __pyx_t_6 = __Pyx_PySequence_ITEM(sequence, 0); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 382, __pyx_L94_error)
+            __Pyx_GOTREF(__pyx_t_6);
+            __pyx_t_2 = __Pyx_PySequence_ITEM(sequence, 1); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 382, __pyx_L94_error)
+            __Pyx_GOTREF(__pyx_t_2);
+            #endif
+            __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
+          } else {
+            Py_ssize_t index = -1;
+            __pyx_t_5 = PyObject_GetIter(__pyx_t_1); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 382, __pyx_L94_error)
+            __Pyx_GOTREF(__pyx_t_5);
+            __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
+            __pyx_t_16 = (CYTHON_COMPILING_IN_LIMITED_API) ? PyIter_Next : __Pyx_PyObject_GetIterNextFunc(__pyx_t_5);
+            index = 0; __pyx_t_6 = __pyx_t_16(__pyx_t_5); if (unlikely(!__pyx_t_6)) goto __pyx_L103_unpacking_failed;
+            __Pyx_GOTREF(__pyx_t_6);
+            index = 1; __pyx_t_2 = __pyx_t_16(__pyx_t_5); if (unlikely(!__pyx_t_2)) goto __pyx_L103_unpacking_failed;
+            __Pyx_GOTREF(__pyx_t_2);
+            if (__Pyx_IternextUnpackEndCheck(__pyx_t_16(__pyx_t_5), 2) < (0)) __PYX_ERR(0, 382, __pyx_L94_error)
+            __pyx_t_16 = NULL;
+            __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
+            goto __pyx_L104_unpacking_done;
+            __pyx_L103_unpacking_failed:;
+            __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
+            __pyx_t_16 = NULL;
+            if (__Pyx_IterFinish() == 0) __Pyx_RaiseNeedMoreValuesError(index);
+            __PYX_ERR(0, 382, __pyx_L94_error)
+            __pyx_L104_unpacking_done:;
+          }
+          __Pyx_XDECREF_SET(__pyx_v_frame_name, __pyx_t_6);
+          __pyx_t_6 = 0;
+          __Pyx_XDECREF_SET(__pyx_v_frame_time, __pyx_t_2);
+          __pyx_t_2 = 0;
+
+          /* "frigate/video/detect_cython.pyx":381
+ *         # Get frame from queue
+ *         try:
+ *             if exit_on_empty:             # <<<<<<<<<<<<<<
+ *                 frame_name, frame_time = frame_queue.get(False)
+ *             else:
+*/
+          goto __pyx_L102;
+        }
+
+        /* "frigate/video/detect_cython.pyx":384
+ *                 frame_name, frame_time = frame_queue.get(False)
+ *             else:
+ *                 frame_name, frame_time = frame_queue.get(True, 1)             # <<<<<<<<<<<<<<
+ *         except queue_module.Empty:
+ *             if exit_on_empty:
+*/
+        /*else*/ {
+          __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_v_frame_queue, __pyx_mstate_global->__pyx_n_u_get); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 384, __pyx_L94_error)
+          __Pyx_GOTREF(__pyx_t_1);
+          __pyx_t_2 = __Pyx_PyObject_Call(__pyx_t_1, __pyx_mstate_global->__pyx_tuple[2], NULL); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 384, __pyx_L94_error)
+          __Pyx_GOTREF(__pyx_t_2);
+          __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
+          if ((likely(PyTuple_CheckExact(__pyx_t_2))) || (PyList_CheckExact(__pyx_t_2))) {
+            PyObject* sequence = __pyx_t_2;
+            Py_ssize_t size = __Pyx_PySequence_SIZE(sequence);
+            if (unlikely(size != 2)) {
+              if (size > 2) __Pyx_RaiseTooManyValuesError(2);
+              else if (size >= 0) __Pyx_RaiseNeedMoreValuesError(size);
+              __PYX_ERR(0, 384, __pyx_L94_error)
+            }
+            #if CYTHON_ASSUME_SAFE_MACROS && !CYTHON_AVOID_BORROWED_REFS
+            if (likely(PyTuple_CheckExact(sequence))) {
+              __pyx_t_1 = PyTuple_GET_ITEM(sequence, 0);
+              __Pyx_INCREF(__pyx_t_1);
+              __pyx_t_6 = PyTuple_GET_ITEM(sequence, 1);
+              __Pyx_INCREF(__pyx_t_6);
+            } else {
+              __pyx_t_1 = __Pyx_PyList_GET_ITEM_REF(sequence, 0, __Pyx_ReferenceSharing_SharedReference);
+              if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 384, __pyx_L94_error)
+              __Pyx_XGOTREF(__pyx_t_1);
+              __pyx_t_6 = __Pyx_PyList_GET_ITEM_REF(sequence, 1, __Pyx_ReferenceSharing_SharedReference);
+              if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 384, __pyx_L94_error)
+              __Pyx_XGOTREF(__pyx_t_6);
+            }
+            #else
+            __pyx_t_1 = __Pyx_PySequence_ITEM(sequence, 0); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 384, __pyx_L94_error)
+            __Pyx_GOTREF(__pyx_t_1);
+            __pyx_t_6 = __Pyx_PySequence_ITEM(sequence, 1); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 384, __pyx_L94_error)
+            __Pyx_GOTREF(__pyx_t_6);
+            #endif
+            __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
+          } else {
+            Py_ssize_t index = -1;
+            __pyx_t_5 = PyObject_GetIter(__pyx_t_2); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 384, __pyx_L94_error)
+            __Pyx_GOTREF(__pyx_t_5);
+            __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
+            __pyx_t_16 = (CYTHON_COMPILING_IN_LIMITED_API) ? PyIter_Next : __Pyx_PyObject_GetIterNextFunc(__pyx_t_5);
+            index = 0; __pyx_t_1 = __pyx_t_16(__pyx_t_5); if (unlikely(!__pyx_t_1)) goto __pyx_L105_unpacking_failed;
+            __Pyx_GOTREF(__pyx_t_1);
+            index = 1; __pyx_t_6 = __pyx_t_16(__pyx_t_5); if (unlikely(!__pyx_t_6)) goto __pyx_L105_unpacking_failed;
+            __Pyx_GOTREF(__pyx_t_6);
+            if (__Pyx_IternextUnpackEndCheck(__pyx_t_16(__pyx_t_5), 2) < (0)) __PYX_ERR(0, 384, __pyx_L94_error)
+            __pyx_t_16 = NULL;
+            __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
+            goto __pyx_L106_unpacking_done;
+            __pyx_L105_unpacking_failed:;
+            __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
+            __pyx_t_16 = NULL;
+            if (__Pyx_IterFinish() == 0) __Pyx_RaiseNeedMoreValuesError(index);
+            __PYX_ERR(0, 384, __pyx_L94_error)
+            __pyx_L106_unpacking_done:;
+          }
+          __Pyx_XDECREF_SET(__pyx_v_frame_name, __pyx_t_1);
+          __pyx_t_1 = 0;
+          __Pyx_XDECREF_SET(__pyx_v_frame_time, __pyx_t_6);
+          __pyx_t_6 = 0;
+        }
+        __pyx_L102:;
+
+        /* "frigate/video/detect_cython.pyx":380
+ * 
+ *         # Get frame from queue
+ *         try:             # <<<<<<<<<<<<<<
+ *             if exit_on_empty:
+ *                 frame_name, frame_time = frame_queue.get(False)
+*/
+      }
+      __Pyx_XDECREF(__pyx_t_9); __pyx_t_9 = 0;
+      __Pyx_XDECREF(__pyx_t_8); __pyx_t_8 = 0;
+      __Pyx_XDECREF(__pyx_t_7); __pyx_t_7 = 0;
+      goto __pyx_L101_try_end;
+      __pyx_L94_error:;
+      __Pyx_XDECREF(__pyx_t_1); __pyx_t_1 = 0;
+      __Pyx_XDECREF(__pyx_t_2); __pyx_t_2 = 0;
+      __Pyx_XDECREF(__pyx_t_4); __pyx_t_4 = 0;
+      __Pyx_XDECREF(__pyx_t_5); __pyx_t_5 = 0;
+      __Pyx_XDECREF(__pyx_t_6); __pyx_t_6 = 0;
+
+      /* "frigate/video/detect_cython.pyx":385
+ *             else:
+ *                 frame_name, frame_time = frame_queue.get(True, 1)
+ *         except queue_module.Empty:             # <<<<<<<<<<<<<<
+ *             if exit_on_empty:
+ *                 break
+*/
+      __Pyx_ErrFetch(&__pyx_t_2, &__pyx_t_6, &__pyx_t_1);
+      __pyx_t_5 = __Pyx_PyObject_GetAttrStr(__pyx_v_queue_module, __pyx_mstate_global->__pyx_n_u_Empty); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 385, __pyx_L96_except_error)
+      __Pyx_GOTREF(__pyx_t_5);
+      __pyx_t_12 = __Pyx_PyErr_GivenExceptionMatches(__pyx_t_2, __pyx_t_5);
+      __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
+      __Pyx_ErrRestore(__pyx_t_2, __pyx_t_6, __pyx_t_1);
+      __pyx_t_2 = 0; __pyx_t_6 = 0; __pyx_t_1 = 0;
+      if (__pyx_t_12) {
+        __Pyx_AddTraceback("frigate.video.detect_cython.cython_process_frames", __pyx_clineno, __pyx_lineno, __pyx_filename);
+        if (__Pyx_GetException(&__pyx_t_1, &__pyx_t_6, &__pyx_t_2) < 0) __PYX_ERR(0, 385, __pyx_L96_except_error)
+        __Pyx_XGOTREF(__pyx_t_1);
+        __Pyx_XGOTREF(__pyx_t_6);
+        __Pyx_XGOTREF(__pyx_t_2);
+
+        /* "frigate/video/detect_cython.pyx":386
+ *                 frame_name, frame_time = frame_queue.get(True, 1)
+ *         except queue_module.Empty:
+ *             if exit_on_empty:             # <<<<<<<<<<<<<<
+ *                 break
+ *             continue
+*/
+        if (__pyx_v_exit_on_empty) {
+
+          /* "frigate/video/detect_cython.pyx":387
+ *         except queue_module.Empty:
+ *             if exit_on_empty:
+ *                 break             # <<<<<<<<<<<<<<
+ *             continue
+ * 
+*/
+          goto __pyx_L108_except_break;
+
+          /* "frigate/video/detect_cython.pyx":386
+ *                 frame_name, frame_time = frame_queue.get(True, 1)
+ *         except queue_module.Empty:
+ *             if exit_on_empty:             # <<<<<<<<<<<<<<
+ *                 break
+ *             continue
+*/
+        }
+
+        /* "frigate/video/detect_cython.pyx":388
+ *             if exit_on_empty:
+ *                 break
+ *             continue             # <<<<<<<<<<<<<<
+ * 
+ *         # Update metrics
+*/
+        goto __pyx_L107_except_continue;
+        __pyx_L107_except_continue:;
+        __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
+        __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
+        __Pyx_XDECREF(__pyx_t_2); __pyx_t_2 = 0;
+        goto __pyx_L100_try_continue;
+        __pyx_L108_except_break:;
+        __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
+        __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
+        __Pyx_XDECREF(__pyx_t_2); __pyx_t_2 = 0;
+        goto __pyx_L99_try_break;
+      }
+      goto __pyx_L96_except_error;
+
+      /* "frigate/video/detect_cython.pyx":380
+ * 
+ *         # Get frame from queue
+ *         try:             # <<<<<<<<<<<<<<
+ *             if exit_on_empty:
+ *                 frame_name, frame_time = frame_queue.get(False)
+*/
+      __pyx_L96_except_error:;
+      __Pyx_XGIVEREF(__pyx_t_9);
+      __Pyx_XGIVEREF(__pyx_t_8);
+      __Pyx_XGIVEREF(__pyx_t_7);
+      __Pyx_ExceptionReset(__pyx_t_9, __pyx_t_8, __pyx_t_7);
+      goto __pyx_L1_error;
+      __pyx_L99_try_break:;
+      __Pyx_XGIVEREF(__pyx_t_9);
+      __Pyx_XGIVEREF(__pyx_t_8);
+      __Pyx_XGIVEREF(__pyx_t_7);
+      __Pyx_ExceptionReset(__pyx_t_9, __pyx_t_8, __pyx_t_7);
+      goto __pyx_L58_break;
+      __pyx_L100_try_continue:;
+      __Pyx_XGIVEREF(__pyx_t_9);
+      __Pyx_XGIVEREF(__pyx_t_8);
+      __Pyx_XGIVEREF(__pyx_t_7);
+      __Pyx_ExceptionReset(__pyx_t_9, __pyx_t_8, __pyx_t_7);
+      goto __pyx_L57_continue;
+      __pyx_L101_try_end:;
+    }
+
+    /* "frigate/video/detect_cython.pyx":391
+ * 
+ *         # Update metrics
+ *         try:             # <<<<<<<<<<<<<<
+ *             camera_metrics.detection_frame.value = frame_time
+ *             ptz_metrics.frame_time.value = frame_time
+*/
+    {
+      __Pyx_PyThreadState_declare
+      __Pyx_PyThreadState_assign
+      __Pyx_ExceptionSave(&__pyx_t_7, &__pyx_t_8, &__pyx_t_9);
+      __Pyx_XGOTREF(__pyx_t_7);
+      __Pyx_XGOTREF(__pyx_t_8);
+      __Pyx_XGOTREF(__pyx_t_9);
+      /*try:*/ {
+
+        /* "frigate/video/detect_cython.pyx":392
+ *         # Update metrics
+ *         try:
+ *             camera_metrics.detection_frame.value = frame_time             # <<<<<<<<<<<<<<
+ *             ptz_metrics.frame_time.value = frame_time
+ *         except Exception:
+*/
+        __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_v_camera_metrics, __pyx_mstate_global->__pyx_n_u_detection_frame); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 392, __pyx_L110_error)
+        __Pyx_GOTREF(__pyx_t_2);
+        if (__Pyx_PyObject_SetAttrStr(__pyx_t_2, __pyx_mstate_global->__pyx_n_u_value, __pyx_v_frame_time) < (0)) __PYX_ERR(0, 392, __pyx_L110_error)
+        __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
+
+        /* "frigate/video/detect_cython.pyx":393
+ *         try:
+ *             camera_metrics.detection_frame.value = frame_time
+ *             ptz_metrics.frame_time.value = frame_time             # <<<<<<<<<<<<<<
+ *         except Exception:
+ *             pass
+*/
+        __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_v_ptz_metrics, __pyx_mstate_global->__pyx_n_u_frame_time); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 393, __pyx_L110_error)
+        __Pyx_GOTREF(__pyx_t_2);
+        if (__Pyx_PyObject_SetAttrStr(__pyx_t_2, __pyx_mstate_global->__pyx_n_u_value, __pyx_v_frame_time) < (0)) __PYX_ERR(0, 393, __pyx_L110_error)
+        __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
+
+        /* "frigate/video/detect_cython.pyx":391
+ * 
+ *         # Update metrics
+ *         try:             # <<<<<<<<<<<<<<
+ *             camera_metrics.detection_frame.value = frame_time
+ *             ptz_metrics.frame_time.value = frame_time
+*/
+      }
+      __Pyx_XDECREF(__pyx_t_7); __pyx_t_7 = 0;
+      __Pyx_XDECREF(__pyx_t_8); __pyx_t_8 = 0;
+      __Pyx_XDECREF(__pyx_t_9); __pyx_t_9 = 0;
+      goto __pyx_L117_try_end;
+      __pyx_L110_error:;
+      __Pyx_XDECREF(__pyx_t_1); __pyx_t_1 = 0;
+      __Pyx_XDECREF(__pyx_t_2); __pyx_t_2 = 0;
+      __Pyx_XDECREF(__pyx_t_4); __pyx_t_4 = 0;
+      __Pyx_XDECREF(__pyx_t_5); __pyx_t_5 = 0;
+      __Pyx_XDECREF(__pyx_t_6); __pyx_t_6 = 0;
+
+      /* "frigate/video/detect_cython.pyx":394
+ *             camera_metrics.detection_frame.value = frame_time
+ *             ptz_metrics.frame_time.value = frame_time
+ *         except Exception:             # <<<<<<<<<<<<<<
+ *             pass
+ * 
+*/
+      __pyx_t_12 = __Pyx_PyErr_ExceptionMatches(((PyObject *)(((PyTypeObject*)PyExc_Exception))));
+      if (__pyx_t_12) {
+        __Pyx_ErrRestore(0,0,0);
+        goto __pyx_L111_exception_handled;
+      }
+      goto __pyx_L112_except_error;
+
+      /* "frigate/video/detect_cython.pyx":391
+ * 
+ *         # Update metrics
+ *         try:             # <<<<<<<<<<<<<<
+ *             camera_metrics.detection_frame.value = frame_time
+ *             ptz_metrics.frame_time.value = frame_time
+*/
+      __pyx_L112_except_error:;
+      __Pyx_XGIVEREF(__pyx_t_7);
+      __Pyx_XGIVEREF(__pyx_t_8);
+      __Pyx_XGIVEREF(__pyx_t_9);
+      __Pyx_ExceptionReset(__pyx_t_7, __pyx_t_8, __pyx_t_9);
+      goto __pyx_L1_error;
+      __pyx_L111_exception_handled:;
+      __Pyx_XGIVEREF(__pyx_t_7);
+      __Pyx_XGIVEREF(__pyx_t_8);
+      __Pyx_XGIVEREF(__pyx_t_9);
+      __Pyx_ExceptionReset(__pyx_t_7, __pyx_t_8, __pyx_t_9);
+      __pyx_L117_try_end:;
+    }
+
+    /* "frigate/video/detect_cython.pyx":398
+ * 
+ *         # Get frame data
+ *         try:             # <<<<<<<<<<<<<<
+ *             frame = frame_manager.get(frame_name, (frame_shape[0] * 3 // 2, frame_shape[1]))
+ *         except Exception:
+*/
+    {
+      __Pyx_PyThreadState_declare
+      __Pyx_PyThreadState_assign
+      __Pyx_ExceptionSave(&__pyx_t_9, &__pyx_t_8, &__pyx_t_7);
+      __Pyx_XGOTREF(__pyx_t_9);
+      __Pyx_XGOTREF(__pyx_t_8);
+      __Pyx_XGOTREF(__pyx_t_7);
+      /*try:*/ {
+
+        /* "frigate/video/detect_cython.pyx":399
+ *         # Get frame data
+ *         try:
+ *             frame = frame_manager.get(frame_name, (frame_shape[0] * 3 // 2, frame_shape[1]))             # <<<<<<<<<<<<<<
+ *         except Exception:
+ *             frame = None
+*/
+        __pyx_t_6 = __pyx_v_frame_manager;
+        __Pyx_INCREF(__pyx_t_6);
+        __pyx_t_1 = __Pyx_GetItemInt(__pyx_v_frame_shape, 0, long, 1, __Pyx_PyLong_From_long, 0, 0, 0, 1, __Pyx_ReferenceSharing_FunctionArgument); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 399, __pyx_L120_error)
+        __Pyx_GOTREF(__pyx_t_1);
+        __pyx_t_5 = __Pyx_PyLong_MultiplyObjC(__pyx_t_1, __pyx_mstate_global->__pyx_int_3, 3, 0, 0); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 399, __pyx_L120_error)
+        __Pyx_GOTREF(__pyx_t_5);
+        __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
+        __pyx_t_1 = __Pyx_PyLong_FloorDivideObjC(__pyx_t_5, __pyx_mstate_global->__pyx_int_2, 2, 0, 0); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 399, __pyx_L120_error)
+        __Pyx_GOTREF(__pyx_t_1);
+        __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
+        __pyx_t_5 = __Pyx_GetItemInt(__pyx_v_frame_shape, 1, long, 1, __Pyx_PyLong_From_long, 0, 0, 0, 1, __Pyx_ReferenceSharing_FunctionArgument); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 399, __pyx_L120_error)
+        __Pyx_GOTREF(__pyx_t_5);
+        __pyx_t_4 = PyTuple_New(2); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 399, __pyx_L120_error)
+        __Pyx_GOTREF(__pyx_t_4);
+        __Pyx_GIVEREF(__pyx_t_1);
+        if (__Pyx_PyTuple_SET_ITEM(__pyx_t_4, 0, __pyx_t_1) != (0)) __PYX_ERR(0, 399, __pyx_L120_error);
+        __Pyx_GIVEREF(__pyx_t_5);
+        if (__Pyx_PyTuple_SET_ITEM(__pyx_t_4, 1, __pyx_t_5) != (0)) __PYX_ERR(0, 399, __pyx_L120_error);
+        __pyx_t_1 = 0;
+        __pyx_t_5 = 0;
+        __pyx_t_3 = 0;
+        {
+          PyObject *__pyx_callargs[3] = {__pyx_t_6, __pyx_v_frame_name, __pyx_t_4};
+          __pyx_t_2 = __Pyx_PyObject_FastCallMethod((PyObject*)__pyx_mstate_global->__pyx_n_u_get, __pyx_callargs+__pyx_t_3, (3-__pyx_t_3) | (1*__Pyx_PY_VECTORCALL_ARGUMENTS_OFFSET));
+          __Pyx_XDECREF(__pyx_t_6); __pyx_t_6 = 0;
+          __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
+          if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 399, __pyx_L120_error)
+          __Pyx_GOTREF(__pyx_t_2);
+        }
+        __Pyx_XDECREF_SET(__pyx_v_frame, __pyx_t_2);
+        __pyx_t_2 = 0;
+
+        /* "frigate/video/detect_cython.pyx":398
+ * 
+ *         # Get frame data
+ *         try:             # <<<<<<<<<<<<<<
+ *             frame = frame_manager.get(frame_name, (frame_shape[0] * 3 // 2, frame_shape[1]))
+ *         except Exception:
+*/
+      }
+      __Pyx_XDECREF(__pyx_t_9); __pyx_t_9 = 0;
+      __Pyx_XDECREF(__pyx_t_8); __pyx_t_8 = 0;
+      __Pyx_XDECREF(__pyx_t_7); __pyx_t_7 = 0;
+      goto __pyx_L127_try_end;
+      __pyx_L120_error:;
+      __Pyx_XDECREF(__pyx_t_1); __pyx_t_1 = 0;
+      __Pyx_XDECREF(__pyx_t_2); __pyx_t_2 = 0;
+      __Pyx_XDECREF(__pyx_t_4); __pyx_t_4 = 0;
+      __Pyx_XDECREF(__pyx_t_5); __pyx_t_5 = 0;
+      __Pyx_XDECREF(__pyx_t_6); __pyx_t_6 = 0;
+
+      /* "frigate/video/detect_cython.pyx":400
+ *         try:
+ *             frame = frame_manager.get(frame_name, (frame_shape[0] * 3 // 2, frame_shape[1]))
+ *         except Exception:             # <<<<<<<<<<<<<<
+ *             frame = None
+ * 
+*/
+      __pyx_t_12 = __Pyx_PyErr_ExceptionMatches(((PyObject *)(((PyTypeObject*)PyExc_Exception))));
+      if (__pyx_t_12) {
+        __Pyx_ErrRestore(0,0,0);
+
+        /* "frigate/video/detect_cython.pyx":401
+ *             frame = frame_manager.get(frame_name, (frame_shape[0] * 3 // 2, frame_shape[1]))
+ *         except Exception:
+ *             frame = None             # <<<<<<<<<<<<<<
+ * 
+ *         if frame is None:
+*/
+        __Pyx_INCREF(Py_None);
+        __Pyx_XDECREF_SET(__pyx_v_frame, Py_None);
+        goto __pyx_L121_exception_handled;
+      }
+      goto __pyx_L122_except_error;
+
+      /* "frigate/video/detect_cython.pyx":398
+ * 
+ *         # Get frame data
+ *         try:             # <<<<<<<<<<<<<<
+ *             frame = frame_manager.get(frame_name, (frame_shape[0] * 3 // 2, frame_shape[1]))
+ *         except Exception:
+*/
+      __pyx_L122_except_error:;
+      __Pyx_XGIVEREF(__pyx_t_9);
+      __Pyx_XGIVEREF(__pyx_t_8);
+      __Pyx_XGIVEREF(__pyx_t_7);
+      __Pyx_ExceptionReset(__pyx_t_9, __pyx_t_8, __pyx_t_7);
+      goto __pyx_L1_error;
+      __pyx_L121_exception_handled:;
+      __Pyx_XGIVEREF(__pyx_t_9);
+      __Pyx_XGIVEREF(__pyx_t_8);
+      __Pyx_XGIVEREF(__pyx_t_7);
+      __Pyx_ExceptionReset(__pyx_t_9, __pyx_t_8, __pyx_t_7);
+      __pyx_L127_try_end:;
+    }
+
+    /* "frigate/video/detect_cython.pyx":403
+ *             frame = None
+ * 
+ *         if frame is None:             # <<<<<<<<<<<<<<
+ *             continue
+ * 
+*/
+    __pyx_t_14 = (__pyx_v_frame == Py_None);
+    if (__pyx_t_14) {
+
+      /* "frigate/video/detect_cython.pyx":404
+ * 
+ *         if frame is None:
+ *             continue             # <<<<<<<<<<<<<<
+ * 
+ *         # Detect motion
+*/
+      goto __pyx_L57_continue;
+
+      /* "frigate/video/detect_cython.pyx":403
+ *             frame = None
+ * 
+ *         if frame is None:             # <<<<<<<<<<<<<<
+ *             continue
+ * 
+*/
+    }
+
+    /* "frigate/video/detect_cython.pyx":407
+ * 
+ *         # Detect motion
+ *         try:             # <<<<<<<<<<<<<<
+ *             motion_boxes = motion_detector.detect(frame)
+ *         except Exception:
+*/
+    {
+      __Pyx_PyThreadState_declare
+      __Pyx_PyThreadState_assign
+      __Pyx_ExceptionSave(&__pyx_t_7, &__pyx_t_8, &__pyx_t_9);
+      __Pyx_XGOTREF(__pyx_t_7);
+      __Pyx_XGOTREF(__pyx_t_8);
+      __Pyx_XGOTREF(__pyx_t_9);
+      /*try:*/ {
+
+        /* "frigate/video/detect_cython.pyx":408
+ *         # Detect motion
+ *         try:
+ *             motion_boxes = motion_detector.detect(frame)             # <<<<<<<<<<<<<<
+ *         except Exception:
+ *             motion_boxes = []
+*/
+        __pyx_t_4 = __pyx_v_motion_detector;
+        __Pyx_INCREF(__pyx_t_4);
+        __pyx_t_3 = 0;
+        {
+          PyObject *__pyx_callargs[2] = {__pyx_t_4, __pyx_v_frame};
+          __pyx_t_2 = __Pyx_PyObject_FastCallMethod((PyObject*)__pyx_mstate_global->__pyx_n_u_detect, __pyx_callargs+__pyx_t_3, (2-__pyx_t_3) | (1*__Pyx_PY_VECTORCALL_ARGUMENTS_OFFSET));
+          __Pyx_XDECREF(__pyx_t_4); __pyx_t_4 = 0;
+          if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 408, __pyx_L131_error)
+          __Pyx_GOTREF(__pyx_t_2);
+        }
+        __Pyx_XDECREF_SET(__pyx_v_motion_boxes, __pyx_t_2);
+        __pyx_t_2 = 0;
+
+        /* "frigate/video/detect_cython.pyx":407
+ * 
+ *         # Detect motion
+ *         try:             # <<<<<<<<<<<<<<
+ *             motion_boxes = motion_detector.detect(frame)
+ *         except Exception:
+*/
+      }
+      __Pyx_XDECREF(__pyx_t_7); __pyx_t_7 = 0;
+      __Pyx_XDECREF(__pyx_t_8); __pyx_t_8 = 0;
+      __Pyx_XDECREF(__pyx_t_9); __pyx_t_9 = 0;
+      goto __pyx_L138_try_end;
+      __pyx_L131_error:;
+      __Pyx_XDECREF(__pyx_t_1); __pyx_t_1 = 0;
+      __Pyx_XDECREF(__pyx_t_2); __pyx_t_2 = 0;
+      __Pyx_XDECREF(__pyx_t_4); __pyx_t_4 = 0;
+      __Pyx_XDECREF(__pyx_t_5); __pyx_t_5 = 0;
+      __Pyx_XDECREF(__pyx_t_6); __pyx_t_6 = 0;
+
+      /* "frigate/video/detect_cython.pyx":409
+ *         try:
+ *             motion_boxes = motion_detector.detect(frame)
+ *         except Exception:             # <<<<<<<<<<<<<<
+ *             motion_boxes = []
+ * 
+*/
+      __pyx_t_12 = __Pyx_PyErr_ExceptionMatches(((PyObject *)(((PyTypeObject*)PyExc_Exception))));
+      if (__pyx_t_12) {
+        __Pyx_AddTraceback("frigate.video.detect_cython.cython_process_frames", __pyx_clineno, __pyx_lineno, __pyx_filename);
+        if (__Pyx_GetException(&__pyx_t_2, &__pyx_t_4, &__pyx_t_6) < 0) __PYX_ERR(0, 409, __pyx_L133_except_error)
+        __Pyx_XGOTREF(__pyx_t_2);
+        __Pyx_XGOTREF(__pyx_t_4);
+        __Pyx_XGOTREF(__pyx_t_6);
+
+        /* "frigate/video/detect_cython.pyx":410
+ *             motion_boxes = motion_detector.detect(frame)
+ *         except Exception:
+ *             motion_boxes = []             # <<<<<<<<<<<<<<
+ * 
+ *         regions = []
+*/
+        __pyx_t_5 = PyList_New(0); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 410, __pyx_L133_except_error)
+        __Pyx_GOTREF(__pyx_t_5);
+        __Pyx_XDECREF_SET(__pyx_v_motion_boxes, __pyx_t_5);
+        __pyx_t_5 = 0;
+        __Pyx_XDECREF(__pyx_t_2); __pyx_t_2 = 0;
+        __Pyx_XDECREF(__pyx_t_4); __pyx_t_4 = 0;
+        __Pyx_XDECREF(__pyx_t_6); __pyx_t_6 = 0;
+        goto __pyx_L132_exception_handled;
+      }
+      goto __pyx_L133_except_error;
+
+      /* "frigate/video/detect_cython.pyx":407
+ * 
+ *         # Detect motion
+ *         try:             # <<<<<<<<<<<<<<
+ *             motion_boxes = motion_detector.detect(frame)
+ *         except Exception:
+*/
+      __pyx_L133_except_error:;
+      __Pyx_XGIVEREF(__pyx_t_7);
+      __Pyx_XGIVEREF(__pyx_t_8);
+      __Pyx_XGIVEREF(__pyx_t_9);
+      __Pyx_ExceptionReset(__pyx_t_7, __pyx_t_8, __pyx_t_9);
+      goto __pyx_L1_error;
+      __pyx_L132_exception_handled:;
+      __Pyx_XGIVEREF(__pyx_t_7);
+      __Pyx_XGIVEREF(__pyx_t_8);
+      __Pyx_XGIVEREF(__pyx_t_9);
+      __Pyx_ExceptionReset(__pyx_t_7, __pyx_t_8, __pyx_t_9);
+      __pyx_L138_try_end:;
+    }
+
+    /* "frigate/video/detect_cython.pyx":412
+ *             motion_boxes = []
+ * 
+ *         regions = []             # <<<<<<<<<<<<<<
+ *         consolidated_detections = []
+ *         do_detect = True
+*/
+    __pyx_t_6 = PyList_New(0); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 412, __pyx_L1_error)
+    __Pyx_GOTREF(__pyx_t_6);
+    __Pyx_XDECREF_SET(__pyx_v_regions, __pyx_t_6);
+    __pyx_t_6 = 0;
+
+    /* "frigate/video/detect_cython.pyx":413
+ * 
+ *         regions = []
+ *         consolidated_detections = []             # <<<<<<<<<<<<<<
+ *         do_detect = True
+ * 
+*/
+    __pyx_t_6 = PyList_New(0); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 413, __pyx_L1_error)
+    __Pyx_GOTREF(__pyx_t_6);
+    __Pyx_XDECREF_SET(__pyx_v_consolidated_detections, __pyx_t_6);
+    __pyx_t_6 = 0;
+
+    /* "frigate/video/detect_cython.pyx":414
+ *         regions = []
+ *         consolidated_detections = []
+ *         do_detect = True             # <<<<<<<<<<<<<<
+ * 
+ *         # Check if detection is enabled
+*/
+    __pyx_v_do_detect = 1;
+
+    /* "frigate/video/detect_cython.pyx":417
+ * 
+ *         # Check if detection is enabled
+ *         try:             # <<<<<<<<<<<<<<
+ *             do_detect = camera_config.detect.enabled
+ *         except Exception:
+*/
+    {
+      __Pyx_PyThreadState_declare
+      __Pyx_PyThreadState_assign
+      __Pyx_ExceptionSave(&__pyx_t_9, &__pyx_t_8, &__pyx_t_7);
+      __Pyx_XGOTREF(__pyx_t_9);
+      __Pyx_XGOTREF(__pyx_t_8);
+      __Pyx_XGOTREF(__pyx_t_7);
+      /*try:*/ {
+
+        /* "frigate/video/detect_cython.pyx":418
+ *         # Check if detection is enabled
+ *         try:
+ *             do_detect = camera_config.detect.enabled             # <<<<<<<<<<<<<<
+ *         except Exception:
+ *             do_detect = True
+*/
+        __pyx_t_6 = __Pyx_PyObject_GetAttrStr(__pyx_v_camera_config, __pyx_mstate_global->__pyx_n_u_detect); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 418, __pyx_L141_error)
+        __Pyx_GOTREF(__pyx_t_6);
+        __pyx_t_4 = __Pyx_PyObject_GetAttrStr(__pyx_t_6, __pyx_mstate_global->__pyx_n_u_enabled); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 418, __pyx_L141_error)
+        __Pyx_GOTREF(__pyx_t_4);
+        __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
+        __pyx_t_14 = __Pyx_PyObject_IsTrue(__pyx_t_4); if (unlikely((__pyx_t_14 == (int)-1) && PyErr_Occurred())) __PYX_ERR(0, 418, __pyx_L141_error)
+        __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
+        __pyx_v_do_detect = __pyx_t_14;
+
+        /* "frigate/video/detect_cython.pyx":417
+ * 
+ *         # Check if detection is enabled
+ *         try:             # <<<<<<<<<<<<<<
+ *             do_detect = camera_config.detect.enabled
+ *         except Exception:
+*/
+      }
+      __Pyx_XDECREF(__pyx_t_9); __pyx_t_9 = 0;
+      __Pyx_XDECREF(__pyx_t_8); __pyx_t_8 = 0;
+      __Pyx_XDECREF(__pyx_t_7); __pyx_t_7 = 0;
+      goto __pyx_L148_try_end;
+      __pyx_L141_error:;
+      __Pyx_XDECREF(__pyx_t_1); __pyx_t_1 = 0;
+      __Pyx_XDECREF(__pyx_t_2); __pyx_t_2 = 0;
+      __Pyx_XDECREF(__pyx_t_4); __pyx_t_4 = 0;
+      __Pyx_XDECREF(__pyx_t_5); __pyx_t_5 = 0;
+      __Pyx_XDECREF(__pyx_t_6); __pyx_t_6 = 0;
+
+      /* "frigate/video/detect_cython.pyx":419
+ *         try:
+ *             do_detect = camera_config.detect.enabled
+ *         except Exception:             # <<<<<<<<<<<<<<
+ *             do_detect = True
+ * 
+*/
+      __pyx_t_12 = __Pyx_PyErr_ExceptionMatches(((PyObject *)(((PyTypeObject*)PyExc_Exception))));
+      if (__pyx_t_12) {
+        __Pyx_ErrRestore(0,0,0);
+
+        /* "frigate/video/detect_cython.pyx":420
+ *             do_detect = camera_config.detect.enabled
+ *         except Exception:
+ *             do_detect = True             # <<<<<<<<<<<<<<
+ * 
+ *         if not do_detect:
+*/
+        __pyx_v_do_detect = 1;
+        goto __pyx_L142_exception_handled;
+      }
+      goto __pyx_L143_except_error;
+
+      /* "frigate/video/detect_cython.pyx":417
+ * 
+ *         # Check if detection is enabled
+ *         try:             # <<<<<<<<<<<<<<
+ *             do_detect = camera_config.detect.enabled
+ *         except Exception:
+*/
+      __pyx_L143_except_error:;
+      __Pyx_XGIVEREF(__pyx_t_9);
+      __Pyx_XGIVEREF(__pyx_t_8);
+      __Pyx_XGIVEREF(__pyx_t_7);
+      __Pyx_ExceptionReset(__pyx_t_9, __pyx_t_8, __pyx_t_7);
+      goto __pyx_L1_error;
+      __pyx_L142_exception_handled:;
+      __Pyx_XGIVEREF(__pyx_t_9);
+      __Pyx_XGIVEREF(__pyx_t_8);
+      __Pyx_XGIVEREF(__pyx_t_7);
+      __Pyx_ExceptionReset(__pyx_t_9, __pyx_t_8, __pyx_t_7);
+      __pyx_L148_try_end:;
+    }
+
+    /* "frigate/video/detect_cython.pyx":422
+ *             do_detect = True
+ * 
+ *         if not do_detect:             # <<<<<<<<<<<<<<
+ *             try:
+ *                 object_tracker.match_and_update(frame_name, frame_time, [])
+*/
+    __pyx_t_14 = (!__pyx_v_do_detect);
+    if (__pyx_t_14) {
+
+      /* "frigate/video/detect_cython.pyx":423
+ * 
+ *         if not do_detect:
+ *             try:             # <<<<<<<<<<<<<<
+ *                 object_tracker.match_and_update(frame_name, frame_time, [])
+ *             except Exception:
+*/
+      {
+        __Pyx_PyThreadState_declare
+        __Pyx_PyThreadState_assign
+        __Pyx_ExceptionSave(&__pyx_t_7, &__pyx_t_8, &__pyx_t_9);
+        __Pyx_XGOTREF(__pyx_t_7);
+        __Pyx_XGOTREF(__pyx_t_8);
+        __Pyx_XGOTREF(__pyx_t_9);
+        /*try:*/ {
+
+          /* "frigate/video/detect_cython.pyx":424
+ *         if not do_detect:
+ *             try:
+ *                 object_tracker.match_and_update(frame_name, frame_time, [])             # <<<<<<<<<<<<<<
+ *             except Exception:
+ *                 pass
+*/
+          __pyx_t_6 = __pyx_v_object_tracker;
+          __Pyx_INCREF(__pyx_t_6);
+          __pyx_t_2 = PyList_New(0); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 424, __pyx_L152_error)
+          __Pyx_GOTREF(__pyx_t_2);
+          __pyx_t_3 = 0;
+          {
+            PyObject *__pyx_callargs[4] = {__pyx_t_6, __pyx_v_frame_name, __pyx_v_frame_time, __pyx_t_2};
+            __pyx_t_4 = __Pyx_PyObject_FastCallMethod((PyObject*)__pyx_mstate_global->__pyx_n_u_match_and_update, __pyx_callargs+__pyx_t_3, (4-__pyx_t_3) | (1*__Pyx_PY_VECTORCALL_ARGUMENTS_OFFSET));
+            __Pyx_XDECREF(__pyx_t_6); __pyx_t_6 = 0;
+            __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
+            if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 424, __pyx_L152_error)
+            __Pyx_GOTREF(__pyx_t_4);
+          }
+          __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
+
+          /* "frigate/video/detect_cython.pyx":423
+ * 
+ *         if not do_detect:
+ *             try:             # <<<<<<<<<<<<<<
+ *                 object_tracker.match_and_update(frame_name, frame_time, [])
+ *             except Exception:
+*/
+        }
+        __Pyx_XDECREF(__pyx_t_7); __pyx_t_7 = 0;
+        __Pyx_XDECREF(__pyx_t_8); __pyx_t_8 = 0;
+        __Pyx_XDECREF(__pyx_t_9); __pyx_t_9 = 0;
+        goto __pyx_L159_try_end;
+        __pyx_L152_error:;
+        __Pyx_XDECREF(__pyx_t_1); __pyx_t_1 = 0;
+        __Pyx_XDECREF(__pyx_t_2); __pyx_t_2 = 0;
+        __Pyx_XDECREF(__pyx_t_4); __pyx_t_4 = 0;
+        __Pyx_XDECREF(__pyx_t_5); __pyx_t_5 = 0;
+        __Pyx_XDECREF(__pyx_t_6); __pyx_t_6 = 0;
+
+        /* "frigate/video/detect_cython.pyx":425
+ *             try:
+ *                 object_tracker.match_and_update(frame_name, frame_time, [])
+ *             except Exception:             # <<<<<<<<<<<<<<
+ *                 pass
+ *         else:
+*/
+        __pyx_t_12 = __Pyx_PyErr_ExceptionMatches(((PyObject *)(((PyTypeObject*)PyExc_Exception))));
+        if (__pyx_t_12) {
+          __Pyx_ErrRestore(0,0,0);
+          goto __pyx_L153_exception_handled;
+        }
+        goto __pyx_L154_except_error;
+
+        /* "frigate/video/detect_cython.pyx":423
+ * 
+ *         if not do_detect:
+ *             try:             # <<<<<<<<<<<<<<
+ *                 object_tracker.match_and_update(frame_name, frame_time, [])
+ *             except Exception:
+*/
+        __pyx_L154_except_error:;
+        __Pyx_XGIVEREF(__pyx_t_7);
+        __Pyx_XGIVEREF(__pyx_t_8);
+        __Pyx_XGIVEREF(__pyx_t_9);
+        __Pyx_ExceptionReset(__pyx_t_7, __pyx_t_8, __pyx_t_9);
+        goto __pyx_L1_error;
+        __pyx_L153_exception_handled:;
+        __Pyx_XGIVEREF(__pyx_t_7);
+        __Pyx_XGIVEREF(__pyx_t_8);
+        __Pyx_XGIVEREF(__pyx_t_9);
+        __Pyx_ExceptionReset(__pyx_t_7, __pyx_t_8, __pyx_t_9);
+        __pyx_L159_try_end:;
+      }
+
+      /* "frigate/video/detect_cython.pyx":422
+ *             do_detect = True
+ * 
+ *         if not do_detect:             # <<<<<<<<<<<<<<
+ *             try:
+ *                 object_tracker.match_and_update(frame_name, frame_time, [])
+*/
+      goto __pyx_L151;
+    }
+
+    /* "frigate/video/detect_cython.pyx":429
+ *         else:
+ *             # Stationary object detection
+ *             stationary_object_ids = set()             # <<<<<<<<<<<<<<
+ *             try:
+ *                 stationary_threshold = camera_config.detect.stationary.threshold
+*/
+    /*else*/ {
+      __pyx_t_4 = PySet_New(0); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 429, __pyx_L1_error)
+      __Pyx_GOTREF(__pyx_t_4);
+      __Pyx_XDECREF_SET(__pyx_v_stationary_object_ids, __pyx_t_4);
+      __pyx_t_4 = 0;
+
+      /* "frigate/video/detect_cython.pyx":430
+ *             # Stationary object detection
+ *             stationary_object_ids = set()
+ *             try:             # <<<<<<<<<<<<<<
+ *                 stationary_threshold = camera_config.detect.stationary.threshold
+ *                 stationary_interval = camera_config.detect.stationary.interval
+*/
+      {
+        __Pyx_PyThreadState_declare
+        __Pyx_PyThreadState_assign
+        __Pyx_ExceptionSave(&__pyx_t_9, &__pyx_t_8, &__pyx_t_7);
+        __Pyx_XGOTREF(__pyx_t_9);
+        __Pyx_XGOTREF(__pyx_t_8);
+        __Pyx_XGOTREF(__pyx_t_7);
+        /*try:*/ {
+
+          /* "frigate/video/detect_cython.pyx":431
+ *             stationary_object_ids = set()
+ *             try:
+ *                 stationary_threshold = camera_config.detect.stationary.threshold             # <<<<<<<<<<<<<<
+ *                 stationary_interval = camera_config.detect.stationary.interval
+ *             except Exception:
+*/
+          __pyx_t_4 = __Pyx_PyObject_GetAttrStr(__pyx_v_camera_config, __pyx_mstate_global->__pyx_n_u_detect); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 431, __pyx_L162_error)
+          __Pyx_GOTREF(__pyx_t_4);
+          __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_t_4, __pyx_mstate_global->__pyx_n_u_stationary); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 431, __pyx_L162_error)
+          __Pyx_GOTREF(__pyx_t_2);
+          __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
+          __pyx_t_4 = __Pyx_PyObject_GetAttrStr(__pyx_t_2, __pyx_mstate_global->__pyx_n_u_threshold); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 431, __pyx_L162_error)
+          __Pyx_GOTREF(__pyx_t_4);
+          __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
+          __Pyx_XDECREF_SET(__pyx_v_stationary_threshold, __pyx_t_4);
+          __pyx_t_4 = 0;
+
+          /* "frigate/video/detect_cython.pyx":432
+ *             try:
+ *                 stationary_threshold = camera_config.detect.stationary.threshold
+ *                 stationary_interval = camera_config.detect.stationary.interval             # <<<<<<<<<<<<<<
+ *             except Exception:
+ *                 stationary_threshold = 30
+*/
+          __pyx_t_4 = __Pyx_PyObject_GetAttrStr(__pyx_v_camera_config, __pyx_mstate_global->__pyx_n_u_detect); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 432, __pyx_L162_error)
+          __Pyx_GOTREF(__pyx_t_4);
+          __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_t_4, __pyx_mstate_global->__pyx_n_u_stationary); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 432, __pyx_L162_error)
+          __Pyx_GOTREF(__pyx_t_2);
+          __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
+          __pyx_t_4 = __Pyx_PyObject_GetAttrStr(__pyx_t_2, __pyx_mstate_global->__pyx_n_u_interval); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 432, __pyx_L162_error)
+          __Pyx_GOTREF(__pyx_t_4);
+          __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
+          __Pyx_XDECREF_SET(__pyx_v_stationary_interval, __pyx_t_4);
+          __pyx_t_4 = 0;
+
+          /* "frigate/video/detect_cython.pyx":430
+ *             # Stationary object detection
+ *             stationary_object_ids = set()
+ *             try:             # <<<<<<<<<<<<<<
+ *                 stationary_threshold = camera_config.detect.stationary.threshold
+ *                 stationary_interval = camera_config.detect.stationary.interval
+*/
+        }
+        __Pyx_XDECREF(__pyx_t_9); __pyx_t_9 = 0;
+        __Pyx_XDECREF(__pyx_t_8); __pyx_t_8 = 0;
+        __Pyx_XDECREF(__pyx_t_7); __pyx_t_7 = 0;
+        goto __pyx_L169_try_end;
+        __pyx_L162_error:;
+        __Pyx_XDECREF(__pyx_t_1); __pyx_t_1 = 0;
+        __Pyx_XDECREF(__pyx_t_2); __pyx_t_2 = 0;
+        __Pyx_XDECREF(__pyx_t_4); __pyx_t_4 = 0;
+        __Pyx_XDECREF(__pyx_t_5); __pyx_t_5 = 0;
+        __Pyx_XDECREF(__pyx_t_6); __pyx_t_6 = 0;
+
+        /* "frigate/video/detect_cython.pyx":433
+ *                 stationary_threshold = camera_config.detect.stationary.threshold
+ *                 stationary_interval = camera_config.detect.stationary.interval
+ *             except Exception:             # <<<<<<<<<<<<<<
+ *                 stationary_threshold = 30
+ *                 stationary_interval = 10
+*/
+        __pyx_t_12 = __Pyx_PyErr_ExceptionMatches(((PyObject *)(((PyTypeObject*)PyExc_Exception))));
+        if (__pyx_t_12) {
+          __Pyx_ErrRestore(0,0,0);
+
+          /* "frigate/video/detect_cython.pyx":434
+ *                 stationary_interval = camera_config.detect.stationary.interval
+ *             except Exception:
+ *                 stationary_threshold = 30             # <<<<<<<<<<<<<<
+ *                 stationary_interval = 10
+ * 
+*/
+          __Pyx_INCREF(__pyx_mstate_global->__pyx_int_30);
+          __Pyx_XDECREF_SET(__pyx_v_stationary_threshold, __pyx_mstate_global->__pyx_int_30);
+
+          /* "frigate/video/detect_cython.pyx":435
+ *             except Exception:
+ *                 stationary_threshold = 30
+ *                 stationary_interval = 10             # <<<<<<<<<<<<<<
+ * 
+ *             if stationary_frame_counter == stationary_interval:
+*/
+          __Pyx_INCREF(__pyx_mstate_global->__pyx_int_10);
+          __Pyx_XDECREF_SET(__pyx_v_stationary_interval, __pyx_mstate_global->__pyx_int_10);
+          goto __pyx_L163_exception_handled;
+        }
+        goto __pyx_L164_except_error;
+
+        /* "frigate/video/detect_cython.pyx":430
+ *             # Stationary object detection
+ *             stationary_object_ids = set()
+ *             try:             # <<<<<<<<<<<<<<
+ *                 stationary_threshold = camera_config.detect.stationary.threshold
+ *                 stationary_interval = camera_config.detect.stationary.interval
+*/
+        __pyx_L164_except_error:;
+        __Pyx_XGIVEREF(__pyx_t_9);
+        __Pyx_XGIVEREF(__pyx_t_8);
+        __Pyx_XGIVEREF(__pyx_t_7);
+        __Pyx_ExceptionReset(__pyx_t_9, __pyx_t_8, __pyx_t_7);
+        goto __pyx_L1_error;
+        __pyx_L163_exception_handled:;
+        __Pyx_XGIVEREF(__pyx_t_9);
+        __Pyx_XGIVEREF(__pyx_t_8);
+        __Pyx_XGIVEREF(__pyx_t_7);
+        __Pyx_ExceptionReset(__pyx_t_9, __pyx_t_8, __pyx_t_7);
+        __pyx_L169_try_end:;
+      }
+
+      /* "frigate/video/detect_cython.pyx":437
+ *                 stationary_interval = 10
+ * 
+ *             if stationary_frame_counter == stationary_interval:             # <<<<<<<<<<<<<<
+ *                 stationary_frame_counter = 0
+ *             else:
+*/
+      __pyx_t_4 = __Pyx_PyLong_From_int(__pyx_v_stationary_frame_counter); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 437, __pyx_L1_error)
+      __Pyx_GOTREF(__pyx_t_4);
+      __pyx_t_2 = PyObject_RichCompare(__pyx_t_4, __pyx_v_stationary_interval, Py_EQ); __Pyx_XGOTREF(__pyx_t_2); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 437, __pyx_L1_error)
+      __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
+      __pyx_t_14 = __Pyx_PyObject_IsTrue(__pyx_t_2); if (unlikely((__pyx_t_14 < 0))) __PYX_ERR(0, 437, __pyx_L1_error)
+      __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
+      if (__pyx_t_14) {
+
+        /* "frigate/video/detect_cython.pyx":438
+ * 
+ *             if stationary_frame_counter == stationary_interval:
+ *                 stationary_frame_counter = 0             # <<<<<<<<<<<<<<
+ *             else:
+ *                 stationary_frame_counter += 1
+*/
+        __pyx_v_stationary_frame_counter = 0;
+
+        /* "frigate/video/detect_cython.pyx":437
+ *                 stationary_interval = 10
+ * 
+ *             if stationary_frame_counter == stationary_interval:             # <<<<<<<<<<<<<<
+ *                 stationary_frame_counter = 0
+ *             else:
+*/
+        goto __pyx_L172;
+      }
+
+      /* "frigate/video/detect_cython.pyx":440
+ *                 stationary_frame_counter = 0
+ *             else:
+ *                 stationary_frame_counter += 1             # <<<<<<<<<<<<<<
+ * 
+ *             # Get motion boxes for check
+*/
+      /*else*/ {
+        __pyx_v_stationary_frame_counter = (__pyx_v_stationary_frame_counter + 1);
+      }
+      __pyx_L172:;
+
+      /* "frigate/video/detect_cython.pyx":443
+ * 
+ *             # Get motion boxes for check
+ *             try:             # <<<<<<<<<<<<<<
+ *                 is_calibrating = motion_detector.is_calibrating()
+ *                 motion_boxes_for_check = [] if is_calibrating else motion_boxes
+*/
+      {
+        __Pyx_PyThreadState_declare
+        __Pyx_PyThreadState_assign
+        __Pyx_ExceptionSave(&__pyx_t_7, &__pyx_t_8, &__pyx_t_9);
+        __Pyx_XGOTREF(__pyx_t_7);
+        __Pyx_XGOTREF(__pyx_t_8);
+        __Pyx_XGOTREF(__pyx_t_9);
+        /*try:*/ {
+
+          /* "frigate/video/detect_cython.pyx":444
+ *             # Get motion boxes for check
+ *             try:
+ *                 is_calibrating = motion_detector.is_calibrating()             # <<<<<<<<<<<<<<
+ *                 motion_boxes_for_check = [] if is_calibrating else motion_boxes
+ *             except Exception:
+*/
+          __pyx_t_4 = __pyx_v_motion_detector;
+          __Pyx_INCREF(__pyx_t_4);
+          __pyx_t_3 = 0;
+          {
+            PyObject *__pyx_callargs[2] = {__pyx_t_4, NULL};
+            __pyx_t_2 = __Pyx_PyObject_FastCallMethod((PyObject*)__pyx_mstate_global->__pyx_n_u_is_calibrating, __pyx_callargs+__pyx_t_3, (1-__pyx_t_3) | (1*__Pyx_PY_VECTORCALL_ARGUMENTS_OFFSET));
+            __Pyx_XDECREF(__pyx_t_4); __pyx_t_4 = 0;
+            if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 444, __pyx_L173_error)
+            __Pyx_GOTREF(__pyx_t_2);
+          }
+          __Pyx_XDECREF_SET(__pyx_v_is_calibrating, __pyx_t_2);
+          __pyx_t_2 = 0;
+
+          /* "frigate/video/detect_cython.pyx":445
+ *             try:
+ *                 is_calibrating = motion_detector.is_calibrating()
+ *                 motion_boxes_for_check = [] if is_calibrating else motion_boxes             # <<<<<<<<<<<<<<
+ *             except Exception:
+ *                 motion_boxes_for_check = []
+*/
+          __pyx_t_14 = __Pyx_PyObject_IsTrue(__pyx_v_is_calibrating); if (unlikely((__pyx_t_14 < 0))) __PYX_ERR(0, 445, __pyx_L173_error)
+          if (__pyx_t_14) {
+            __pyx_t_4 = PyList_New(0); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 445, __pyx_L173_error)
+            __Pyx_GOTREF(__pyx_t_4);
+            __pyx_t_2 = __pyx_t_4;
+            __pyx_t_4 = 0;
+          } else {
+            __Pyx_INCREF(__pyx_v_motion_boxes);
+            __pyx_t_2 = __pyx_v_motion_boxes;
+          }
+          __Pyx_XDECREF_SET(__pyx_v_motion_boxes_for_check, __pyx_t_2);
+          __pyx_t_2 = 0;
+
+          /* "frigate/video/detect_cython.pyx":443
+ * 
+ *             # Get motion boxes for check
+ *             try:             # <<<<<<<<<<<<<<
+ *                 is_calibrating = motion_detector.is_calibrating()
+ *                 motion_boxes_for_check = [] if is_calibrating else motion_boxes
+*/
+        }
+        __Pyx_XDECREF(__pyx_t_7); __pyx_t_7 = 0;
+        __Pyx_XDECREF(__pyx_t_8); __pyx_t_8 = 0;
+        __Pyx_XDECREF(__pyx_t_9); __pyx_t_9 = 0;
+        goto __pyx_L180_try_end;
+        __pyx_L173_error:;
+        __Pyx_XDECREF(__pyx_t_1); __pyx_t_1 = 0;
+        __Pyx_XDECREF(__pyx_t_2); __pyx_t_2 = 0;
+        __Pyx_XDECREF(__pyx_t_4); __pyx_t_4 = 0;
+        __Pyx_XDECREF(__pyx_t_5); __pyx_t_5 = 0;
+        __Pyx_XDECREF(__pyx_t_6); __pyx_t_6 = 0;
+
+        /* "frigate/video/detect_cython.pyx":446
+ *                 is_calibrating = motion_detector.is_calibrating()
+ *                 motion_boxes_for_check = [] if is_calibrating else motion_boxes
+ *             except Exception:             # <<<<<<<<<<<<<<
+ *                 motion_boxes_for_check = []
+ * 
+*/
+        __pyx_t_12 = __Pyx_PyErr_ExceptionMatches(((PyObject *)(((PyTypeObject*)PyExc_Exception))));
+        if (__pyx_t_12) {
+          __Pyx_AddTraceback("frigate.video.detect_cython.cython_process_frames", __pyx_clineno, __pyx_lineno, __pyx_filename);
+          if (__Pyx_GetException(&__pyx_t_2, &__pyx_t_4, &__pyx_t_6) < 0) __PYX_ERR(0, 446, __pyx_L175_except_error)
+          __Pyx_XGOTREF(__pyx_t_2);
+          __Pyx_XGOTREF(__pyx_t_4);
+          __Pyx_XGOTREF(__pyx_t_6);
+
+          /* "frigate/video/detect_cython.pyx":447
+ *                 motion_boxes_for_check = [] if is_calibrating else motion_boxes
+ *             except Exception:
+ *                 motion_boxes_for_check = []             # <<<<<<<<<<<<<<
+ * 
+ *             # Call Cython stationary detection
+*/
+          __pyx_t_5 = PyList_New(0); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 447, __pyx_L175_except_error)
+          __Pyx_GOTREF(__pyx_t_5);
+          __Pyx_XDECREF_SET(__pyx_v_motion_boxes_for_check, __pyx_t_5);
+          __pyx_t_5 = 0;
+          __Pyx_XDECREF(__pyx_t_2); __pyx_t_2 = 0;
+          __Pyx_XDECREF(__pyx_t_4); __pyx_t_4 = 0;
+          __Pyx_XDECREF(__pyx_t_6); __pyx_t_6 = 0;
+          goto __pyx_L174_exception_handled;
+        }
+        goto __pyx_L175_except_error;
+
+        /* "frigate/video/detect_cython.pyx":443
+ * 
+ *             # Get motion boxes for check
+ *             try:             # <<<<<<<<<<<<<<
+ *                 is_calibrating = motion_detector.is_calibrating()
+ *                 motion_boxes_for_check = [] if is_calibrating else motion_boxes
+*/
+        __pyx_L175_except_error:;
+        __Pyx_XGIVEREF(__pyx_t_7);
+        __Pyx_XGIVEREF(__pyx_t_8);
+        __Pyx_XGIVEREF(__pyx_t_9);
+        __Pyx_ExceptionReset(__pyx_t_7, __pyx_t_8, __pyx_t_9);
+        goto __pyx_L1_error;
+        __pyx_L174_exception_handled:;
+        __Pyx_XGIVEREF(__pyx_t_7);
+        __Pyx_XGIVEREF(__pyx_t_8);
+        __Pyx_XGIVEREF(__pyx_t_9);
+        __Pyx_ExceptionReset(__pyx_t_7, __pyx_t_8, __pyx_t_9);
+        __pyx_L180_try_end:;
+      }
+
+      /* "frigate/video/detect_cython.pyx":450
+ * 
+ *             # Call Cython stationary detection
+ *             try:             # <<<<<<<<<<<<<<
+ *                 from frigate.video.detect_cython import cython_process_tracked_objects
+ *                 stationary_object_ids, tracked_object_boxes, detections, _ = (
+*/
+      {
+        __Pyx_PyThreadState_declare
+        __Pyx_PyThreadState_assign
+        __Pyx_ExceptionSave(&__pyx_t_9, &__pyx_t_8, &__pyx_t_7);
+        __Pyx_XGOTREF(__pyx_t_9);
+        __Pyx_XGOTREF(__pyx_t_8);
+        __Pyx_XGOTREF(__pyx_t_7);
+        /*try:*/ {
+
+          /* "frigate/video/detect_cython.pyx":451
+ *             # Call Cython stationary detection
+ *             try:
+ *                 from frigate.video.detect_cython import cython_process_tracked_objects             # <<<<<<<<<<<<<<
+ *                 stationary_object_ids, tracked_object_boxes, detections, _ = (
+ *                     cython_process_tracked_objects(
+*/
+          {
+            PyObject* const __pyx_imported_names[] = {__pyx_mstate_global->__pyx_n_u_cython_process_tracked_objects};
+            __pyx_t_10 = __Pyx_Import(__pyx_mstate_global->__pyx_n_u_frigate_video_detect_cython, __pyx_imported_names, 1, NULL, 0); if (unlikely(!__pyx_t_10)) __PYX_ERR(0, 451, __pyx_L183_error)
+          }
+          __pyx_t_6 = __pyx_t_10;
+          __Pyx_GOTREF(__pyx_t_6);
+          {
+            PyObject* const __pyx_imported_names[] = {__pyx_mstate_global->__pyx_n_u_cython_process_tracked_objects};
+            __pyx_t_11 = 0; {
+              __pyx_t_4 = __Pyx_ImportFrom(__pyx_t_6, __pyx_imported_names[__pyx_t_11]); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 451, __pyx_L183_error)
+              __Pyx_GOTREF(__pyx_t_4);
+              switch (__pyx_t_11) {
+                case 0:
+                __Pyx_INCREF(__pyx_t_4);
+                __Pyx_XDECREF_SET(__pyx_v_cython_process_tracked_objects, __pyx_t_4);
+                break;
+                default:;
+              }
+              __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
+            }
+          }
+          __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
+
+          /* "frigate/video/detect_cython.pyx":453
+ *                 from frigate.video.detect_cython import cython_process_tracked_objects
+ *                 stationary_object_ids, tracked_object_boxes, detections, _ = (
+ *                     cython_process_tracked_objects(             # <<<<<<<<<<<<<<
+ *                         object_tracker.tracked_objects,
+ *                         motion_boxes_for_check,
+*/
+          __pyx_t_4 = NULL;
+          __Pyx_INCREF(__pyx_v_cython_process_tracked_objects);
+          __pyx_t_2 = __pyx_v_cython_process_tracked_objects; 
+
+          /* "frigate/video/detect_cython.pyx":454
+ *                 stationary_object_ids, tracked_object_boxes, detections, _ = (
+ *                     cython_process_tracked_objects(
+ *                         object_tracker.tracked_objects,             # <<<<<<<<<<<<<<
+ *                         motion_boxes_for_check,
+ *                         stationary_object_ids,
+*/
+          __pyx_t_5 = __Pyx_PyObject_GetAttrStr(__pyx_v_object_tracker, __pyx_mstate_global->__pyx_n_u_tracked_objects); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 454, __pyx_L183_error)
+          __Pyx_GOTREF(__pyx_t_5);
+
+          /* "frigate/video/detect_cython.pyx":458
+ *                         stationary_object_ids,
+ *                         stationary_threshold,
+ *                         object_tracker.disappeared,             # <<<<<<<<<<<<<<
+ *                         None,  # intersects_any
+ *                         None,
+*/
+          __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_v_object_tracker, __pyx_mstate_global->__pyx_n_u_disappeared); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 458, __pyx_L183_error)
+          __Pyx_GOTREF(__pyx_t_1);
+
+          /* "frigate/video/detect_cython.pyx":461
+ *                         None,  # intersects_any
+ *                         None,
+ *                         None,             # <<<<<<<<<<<<<<
+ *                         set(),
+ *                         None,
+*/
+          __pyx_t_17 = PySet_New(0); if (unlikely(!__pyx_t_17)) __PYX_ERR(0, 462, __pyx_L183_error)
+          __Pyx_GOTREF(__pyx_t_17);
+
+          /* "frigate/video/detect_cython.pyx":463
+ *                         None,
+ *                         set(),
+ *                         None,             # <<<<<<<<<<<<<<
+ *                     )
+ *                 )
+*/
+          __pyx_t_3 = 1;
+          #if CYTHON_UNPACK_METHODS
+          if (unlikely(PyMethod_Check(__pyx_t_2))) {
+            __pyx_t_4 = PyMethod_GET_SELF(__pyx_t_2);
+            assert(__pyx_t_4);
+            PyObject* __pyx__function = PyMethod_GET_FUNCTION(__pyx_t_2);
+            __Pyx_INCREF(__pyx_t_4);
+            __Pyx_INCREF(__pyx__function);
+            __Pyx_DECREF_SET(__pyx_t_2, __pyx__function);
+            __pyx_t_3 = 0;
+          }
+          #endif
+          {
+            PyObject *__pyx_callargs[11] = {__pyx_t_4, __pyx_t_5, __pyx_v_motion_boxes_for_check, __pyx_v_stationary_object_ids, __pyx_v_stationary_threshold, __pyx_t_1, Py_None, Py_None, Py_None, __pyx_t_17, Py_None};
+            __pyx_t_6 = __Pyx_PyObject_FastCall((PyObject*)__pyx_t_2, __pyx_callargs+__pyx_t_3, (11-__pyx_t_3) | (__pyx_t_3*__Pyx_PY_VECTORCALL_ARGUMENTS_OFFSET));
+            __Pyx_XDECREF(__pyx_t_4); __pyx_t_4 = 0;
+            __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
+            __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
+            __Pyx_DECREF(__pyx_t_17); __pyx_t_17 = 0;
+            __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
+            if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 453, __pyx_L183_error)
+            __Pyx_GOTREF(__pyx_t_6);
+          }
+          if ((likely(PyTuple_CheckExact(__pyx_t_6))) || (PyList_CheckExact(__pyx_t_6))) {
+            PyObject* sequence = __pyx_t_6;
+            Py_ssize_t size = __Pyx_PySequence_SIZE(sequence);
+            if (unlikely(size != 4)) {
+              if (size > 4) __Pyx_RaiseTooManyValuesError(4);
+              else if (size >= 0) __Pyx_RaiseNeedMoreValuesError(size);
+              __PYX_ERR(0, 452, __pyx_L183_error)
+            }
+            #if CYTHON_ASSUME_SAFE_MACROS && !CYTHON_AVOID_BORROWED_REFS
+            if (likely(PyTuple_CheckExact(sequence))) {
+              __pyx_t_2 = PyTuple_GET_ITEM(sequence, 0);
+              __Pyx_INCREF(__pyx_t_2);
+              __pyx_t_17 = PyTuple_GET_ITEM(sequence, 1);
+              __Pyx_INCREF(__pyx_t_17);
+              __pyx_t_1 = PyTuple_GET_ITEM(sequence, 2);
+              __Pyx_INCREF(__pyx_t_1);
+              __pyx_t_5 = PyTuple_GET_ITEM(sequence, 3);
+              __Pyx_INCREF(__pyx_t_5);
+            } else {
+              __pyx_t_2 = __Pyx_PyList_GET_ITEM_REF(sequence, 0, __Pyx_ReferenceSharing_SharedReference);
+              if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 452, __pyx_L183_error)
+              __Pyx_XGOTREF(__pyx_t_2);
+              __pyx_t_17 = __Pyx_PyList_GET_ITEM_REF(sequence, 1, __Pyx_ReferenceSharing_SharedReference);
+              if (unlikely(!__pyx_t_17)) __PYX_ERR(0, 452, __pyx_L183_error)
+              __Pyx_XGOTREF(__pyx_t_17);
+              __pyx_t_1 = __Pyx_PyList_GET_ITEM_REF(sequence, 2, __Pyx_ReferenceSharing_SharedReference);
+              if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 452, __pyx_L183_error)
+              __Pyx_XGOTREF(__pyx_t_1);
+              __pyx_t_5 = __Pyx_PyList_GET_ITEM_REF(sequence, 3, __Pyx_ReferenceSharing_SharedReference);
+              if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 452, __pyx_L183_error)
+              __Pyx_XGOTREF(__pyx_t_5);
+            }
+            #else
+            {
+              Py_ssize_t i;
+              PyObject** temps[4] = {&__pyx_t_2,&__pyx_t_17,&__pyx_t_1,&__pyx_t_5};
+              for (i=0; i < 4; i++) {
+                PyObject* item = __Pyx_PySequence_ITEM(sequence, i); if (unlikely(!item)) __PYX_ERR(0, 452, __pyx_L183_error)
+                __Pyx_GOTREF(item);
+                *(temps[i]) = item;
+              }
+            }
+            #endif
+            __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
+          } else {
+            Py_ssize_t index = -1;
+            PyObject** temps[4] = {&__pyx_t_2,&__pyx_t_17,&__pyx_t_1,&__pyx_t_5};
+            __pyx_t_4 = PyObject_GetIter(__pyx_t_6); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 452, __pyx_L183_error)
+            __Pyx_GOTREF(__pyx_t_4);
+            __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
+            __pyx_t_16 = (CYTHON_COMPILING_IN_LIMITED_API) ? PyIter_Next : __Pyx_PyObject_GetIterNextFunc(__pyx_t_4);
+            for (index=0; index < 4; index++) {
+              PyObject* item = __pyx_t_16(__pyx_t_4); if (unlikely(!item)) goto __pyx_L191_unpacking_failed;
+              __Pyx_GOTREF(item);
+              *(temps[index]) = item;
+            }
+            if (__Pyx_IternextUnpackEndCheck(__pyx_t_16(__pyx_t_4), 4) < (0)) __PYX_ERR(0, 452, __pyx_L183_error)
+            __pyx_t_16 = NULL;
+            __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
+            goto __pyx_L192_unpacking_done;
+            __pyx_L191_unpacking_failed:;
+            __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
+            __pyx_t_16 = NULL;
+            if (__Pyx_IterFinish() == 0) __Pyx_RaiseNeedMoreValuesError(index);
+            __PYX_ERR(0, 452, __pyx_L183_error)
+            __pyx_L192_unpacking_done:;
+          }
+
+          /* "frigate/video/detect_cython.pyx":452
+ *             try:
+ *                 from frigate.video.detect_cython import cython_process_tracked_objects
+ *                 stationary_object_ids, tracked_object_boxes, detections, _ = (             # <<<<<<<<<<<<<<
+ *                     cython_process_tracked_objects(
+ *                         object_tracker.tracked_objects,
+*/
+          __Pyx_DECREF_SET(__pyx_v_stationary_object_ids, __pyx_t_2);
+          __pyx_t_2 = 0;
+          __Pyx_XDECREF_SET(__pyx_v_tracked_object_boxes, __pyx_t_17);
+          __pyx_t_17 = 0;
+          __Pyx_XDECREF_SET(__pyx_v_detections, __pyx_t_1);
+          __pyx_t_1 = 0;
+          __Pyx_XDECREF_SET(__pyx_v__, __pyx_t_5);
+          __pyx_t_5 = 0;
+
+          /* "frigate/video/detect_cython.pyx":466
+ *                     )
+ *                 )
+ *                 object_boxes = tracked_object_boxes + object_tracker.untracked_object_boxes             # <<<<<<<<<<<<<<
+ *             except Exception:
+ *                 object_boxes = []
+*/
+          __pyx_t_6 = __Pyx_PyObject_GetAttrStr(__pyx_v_object_tracker, __pyx_mstate_global->__pyx_n_u_untracked_object_boxes); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 466, __pyx_L183_error)
+          __Pyx_GOTREF(__pyx_t_6);
+          __pyx_t_5 = PyNumber_Add(__pyx_v_tracked_object_boxes, __pyx_t_6); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 466, __pyx_L183_error)
+          __Pyx_GOTREF(__pyx_t_5);
+          __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
+          __Pyx_XDECREF_SET(__pyx_v_object_boxes, __pyx_t_5);
+          __pyx_t_5 = 0;
+
+          /* "frigate/video/detect_cython.pyx":450
+ * 
+ *             # Call Cython stationary detection
+ *             try:             # <<<<<<<<<<<<<<
+ *                 from frigate.video.detect_cython import cython_process_tracked_objects
+ *                 stationary_object_ids, tracked_object_boxes, detections, _ = (
+*/
+        }
+        __Pyx_XDECREF(__pyx_t_9); __pyx_t_9 = 0;
+        __Pyx_XDECREF(__pyx_t_8); __pyx_t_8 = 0;
+        __Pyx_XDECREF(__pyx_t_7); __pyx_t_7 = 0;
+        goto __pyx_L190_try_end;
+        __pyx_L183_error:;
+        __Pyx_XDECREF(__pyx_t_1); __pyx_t_1 = 0;
+        __Pyx_XDECREF(__pyx_t_17); __pyx_t_17 = 0;
+        __Pyx_XDECREF(__pyx_t_2); __pyx_t_2 = 0;
+        __Pyx_XDECREF(__pyx_t_4); __pyx_t_4 = 0;
+        __Pyx_XDECREF(__pyx_t_5); __pyx_t_5 = 0;
+        __Pyx_XDECREF(__pyx_t_6); __pyx_t_6 = 0;
+
+        /* "frigate/video/detect_cython.pyx":467
+ *                 )
+ *                 object_boxes = tracked_object_boxes + object_tracker.untracked_object_boxes
+ *             except Exception:             # <<<<<<<<<<<<<<
+ *                 object_boxes = []
+ *                 detections = []
+*/
+        __pyx_t_12 = __Pyx_PyErr_ExceptionMatches(((PyObject *)(((PyTypeObject*)PyExc_Exception))));
+        if (__pyx_t_12) {
+          __Pyx_AddTraceback("frigate.video.detect_cython.cython_process_frames", __pyx_clineno, __pyx_lineno, __pyx_filename);
+          if (__Pyx_GetException(&__pyx_t_5, &__pyx_t_6, &__pyx_t_1) < 0) __PYX_ERR(0, 467, __pyx_L185_except_error)
+          __Pyx_XGOTREF(__pyx_t_5);
+          __Pyx_XGOTREF(__pyx_t_6);
+          __Pyx_XGOTREF(__pyx_t_1);
+
+          /* "frigate/video/detect_cython.pyx":468
+ *                 object_boxes = tracked_object_boxes + object_tracker.untracked_object_boxes
+ *             except Exception:
+ *                 object_boxes = []             # <<<<<<<<<<<<<<
+ *                 detections = []
+ *                 stationary_object_ids = set()
+*/
+          __pyx_t_17 = PyList_New(0); if (unlikely(!__pyx_t_17)) __PYX_ERR(0, 468, __pyx_L185_except_error)
+          __Pyx_GOTREF(__pyx_t_17);
+          __Pyx_XDECREF_SET(__pyx_v_object_boxes, __pyx_t_17);
+          __pyx_t_17 = 0;
+
+          /* "frigate/video/detect_cython.pyx":469
+ *             except Exception:
+ *                 object_boxes = []
+ *                 detections = []             # <<<<<<<<<<<<<<
+ *                 stationary_object_ids = set()
+ * 
+*/
+          __pyx_t_17 = PyList_New(0); if (unlikely(!__pyx_t_17)) __PYX_ERR(0, 469, __pyx_L185_except_error)
+          __Pyx_GOTREF(__pyx_t_17);
+          __Pyx_XDECREF_SET(__pyx_v_detections, __pyx_t_17);
+          __pyx_t_17 = 0;
+
+          /* "frigate/video/detect_cython.pyx":470
+ *                 object_boxes = []
+ *                 detections = []
+ *                 stationary_object_ids = set()             # <<<<<<<<<<<<<<
+ * 
+ *             # Get consolidated regions for tracked objects
+*/
+          __pyx_t_17 = PySet_New(0); if (unlikely(!__pyx_t_17)) __PYX_ERR(0, 470, __pyx_L185_except_error)
+          __Pyx_GOTREF(__pyx_t_17);
+          __Pyx_DECREF_SET(__pyx_v_stationary_object_ids, __pyx_t_17);
+          __pyx_t_17 = 0;
+          __Pyx_XDECREF(__pyx_t_5); __pyx_t_5 = 0;
+          __Pyx_XDECREF(__pyx_t_6); __pyx_t_6 = 0;
+          __Pyx_XDECREF(__pyx_t_1); __pyx_t_1 = 0;
+          goto __pyx_L184_exception_handled;
+        }
+        goto __pyx_L185_except_error;
+
+        /* "frigate/video/detect_cython.pyx":450
+ * 
+ *             # Call Cython stationary detection
+ *             try:             # <<<<<<<<<<<<<<
+ *                 from frigate.video.detect_cython import cython_process_tracked_objects
+ *                 stationary_object_ids, tracked_object_boxes, detections, _ = (
+*/
+        __pyx_L185_except_error:;
+        __Pyx_XGIVEREF(__pyx_t_9);
+        __Pyx_XGIVEREF(__pyx_t_8);
+        __Pyx_XGIVEREF(__pyx_t_7);
+        __Pyx_ExceptionReset(__pyx_t_9, __pyx_t_8, __pyx_t_7);
+        goto __pyx_L1_error;
+        __pyx_L184_exception_handled:;
+        __Pyx_XGIVEREF(__pyx_t_9);
+        __Pyx_XGIVEREF(__pyx_t_8);
+        __Pyx_XGIVEREF(__pyx_t_7);
+        __Pyx_ExceptionReset(__pyx_t_9, __pyx_t_8, __pyx_t_7);
+        __pyx_L190_try_end:;
+      }
+
+      /* "frigate/video/detect_cython.pyx":473
+ * 
+ *             # Get consolidated regions for tracked objects
+ *             try:             # <<<<<<<<<<<<<<
+ *                 from frigate.util.object import get_cluster_candidates, get_cluster_region
+ *                 regions = [
+*/
+      {
+        __Pyx_PyThreadState_declare
+        __Pyx_PyThreadState_assign
+        __Pyx_ExceptionSave(&__pyx_t_7, &__pyx_t_8, &__pyx_t_9);
+        __Pyx_XGOTREF(__pyx_t_7);
+        __Pyx_XGOTREF(__pyx_t_8);
+        __Pyx_XGOTREF(__pyx_t_9);
+        /*try:*/ {
+
+          /* "frigate/video/detect_cython.pyx":474
+ *             # Get consolidated regions for tracked objects
+ *             try:
+ *                 from frigate.util.object import get_cluster_candidates, get_cluster_region             # <<<<<<<<<<<<<<
+ *                 regions = [
+ *                     get_cluster_region(
+*/
+          {
+            PyObject* const __pyx_imported_names[] = {__pyx_mstate_global->__pyx_n_u_get_cluster_candidates,__pyx_mstate_global->__pyx_n_u_get_cluster_region};
+            __pyx_t_10 = __Pyx_Import(__pyx_mstate_global->__pyx_n_u_frigate_util_object, __pyx_imported_names, 2, NULL, 0); if (unlikely(!__pyx_t_10)) __PYX_ERR(0, 474, __pyx_L195_error)
+          }
+          __pyx_t_1 = __pyx_t_10;
+          __Pyx_GOTREF(__pyx_t_1);
+          {
+            PyObject* const __pyx_imported_names[] = {__pyx_mstate_global->__pyx_n_u_get_cluster_candidates,__pyx_mstate_global->__pyx_n_u_get_cluster_region};
+            for (__pyx_t_11=0; __pyx_t_11 < 2; __pyx_t_11++) {
+              __pyx_t_6 = __Pyx_ImportFrom(__pyx_t_1, __pyx_imported_names[__pyx_t_11]); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 474, __pyx_L195_error)
+              __Pyx_GOTREF(__pyx_t_6);
+              switch (__pyx_t_11) {
+                case 0:
+                __Pyx_INCREF(__pyx_t_6);
+                __Pyx_XDECREF_SET(__pyx_v_get_cluster_candidates, __pyx_t_6);
+                break;
+                case 1:
+                __Pyx_INCREF(__pyx_t_6);
+                __Pyx_XDECREF_SET(__pyx_v_get_cluster_region, __pyx_t_6);
+                break;
+                default:;
+              }
+              __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
+            }
+          }
+          __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
+
+          /* "frigate/video/detect_cython.pyx":475
+ *             try:
+ *                 from frigate.util.object import get_cluster_candidates, get_cluster_region
+ *                 regions = [             # <<<<<<<<<<<<<<
+ *                     get_cluster_region(
+ *                         frame_shape, region_min_size, candidate, object_boxes
+*/
+          { /* enter inner scope */
+            __pyx_t_1 = PyList_New(0); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 475, __pyx_L205_error)
+            __Pyx_GOTREF(__pyx_t_1);
+
+            /* "frigate/video/detect_cython.pyx":479
+ *                         frame_shape, region_min_size, candidate, object_boxes
+ *                     )
+ *                     for candidate in get_cluster_candidates(             # <<<<<<<<<<<<<<
+ *                         frame_shape, region_min_size, object_boxes
+ *                     )
+*/
+            __pyx_t_5 = NULL;
+            __Pyx_INCREF(__pyx_v_get_cluster_candidates);
+            __pyx_t_17 = __pyx_v_get_cluster_candidates; 
+
+            /* "frigate/video/detect_cython.pyx":480
+ *                     )
+ *                     for candidate in get_cluster_candidates(
+ *                         frame_shape, region_min_size, object_boxes             # <<<<<<<<<<<<<<
+ *                     )
+ *                 ]
+*/
+            __pyx_t_2 = __Pyx_PyLong_From_int(__pyx_v_region_min_size); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 480, __pyx_L205_error)
+            __Pyx_GOTREF(__pyx_t_2);
+            __pyx_t_3 = 1;
+            #if CYTHON_UNPACK_METHODS
+            if (unlikely(PyMethod_Check(__pyx_t_17))) {
+              __pyx_t_5 = PyMethod_GET_SELF(__pyx_t_17);
+              assert(__pyx_t_5);
+              PyObject* __pyx__function = PyMethod_GET_FUNCTION(__pyx_t_17);
+              __Pyx_INCREF(__pyx_t_5);
+              __Pyx_INCREF(__pyx__function);
+              __Pyx_DECREF_SET(__pyx_t_17, __pyx__function);
+              __pyx_t_3 = 0;
+            }
+            #endif
+            {
+              PyObject *__pyx_callargs[4] = {__pyx_t_5, __pyx_v_frame_shape, __pyx_t_2, __pyx_v_object_boxes};
+              __pyx_t_6 = __Pyx_PyObject_FastCall((PyObject*)__pyx_t_17, __pyx_callargs+__pyx_t_3, (4-__pyx_t_3) | (__pyx_t_3*__Pyx_PY_VECTORCALL_ARGUMENTS_OFFSET));
+              __Pyx_XDECREF(__pyx_t_5); __pyx_t_5 = 0;
+              __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
+              __Pyx_DECREF(__pyx_t_17); __pyx_t_17 = 0;
+              if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 479, __pyx_L205_error)
+              __Pyx_GOTREF(__pyx_t_6);
+            }
+
+            /* "frigate/video/detect_cython.pyx":479
+ *                         frame_shape, region_min_size, candidate, object_boxes
+ *                     )
+ *                     for candidate in get_cluster_candidates(             # <<<<<<<<<<<<<<
+ *                         frame_shape, region_min_size, object_boxes
+ *                     )
+*/
+            if (likely(PyList_CheckExact(__pyx_t_6)) || PyTuple_CheckExact(__pyx_t_6)) {
+              __pyx_t_17 = __pyx_t_6; __Pyx_INCREF(__pyx_t_17);
+              __pyx_t_11 = 0;
+              __pyx_t_15 = NULL;
+            } else {
+              __pyx_t_11 = -1; __pyx_t_17 = PyObject_GetIter(__pyx_t_6); if (unlikely(!__pyx_t_17)) __PYX_ERR(0, 479, __pyx_L205_error)
+              __Pyx_GOTREF(__pyx_t_17);
+              __pyx_t_15 = (CYTHON_COMPILING_IN_LIMITED_API) ? PyIter_Next : __Pyx_PyObject_GetIterNextFunc(__pyx_t_17); if (unlikely(!__pyx_t_15)) __PYX_ERR(0, 479, __pyx_L205_error)
+            }
+            __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
+            for (;;) {
+              if (likely(!__pyx_t_15)) {
+                if (likely(PyList_CheckExact(__pyx_t_17))) {
+                  {
+                    Py_ssize_t __pyx_temp = __Pyx_PyList_GET_SIZE(__pyx_t_17);
+                    #if !CYTHON_ASSUME_SAFE_SIZE
+                    if (unlikely((__pyx_temp < 0))) __PYX_ERR(0, 479, __pyx_L205_error)
+                    #endif
+                    if (__pyx_t_11 >= __pyx_temp) break;
+                  }
+                  __pyx_t_6 = __Pyx_PyList_GET_ITEM_REF(__pyx_t_17, __pyx_t_11, __Pyx_ReferenceSharing_OwnStrongReference);
+                  ++__pyx_t_11;
+                } else {
+                  {
+                    Py_ssize_t __pyx_temp = __Pyx_PyTuple_GET_SIZE(__pyx_t_17);
+                    #if !CYTHON_ASSUME_SAFE_SIZE
+                    if (unlikely((__pyx_temp < 0))) __PYX_ERR(0, 479, __pyx_L205_error)
+                    #endif
+                    if (__pyx_t_11 >= __pyx_temp) break;
+                  }
+                  #if CYTHON_ASSUME_SAFE_MACROS && !CYTHON_AVOID_BORROWED_REFS
+                  __pyx_t_6 = __Pyx_NewRef(PyTuple_GET_ITEM(__pyx_t_17, __pyx_t_11));
+                  #else
+                  __pyx_t_6 = __Pyx_PySequence_ITEM(__pyx_t_17, __pyx_t_11);
+                  #endif
+                  ++__pyx_t_11;
+                }
+                if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 479, __pyx_L205_error)
+              } else {
+                __pyx_t_6 = __pyx_t_15(__pyx_t_17);
+                if (unlikely(!__pyx_t_6)) {
+                  PyObject* exc_type = PyErr_Occurred();
+                  if (exc_type) {
+                    if (unlikely(!__Pyx_PyErr_GivenExceptionMatches(exc_type, PyExc_StopIteration))) __PYX_ERR(0, 479, __pyx_L205_error)
+                    PyErr_Clear();
+                  }
+                  break;
+                }
+              }
+              __Pyx_GOTREF(__pyx_t_6);
+              __Pyx_XDECREF_SET(__pyx_8genexpr2__pyx_v_candidate, __pyx_t_6);
+              __pyx_t_6 = 0;
+
+              /* "frigate/video/detect_cython.pyx":476
+ *                 from frigate.util.object import get_cluster_candidates, get_cluster_region
+ *                 regions = [
+ *                     get_cluster_region(             # <<<<<<<<<<<<<<
+ *                         frame_shape, region_min_size, candidate, object_boxes
+ *                     )
+*/
+              __pyx_t_2 = NULL;
+              __Pyx_INCREF(__pyx_v_get_cluster_region);
+              __pyx_t_5 = __pyx_v_get_cluster_region; 
+
+              /* "frigate/video/detect_cython.pyx":477
+ *                 regions = [
+ *                     get_cluster_region(
+ *                         frame_shape, region_min_size, candidate, object_boxes             # <<<<<<<<<<<<<<
+ *                     )
+ *                     for candidate in get_cluster_candidates(
+*/
+              __pyx_t_4 = __Pyx_PyLong_From_int(__pyx_v_region_min_size); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 477, __pyx_L205_error)
+              __Pyx_GOTREF(__pyx_t_4);
+              __pyx_t_3 = 1;
+              #if CYTHON_UNPACK_METHODS
+              if (unlikely(PyMethod_Check(__pyx_t_5))) {
+                __pyx_t_2 = PyMethod_GET_SELF(__pyx_t_5);
+                assert(__pyx_t_2);
+                PyObject* __pyx__function = PyMethod_GET_FUNCTION(__pyx_t_5);
+                __Pyx_INCREF(__pyx_t_2);
+                __Pyx_INCREF(__pyx__function);
+                __Pyx_DECREF_SET(__pyx_t_5, __pyx__function);
+                __pyx_t_3 = 0;
+              }
+              #endif
+              {
+                PyObject *__pyx_callargs[5] = {__pyx_t_2, __pyx_v_frame_shape, __pyx_t_4, __pyx_8genexpr2__pyx_v_candidate, __pyx_v_object_boxes};
+                __pyx_t_6 = __Pyx_PyObject_FastCall((PyObject*)__pyx_t_5, __pyx_callargs+__pyx_t_3, (5-__pyx_t_3) | (__pyx_t_3*__Pyx_PY_VECTORCALL_ARGUMENTS_OFFSET));
+                __Pyx_XDECREF(__pyx_t_2); __pyx_t_2 = 0;
+                __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
+                __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
+                if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 476, __pyx_L205_error)
+                __Pyx_GOTREF(__pyx_t_6);
+              }
+              if (unlikely(__Pyx_ListComp_Append(__pyx_t_1, (PyObject*)__pyx_t_6))) __PYX_ERR(0, 475, __pyx_L205_error)
+              __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
+
+              /* "frigate/video/detect_cython.pyx":479
+ *                         frame_shape, region_min_size, candidate, object_boxes
+ *                     )
+ *                     for candidate in get_cluster_candidates(             # <<<<<<<<<<<<<<
+ *                         frame_shape, region_min_size, object_boxes
+ *                     )
+*/
+            }
+            __Pyx_DECREF(__pyx_t_17); __pyx_t_17 = 0;
+            __Pyx_XDECREF(__pyx_8genexpr2__pyx_v_candidate); __pyx_8genexpr2__pyx_v_candidate = 0;
+            goto __pyx_L209_exit_scope;
+            __pyx_L205_error:;
+            __Pyx_XDECREF(__pyx_8genexpr2__pyx_v_candidate); __pyx_8genexpr2__pyx_v_candidate = 0;
+            goto __pyx_L195_error;
+            __pyx_L209_exit_scope:;
+          } /* exit inner scope */
+          __Pyx_DECREF_SET(__pyx_v_regions, __pyx_t_1);
+          __pyx_t_1 = 0;
+
+          /* "frigate/video/detect_cython.pyx":473
+ * 
+ *             # Get consolidated regions for tracked objects
+ *             try:             # <<<<<<<<<<<<<<
+ *                 from frigate.util.object import get_cluster_candidates, get_cluster_region
+ *                 regions = [
+*/
+        }
+        __Pyx_XDECREF(__pyx_t_7); __pyx_t_7 = 0;
+        __Pyx_XDECREF(__pyx_t_8); __pyx_t_8 = 0;
+        __Pyx_XDECREF(__pyx_t_9); __pyx_t_9 = 0;
+        goto __pyx_L202_try_end;
+        __pyx_L195_error:;
+        __Pyx_XDECREF(__pyx_t_1); __pyx_t_1 = 0;
+        __Pyx_XDECREF(__pyx_t_17); __pyx_t_17 = 0;
+        __Pyx_XDECREF(__pyx_t_2); __pyx_t_2 = 0;
+        __Pyx_XDECREF(__pyx_t_4); __pyx_t_4 = 0;
+        __Pyx_XDECREF(__pyx_t_5); __pyx_t_5 = 0;
+        __Pyx_XDECREF(__pyx_t_6); __pyx_t_6 = 0;
+
+        /* "frigate/video/detect_cython.pyx":483
+ *                     )
+ *                 ]
+ *             except Exception:             # <<<<<<<<<<<<<<
+ *                 regions = []
+ * 
+*/
+        __pyx_t_12 = __Pyx_PyErr_ExceptionMatches(((PyObject *)(((PyTypeObject*)PyExc_Exception))));
+        if (__pyx_t_12) {
+          __Pyx_AddTraceback("frigate.video.detect_cython.cython_process_frames", __pyx_clineno, __pyx_lineno, __pyx_filename);
+          if (__Pyx_GetException(&__pyx_t_1, &__pyx_t_17, &__pyx_t_6) < 0) __PYX_ERR(0, 483, __pyx_L197_except_error)
+          __Pyx_XGOTREF(__pyx_t_1);
+          __Pyx_XGOTREF(__pyx_t_17);
+          __Pyx_XGOTREF(__pyx_t_6);
+
+          /* "frigate/video/detect_cython.pyx":484
+ *                 ]
+ *             except Exception:
+ *                 regions = []             # <<<<<<<<<<<<<<
+ * 
+ *             # Add motion boxes to regions
+*/
+          __pyx_t_5 = PyList_New(0); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 484, __pyx_L197_except_error)
+          __Pyx_GOTREF(__pyx_t_5);
+          __Pyx_DECREF_SET(__pyx_v_regions, __pyx_t_5);
+          __pyx_t_5 = 0;
+          __Pyx_XDECREF(__pyx_t_1); __pyx_t_1 = 0;
+          __Pyx_XDECREF(__pyx_t_17); __pyx_t_17 = 0;
+          __Pyx_XDECREF(__pyx_t_6); __pyx_t_6 = 0;
+          goto __pyx_L196_exception_handled;
+        }
+        goto __pyx_L197_except_error;
+
+        /* "frigate/video/detect_cython.pyx":473
+ * 
+ *             # Get consolidated regions for tracked objects
+ *             try:             # <<<<<<<<<<<<<<
+ *                 from frigate.util.object import get_cluster_candidates, get_cluster_region
+ *                 regions = [
+*/
+        __pyx_L197_except_error:;
+        __Pyx_XGIVEREF(__pyx_t_7);
+        __Pyx_XGIVEREF(__pyx_t_8);
+        __Pyx_XGIVEREF(__pyx_t_9);
+        __Pyx_ExceptionReset(__pyx_t_7, __pyx_t_8, __pyx_t_9);
+        goto __pyx_L1_error;
+        __pyx_L196_exception_handled:;
+        __Pyx_XGIVEREF(__pyx_t_7);
+        __Pyx_XGIVEREF(__pyx_t_8);
+        __Pyx_XGIVEREF(__pyx_t_9);
+        __Pyx_ExceptionReset(__pyx_t_7, __pyx_t_8, __pyx_t_9);
+        __pyx_L202_try_end:;
+      }
+
+      /* "frigate/video/detect_cython.pyx":487
+ * 
+ *             # Add motion boxes to regions
+ *             try:             # <<<<<<<<<<<<<<
+ *                 is_calibrating = motion_detector.is_calibrating()
+ *                 if not is_calibrating:
+*/
+      {
+        __Pyx_PyThreadState_declare
+        __Pyx_PyThreadState_assign
+        __Pyx_ExceptionSave(&__pyx_t_9, &__pyx_t_8, &__pyx_t_7);
+        __Pyx_XGOTREF(__pyx_t_9);
+        __Pyx_XGOTREF(__pyx_t_8);
+        __Pyx_XGOTREF(__pyx_t_7);
+        /*try:*/ {
+
+          /* "frigate/video/detect_cython.pyx":488
+ *             # Add motion boxes to regions
+ *             try:
+ *                 is_calibrating = motion_detector.is_calibrating()             # <<<<<<<<<<<<<<
+ *                 if not is_calibrating:
+ *                     try:
+*/
+          __pyx_t_17 = __pyx_v_motion_detector;
+          __Pyx_INCREF(__pyx_t_17);
+          __pyx_t_3 = 0;
+          {
+            PyObject *__pyx_callargs[2] = {__pyx_t_17, NULL};
+            __pyx_t_6 = __Pyx_PyObject_FastCallMethod((PyObject*)__pyx_mstate_global->__pyx_n_u_is_calibrating, __pyx_callargs+__pyx_t_3, (1-__pyx_t_3) | (1*__Pyx_PY_VECTORCALL_ARGUMENTS_OFFSET));
+            __Pyx_XDECREF(__pyx_t_17); __pyx_t_17 = 0;
+            if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 488, __pyx_L212_error)
+            __Pyx_GOTREF(__pyx_t_6);
+          }
+          __Pyx_XDECREF_SET(__pyx_v_is_calibrating, __pyx_t_6);
+          __pyx_t_6 = 0;
+
+          /* "frigate/video/detect_cython.pyx":489
+ *             try:
+ *                 is_calibrating = motion_detector.is_calibrating()
+ *                 if not is_calibrating:             # <<<<<<<<<<<<<<
+ *                     try:
+ *                         ptz_moving = ptz_moving_at_frame_time(
+*/
+          __pyx_t_14 = __Pyx_PyObject_IsTrue(__pyx_v_is_calibrating); if (unlikely((__pyx_t_14 < 0))) __PYX_ERR(0, 489, __pyx_L212_error)
+          __pyx_t_13 = (!__pyx_t_14);
+          if (__pyx_t_13) {
+
+            /* "frigate/video/detect_cython.pyx":490
+ *                 is_calibrating = motion_detector.is_calibrating()
+ *                 if not is_calibrating:
+ *                     try:             # <<<<<<<<<<<<<<
+ *                         ptz_moving = ptz_moving_at_frame_time(
+ *                             frame_time,
+*/
+            {
+              __Pyx_PyThreadState_declare
+              __Pyx_PyThreadState_assign
+              __Pyx_ExceptionSave(&__pyx_t_10, &__pyx_t_18, &__pyx_t_19);
+              __Pyx_XGOTREF(__pyx_t_10);
+              __Pyx_XGOTREF(__pyx_t_18);
+              __Pyx_XGOTREF(__pyx_t_19);
+              /*try:*/ {
+
+                /* "frigate/video/detect_cython.pyx":493
+ *                         ptz_moving = ptz_moving_at_frame_time(
+ *                             frame_time,
+ *                             ptz_metrics.start_time.value,             # <<<<<<<<<<<<<<
+ *                             ptz_metrics.stop_time.value,
+ *                         )
+*/
+                __pyx_t_6 = __Pyx_PyObject_GetAttrStr(__pyx_v_ptz_metrics, __pyx_mstate_global->__pyx_n_u_start_time); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 493, __pyx_L221_error)
+                __Pyx_GOTREF(__pyx_t_6);
+                __pyx_t_17 = __Pyx_PyObject_GetAttrStr(__pyx_t_6, __pyx_mstate_global->__pyx_n_u_value); if (unlikely(!__pyx_t_17)) __PYX_ERR(0, 493, __pyx_L221_error)
+                __Pyx_GOTREF(__pyx_t_17);
+                __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
+
+                /* "frigate/video/detect_cython.pyx":494
+ *                             frame_time,
+ *                             ptz_metrics.start_time.value,
+ *                             ptz_metrics.stop_time.value,             # <<<<<<<<<<<<<<
+ *                         )
+ *                     except Exception:
+*/
+                __pyx_t_6 = __Pyx_PyObject_GetAttrStr(__pyx_v_ptz_metrics, __pyx_mstate_global->__pyx_n_u_stop_time); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 494, __pyx_L221_error)
+                __Pyx_GOTREF(__pyx_t_6);
+                __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_t_6, __pyx_mstate_global->__pyx_n_u_value); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 494, __pyx_L221_error)
+                __Pyx_GOTREF(__pyx_t_1);
+                __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
+
+                /* "frigate/video/detect_cython.pyx":491
+ *                 if not is_calibrating:
+ *                     try:
+ *                         ptz_moving = ptz_moving_at_frame_time(             # <<<<<<<<<<<<<<
+ *                             frame_time,
+ *                             ptz_metrics.start_time.value,
+*/
+                __pyx_t_13 = __pyx_f_7frigate_5video_13detect_cython_ptz_moving_at_frame_time(__pyx_v_frame_time, __pyx_t_17, __pyx_t_1); if (unlikely(__pyx_t_13 == ((int)-1) && PyErr_Occurred())) __PYX_ERR(0, 491, __pyx_L221_error)
+                __Pyx_DECREF(__pyx_t_17); __pyx_t_17 = 0;
+                __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
+                __pyx_v_ptz_moving = __pyx_t_13;
+
+                /* "frigate/video/detect_cython.pyx":490
+ *                 is_calibrating = motion_detector.is_calibrating()
+ *                 if not is_calibrating:
+ *                     try:             # <<<<<<<<<<<<<<
+ *                         ptz_moving = ptz_moving_at_frame_time(
+ *                             frame_time,
+*/
+              }
+              __Pyx_XDECREF(__pyx_t_10); __pyx_t_10 = 0;
+              __Pyx_XDECREF(__pyx_t_18); __pyx_t_18 = 0;
+              __Pyx_XDECREF(__pyx_t_19); __pyx_t_19 = 0;
+              goto __pyx_L228_try_end;
+              __pyx_L221_error:;
+              __Pyx_XDECREF(__pyx_t_1); __pyx_t_1 = 0;
+              __Pyx_XDECREF(__pyx_t_17); __pyx_t_17 = 0;
+              __Pyx_XDECREF(__pyx_t_2); __pyx_t_2 = 0;
+              __Pyx_XDECREF(__pyx_t_4); __pyx_t_4 = 0;
+              __Pyx_XDECREF(__pyx_t_5); __pyx_t_5 = 0;
+              __Pyx_XDECREF(__pyx_t_6); __pyx_t_6 = 0;
+
+              /* "frigate/video/detect_cython.pyx":496
+ *                             ptz_metrics.stop_time.value,
+ *                         )
+ *                     except Exception:             # <<<<<<<<<<<<<<
+ *                         ptz_moving = False
+ * 
+*/
+              __pyx_t_12 = __Pyx_PyErr_ExceptionMatches(((PyObject *)(((PyTypeObject*)PyExc_Exception))));
+              if (__pyx_t_12) {
+                __Pyx_ErrRestore(0,0,0);
+
+                /* "frigate/video/detect_cython.pyx":497
+ *                         )
+ *                     except Exception:
+ *                         ptz_moving = False             # <<<<<<<<<<<<<<
+ * 
+ *                     if not ptz_moving:
+*/
+                __pyx_v_ptz_moving = 0;
+                goto __pyx_L222_exception_handled;
+              }
+              goto __pyx_L223_except_error;
+
+              /* "frigate/video/detect_cython.pyx":490
+ *                 is_calibrating = motion_detector.is_calibrating()
+ *                 if not is_calibrating:
+ *                     try:             # <<<<<<<<<<<<<<
+ *                         ptz_moving = ptz_moving_at_frame_time(
+ *                             frame_time,
+*/
+              __pyx_L223_except_error:;
+              __Pyx_XGIVEREF(__pyx_t_10);
+              __Pyx_XGIVEREF(__pyx_t_18);
+              __Pyx_XGIVEREF(__pyx_t_19);
+              __Pyx_ExceptionReset(__pyx_t_10, __pyx_t_18, __pyx_t_19);
+              goto __pyx_L212_error;
+              __pyx_L222_exception_handled:;
+              __Pyx_XGIVEREF(__pyx_t_10);
+              __Pyx_XGIVEREF(__pyx_t_18);
+              __Pyx_XGIVEREF(__pyx_t_19);
+              __Pyx_ExceptionReset(__pyx_t_10, __pyx_t_18, __pyx_t_19);
+              __pyx_L228_try_end:;
+            }
+
+            /* "frigate/video/detect_cython.pyx":499
+ *                         ptz_moving = False
+ * 
+ *                     if not ptz_moving:             # <<<<<<<<<<<<<<
+ *                         m_count = len(motion_boxes)
+ *                         r_count = len(regions)
+*/
+            __pyx_t_13 = (!__pyx_v_ptz_moving);
+            if (__pyx_t_13) {
+
+              /* "frigate/video/detect_cython.pyx":500
+ * 
+ *                     if not ptz_moving:
+ *                         m_count = len(motion_boxes)             # <<<<<<<<<<<<<<
+ *                         r_count = len(regions)
+ *                         standalone_motion_boxes = []
+*/
+              __pyx_t_11 = PyObject_Length(__pyx_v_motion_boxes); if (unlikely(__pyx_t_11 == ((Py_ssize_t)-1))) __PYX_ERR(0, 500, __pyx_L212_error)
+              __pyx_v_m_count = __pyx_t_11;
+
+              /* "frigate/video/detect_cython.pyx":501
+ *                     if not ptz_moving:
+ *                         m_count = len(motion_boxes)
+ *                         r_count = len(regions)             # <<<<<<<<<<<<<<
+ *                         standalone_motion_boxes = []
+ * 
+*/
+              __pyx_t_11 = PyObject_Length(__pyx_v_regions); if (unlikely(__pyx_t_11 == ((Py_ssize_t)-1))) __PYX_ERR(0, 501, __pyx_L212_error)
+              __pyx_v_r_count = __pyx_t_11;
+
+              /* "frigate/video/detect_cython.pyx":502
+ *                         m_count = len(motion_boxes)
+ *                         r_count = len(regions)
+ *                         standalone_motion_boxes = []             # <<<<<<<<<<<<<<
+ * 
+ *                         if m_count > 0 and r_count > 0:
+*/
+              __pyx_t_1 = PyList_New(0); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 502, __pyx_L212_error)
+              __Pyx_GOTREF(__pyx_t_1);
+              __Pyx_XDECREF_SET(__pyx_v_standalone_motion_boxes, __pyx_t_1);
+              __pyx_t_1 = 0;
+
+              /* "frigate/video/detect_cython.pyx":504
+ *                         standalone_motion_boxes = []
+ * 
+ *                         if m_count > 0 and r_count > 0:             # <<<<<<<<<<<<<<
+ *                             if (
+ *                                 m_count <= motion_boxes_buf.shape[0]
+*/
+              __pyx_t_14 = (__pyx_v_m_count > 0);
+              if (__pyx_t_14) {
+              } else {
+                __pyx_t_13 = __pyx_t_14;
+                goto __pyx_L233_bool_binop_done;
+              }
+              __pyx_t_14 = (__pyx_v_r_count > 0);
+              __pyx_t_13 = __pyx_t_14;
+              __pyx_L233_bool_binop_done:;
+              if (__pyx_t_13) {
+
+                /* "frigate/video/detect_cython.pyx":506
+ *                         if m_count > 0 and r_count > 0:
+ *                             if (
+ *                                 m_count <= motion_boxes_buf.shape[0]             # <<<<<<<<<<<<<<
+ *                                 and r_count <= regions_buf.shape[0]
+ *                             ):
+*/
+                __pyx_t_1 = __Pyx_PyLong_From_int(__pyx_v_m_count); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 506, __pyx_L212_error)
+                __Pyx_GOTREF(__pyx_t_1);
+                __pyx_t_17 = __Pyx_PyObject_GetAttrStr(__pyx_v_motion_boxes_buf, __pyx_mstate_global->__pyx_n_u_shape); if (unlikely(!__pyx_t_17)) __PYX_ERR(0, 506, __pyx_L212_error)
+                __Pyx_GOTREF(__pyx_t_17);
+                __pyx_t_6 = __Pyx_GetItemInt(__pyx_t_17, 0, long, 1, __Pyx_PyLong_From_long, 0, 0, 0, 1, __Pyx_ReferenceSharing_OwnStrongReference); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 506, __pyx_L212_error)
+                __Pyx_GOTREF(__pyx_t_6);
+                __Pyx_DECREF(__pyx_t_17); __pyx_t_17 = 0;
+                __pyx_t_17 = PyObject_RichCompare(__pyx_t_1, __pyx_t_6, Py_LE); __Pyx_XGOTREF(__pyx_t_17); if (unlikely(!__pyx_t_17)) __PYX_ERR(0, 506, __pyx_L212_error)
+                __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
+                __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
+                __pyx_t_14 = __Pyx_PyObject_IsTrue(__pyx_t_17); if (unlikely((__pyx_t_14 < 0))) __PYX_ERR(0, 506, __pyx_L212_error)
+                __Pyx_DECREF(__pyx_t_17); __pyx_t_17 = 0;
+                if (__pyx_t_14) {
+                } else {
+                  __pyx_t_13 = __pyx_t_14;
+                  goto __pyx_L236_bool_binop_done;
+                }
+
+                /* "frigate/video/detect_cython.pyx":507
+ *                             if (
+ *                                 m_count <= motion_boxes_buf.shape[0]
+ *                                 and r_count <= regions_buf.shape[0]             # <<<<<<<<<<<<<<
+ *                             ):
+ *                                 motion_boxes_buf[:m_count] = motion_boxes
+*/
+                __pyx_t_17 = __Pyx_PyLong_From_int(__pyx_v_r_count); if (unlikely(!__pyx_t_17)) __PYX_ERR(0, 507, __pyx_L212_error)
+                __Pyx_GOTREF(__pyx_t_17);
+                __pyx_t_6 = __Pyx_PyObject_GetAttrStr(__pyx_v_regions_buf, __pyx_mstate_global->__pyx_n_u_shape); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 507, __pyx_L212_error)
+                __Pyx_GOTREF(__pyx_t_6);
+                __pyx_t_1 = __Pyx_GetItemInt(__pyx_t_6, 0, long, 1, __Pyx_PyLong_From_long, 0, 0, 0, 1, __Pyx_ReferenceSharing_OwnStrongReference); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 507, __pyx_L212_error)
+                __Pyx_GOTREF(__pyx_t_1);
+                __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
+                __pyx_t_6 = PyObject_RichCompare(__pyx_t_17, __pyx_t_1, Py_LE); __Pyx_XGOTREF(__pyx_t_6); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 507, __pyx_L212_error)
+                __Pyx_DECREF(__pyx_t_17); __pyx_t_17 = 0;
+                __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
+                __pyx_t_14 = __Pyx_PyObject_IsTrue(__pyx_t_6); if (unlikely((__pyx_t_14 < 0))) __PYX_ERR(0, 507, __pyx_L212_error)
+                __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
+                __pyx_t_13 = __pyx_t_14;
+                __pyx_L236_bool_binop_done:;
+
+                /* "frigate/video/detect_cython.pyx":505
+ * 
+ *                         if m_count > 0 and r_count > 0:
+ *                             if (             # <<<<<<<<<<<<<<
+ *                                 m_count <= motion_boxes_buf.shape[0]
+ *                                 and r_count <= regions_buf.shape[0]
+*/
+                if (__pyx_t_13) {
+
+                  /* "frigate/video/detect_cython.pyx":509
+ *                                 and r_count <= regions_buf.shape[0]
+ *                             ):
+ *                                 motion_boxes_buf[:m_count] = motion_boxes             # <<<<<<<<<<<<<<
+ *                                 regions_buf[:r_count] = regions
+ *                                 from frigate.motion.motion_cython import cython_filter_motion_boxes
+*/
+                  if (__Pyx_PyObject_SetSlice(__pyx_v_motion_boxes_buf, __pyx_v_motion_boxes, 0, __pyx_v_m_count, NULL, NULL, NULL, 0, 1, 0) < (0)) __PYX_ERR(0, 509, __pyx_L212_error)
+
+                  /* "frigate/video/detect_cython.pyx":510
+ *                             ):
+ *                                 motion_boxes_buf[:m_count] = motion_boxes
+ *                                 regions_buf[:r_count] = regions             # <<<<<<<<<<<<<<
+ *                                 from frigate.motion.motion_cython import cython_filter_motion_boxes
+ *                                 standalone_motion_array = cython_filter_motion_boxes(
+*/
+                  if (__Pyx_PyObject_SetSlice(__pyx_v_regions_buf, __pyx_v_regions, 0, __pyx_v_r_count, NULL, NULL, NULL, 0, 1, 0) < (0)) __PYX_ERR(0, 510, __pyx_L212_error)
+
+                  /* "frigate/video/detect_cython.pyx":511
+ *                                 motion_boxes_buf[:m_count] = motion_boxes
+ *                                 regions_buf[:r_count] = regions
+ *                                 from frigate.motion.motion_cython import cython_filter_motion_boxes             # <<<<<<<<<<<<<<
+ *                                 standalone_motion_array = cython_filter_motion_boxes(
+ *                                     motion_boxes_buf[:m_count], regions_buf[:r_count]
+*/
+                  {
+                    PyObject* const __pyx_imported_names[] = {__pyx_mstate_global->__pyx_n_u_cython_filter_motion_boxes};
+                    __pyx_t_19 = __Pyx_Import(__pyx_mstate_global->__pyx_n_u_frigate_motion_motion_cython, __pyx_imported_names, 1, NULL, 0); if (unlikely(!__pyx_t_19)) __PYX_ERR(0, 511, __pyx_L212_error)
+                  }
+                  __pyx_t_6 = __pyx_t_19;
+                  __Pyx_GOTREF(__pyx_t_6);
+                  {
+                    PyObject* const __pyx_imported_names[] = {__pyx_mstate_global->__pyx_n_u_cython_filter_motion_boxes};
+                    __pyx_t_11 = 0; {
+                      __pyx_t_1 = __Pyx_ImportFrom(__pyx_t_6, __pyx_imported_names[__pyx_t_11]); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 511, __pyx_L212_error)
+                      __Pyx_GOTREF(__pyx_t_1);
+                      switch (__pyx_t_11) {
+                        case 0:
+                        __Pyx_INCREF(__pyx_t_1);
+                        __Pyx_XDECREF_SET(__pyx_v_cython_filter_motion_boxes, __pyx_t_1);
+                        break;
+                        default:;
+                      }
+                      __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
+                    }
+                  }
+                  __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
+
+                  /* "frigate/video/detect_cython.pyx":512
+ *                                 regions_buf[:r_count] = regions
+ *                                 from frigate.motion.motion_cython import cython_filter_motion_boxes
+ *                                 standalone_motion_array = cython_filter_motion_boxes(             # <<<<<<<<<<<<<<
+ *                                     motion_boxes_buf[:m_count], regions_buf[:r_count]
+ *                                 )
+*/
+                  __pyx_t_1 = NULL;
+                  __Pyx_INCREF(__pyx_v_cython_filter_motion_boxes);
+                  __pyx_t_17 = __pyx_v_cython_filter_motion_boxes; 
+
+                  /* "frigate/video/detect_cython.pyx":513
+ *                                 from frigate.motion.motion_cython import cython_filter_motion_boxes
+ *                                 standalone_motion_array = cython_filter_motion_boxes(
+ *                                     motion_boxes_buf[:m_count], regions_buf[:r_count]             # <<<<<<<<<<<<<<
+ *                                 )
+ *                             else:
+*/
+                  __pyx_t_5 = __Pyx_PyObject_GetSlice(__pyx_v_motion_boxes_buf, 0, __pyx_v_m_count, NULL, NULL, NULL, 0, 1, 0); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 513, __pyx_L212_error)
+                  __Pyx_GOTREF(__pyx_t_5);
+                  __pyx_t_4 = __Pyx_PyObject_GetSlice(__pyx_v_regions_buf, 0, __pyx_v_r_count, NULL, NULL, NULL, 0, 1, 0); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 513, __pyx_L212_error)
+                  __Pyx_GOTREF(__pyx_t_4);
+                  __pyx_t_3 = 1;
+                  #if CYTHON_UNPACK_METHODS
+                  if (unlikely(PyMethod_Check(__pyx_t_17))) {
+                    __pyx_t_1 = PyMethod_GET_SELF(__pyx_t_17);
+                    assert(__pyx_t_1);
+                    PyObject* __pyx__function = PyMethod_GET_FUNCTION(__pyx_t_17);
+                    __Pyx_INCREF(__pyx_t_1);
+                    __Pyx_INCREF(__pyx__function);
+                    __Pyx_DECREF_SET(__pyx_t_17, __pyx__function);
+                    __pyx_t_3 = 0;
+                  }
+                  #endif
+                  {
+                    PyObject *__pyx_callargs[3] = {__pyx_t_1, __pyx_t_5, __pyx_t_4};
+                    __pyx_t_6 = __Pyx_PyObject_FastCall((PyObject*)__pyx_t_17, __pyx_callargs+__pyx_t_3, (3-__pyx_t_3) | (__pyx_t_3*__Pyx_PY_VECTORCALL_ARGUMENTS_OFFSET));
+                    __Pyx_XDECREF(__pyx_t_1); __pyx_t_1 = 0;
+                    __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
+                    __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
+                    __Pyx_DECREF(__pyx_t_17); __pyx_t_17 = 0;
+                    if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 512, __pyx_L212_error)
+                    __Pyx_GOTREF(__pyx_t_6);
+                  }
+                  __Pyx_XDECREF_SET(__pyx_v_standalone_motion_array, __pyx_t_6);
+                  __pyx_t_6 = 0;
+
+                  /* "frigate/video/detect_cython.pyx":505
+ * 
+ *                         if m_count > 0 and r_count > 0:
+ *                             if (             # <<<<<<<<<<<<<<
+ *                                 m_count <= motion_boxes_buf.shape[0]
+ *                                 and r_count <= regions_buf.shape[0]
+*/
+                  goto __pyx_L235;
+                }
+
+                /* "frigate/video/detect_cython.pyx":516
+ *                                 )
+ *                             else:
+ *                                 motion_boxes_array = np.array(motion_boxes, dtype=np.float32).reshape(-1, 4)             # <<<<<<<<<<<<<<
+ *                                 regions_array = np.array(regions, dtype=np.float32)
+ *                                 from frigate.motion.motion_cython import cython_filter_motion_boxes
+*/
+                /*else*/ {
+                  __pyx_t_17 = NULL;
+                  __Pyx_GetModuleGlobalName(__pyx_t_4, __pyx_mstate_global->__pyx_n_u_np); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 516, __pyx_L212_error)
+                  __Pyx_GOTREF(__pyx_t_4);
+                  __pyx_t_5 = __Pyx_PyObject_GetAttrStr(__pyx_t_4, __pyx_mstate_global->__pyx_n_u_array); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 516, __pyx_L212_error)
+                  __Pyx_GOTREF(__pyx_t_5);
+                  __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
+                  __Pyx_GetModuleGlobalName(__pyx_t_4, __pyx_mstate_global->__pyx_n_u_np); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 516, __pyx_L212_error)
+                  __Pyx_GOTREF(__pyx_t_4);
+                  __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_t_4, __pyx_mstate_global->__pyx_n_u_float32); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 516, __pyx_L212_error)
+                  __Pyx_GOTREF(__pyx_t_1);
+                  __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
+                  __pyx_t_3 = 1;
+                  #if CYTHON_UNPACK_METHODS
+                  if (unlikely(PyMethod_Check(__pyx_t_5))) {
+                    __pyx_t_17 = PyMethod_GET_SELF(__pyx_t_5);
+                    assert(__pyx_t_17);
+                    PyObject* __pyx__function = PyMethod_GET_FUNCTION(__pyx_t_5);
+                    __Pyx_INCREF(__pyx_t_17);
+                    __Pyx_INCREF(__pyx__function);
+                    __Pyx_DECREF_SET(__pyx_t_5, __pyx__function);
+                    __pyx_t_3 = 0;
+                  }
+                  #endif
+                  {
+                    PyObject *__pyx_callargs[2 + ((CYTHON_VECTORCALL) ? 1 : 0)] = {__pyx_t_17, __pyx_v_motion_boxes};
+                    __pyx_t_4 = __Pyx_MakeVectorcallBuilderKwds(1); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 516, __pyx_L212_error)
+                    __Pyx_GOTREF(__pyx_t_4);
+                    if (__Pyx_VectorcallBuilder_AddArg(__pyx_mstate_global->__pyx_n_u_dtype, __pyx_t_1, __pyx_t_4, __pyx_callargs+2, 0) < (0)) __PYX_ERR(0, 516, __pyx_L212_error)
+                    __pyx_t_6 = __Pyx_Object_Vectorcall_CallFromBuilder((PyObject*)__pyx_t_5, __pyx_callargs+__pyx_t_3, (2-__pyx_t_3) | (__pyx_t_3*__Pyx_PY_VECTORCALL_ARGUMENTS_OFFSET), __pyx_t_4);
+                    __Pyx_XDECREF(__pyx_t_17); __pyx_t_17 = 0;
+                    __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
+                    __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
+                    __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
+                    if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 516, __pyx_L212_error)
+                    __Pyx_GOTREF(__pyx_t_6);
+                  }
+                  __pyx_t_5 = __Pyx_PyObject_GetAttrStr(__pyx_t_6, __pyx_mstate_global->__pyx_n_u_reshape); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 516, __pyx_L212_error)
+                  __Pyx_GOTREF(__pyx_t_5);
+                  __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
+                  __pyx_t_6 = __Pyx_PyObject_Call(__pyx_t_5, __pyx_mstate_global->__pyx_tuple[3], NULL); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 516, __pyx_L212_error)
+                  __Pyx_GOTREF(__pyx_t_6);
+                  __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
+                  __Pyx_XDECREF_SET(__pyx_v_motion_boxes_array, __pyx_t_6);
+                  __pyx_t_6 = 0;
+
+                  /* "frigate/video/detect_cython.pyx":517
+ *                             else:
+ *                                 motion_boxes_array = np.array(motion_boxes, dtype=np.float32).reshape(-1, 4)
+ *                                 regions_array = np.array(regions, dtype=np.float32)             # <<<<<<<<<<<<<<
+ *                                 from frigate.motion.motion_cython import cython_filter_motion_boxes
+ *                                 standalone_motion_array = cython_filter_motion_boxes(
+*/
+                  __pyx_t_5 = NULL;
+                  __Pyx_GetModuleGlobalName(__pyx_t_4, __pyx_mstate_global->__pyx_n_u_np); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 517, __pyx_L212_error)
+                  __Pyx_GOTREF(__pyx_t_4);
+                  __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_t_4, __pyx_mstate_global->__pyx_n_u_array); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 517, __pyx_L212_error)
+                  __Pyx_GOTREF(__pyx_t_1);
+                  __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
+                  __Pyx_GetModuleGlobalName(__pyx_t_4, __pyx_mstate_global->__pyx_n_u_np); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 517, __pyx_L212_error)
+                  __Pyx_GOTREF(__pyx_t_4);
+                  __pyx_t_17 = __Pyx_PyObject_GetAttrStr(__pyx_t_4, __pyx_mstate_global->__pyx_n_u_float32); if (unlikely(!__pyx_t_17)) __PYX_ERR(0, 517, __pyx_L212_error)
+                  __Pyx_GOTREF(__pyx_t_17);
+                  __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
+                  __pyx_t_3 = 1;
+                  #if CYTHON_UNPACK_METHODS
+                  if (unlikely(PyMethod_Check(__pyx_t_1))) {
+                    __pyx_t_5 = PyMethod_GET_SELF(__pyx_t_1);
+                    assert(__pyx_t_5);
+                    PyObject* __pyx__function = PyMethod_GET_FUNCTION(__pyx_t_1);
+                    __Pyx_INCREF(__pyx_t_5);
+                    __Pyx_INCREF(__pyx__function);
+                    __Pyx_DECREF_SET(__pyx_t_1, __pyx__function);
+                    __pyx_t_3 = 0;
+                  }
+                  #endif
+                  {
+                    PyObject *__pyx_callargs[2 + ((CYTHON_VECTORCALL) ? 1 : 0)] = {__pyx_t_5, __pyx_v_regions};
+                    __pyx_t_4 = __Pyx_MakeVectorcallBuilderKwds(1); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 517, __pyx_L212_error)
+                    __Pyx_GOTREF(__pyx_t_4);
+                    if (__Pyx_VectorcallBuilder_AddArg(__pyx_mstate_global->__pyx_n_u_dtype, __pyx_t_17, __pyx_t_4, __pyx_callargs+2, 0) < (0)) __PYX_ERR(0, 517, __pyx_L212_error)
+                    __pyx_t_6 = __Pyx_Object_Vectorcall_CallFromBuilder((PyObject*)__pyx_t_1, __pyx_callargs+__pyx_t_3, (2-__pyx_t_3) | (__pyx_t_3*__Pyx_PY_VECTORCALL_ARGUMENTS_OFFSET), __pyx_t_4);
+                    __Pyx_XDECREF(__pyx_t_5); __pyx_t_5 = 0;
+                    __Pyx_DECREF(__pyx_t_17); __pyx_t_17 = 0;
+                    __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
+                    __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
+                    if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 517, __pyx_L212_error)
+                    __Pyx_GOTREF(__pyx_t_6);
+                  }
+                  __Pyx_XDECREF_SET(__pyx_v_regions_array, __pyx_t_6);
+                  __pyx_t_6 = 0;
+
+                  /* "frigate/video/detect_cython.pyx":518
+ *                                 motion_boxes_array = np.array(motion_boxes, dtype=np.float32).reshape(-1, 4)
+ *                                 regions_array = np.array(regions, dtype=np.float32)
+ *                                 from frigate.motion.motion_cython import cython_filter_motion_boxes             # <<<<<<<<<<<<<<
+ *                                 standalone_motion_array = cython_filter_motion_boxes(
+ *                                     motion_boxes_array, regions_array
+*/
+                  {
+                    PyObject* const __pyx_imported_names[] = {__pyx_mstate_global->__pyx_n_u_cython_filter_motion_boxes};
+                    __pyx_t_19 = __Pyx_Import(__pyx_mstate_global->__pyx_n_u_frigate_motion_motion_cython, __pyx_imported_names, 1, NULL, 0); if (unlikely(!__pyx_t_19)) __PYX_ERR(0, 518, __pyx_L212_error)
+                  }
+                  __pyx_t_6 = __pyx_t_19;
+                  __Pyx_GOTREF(__pyx_t_6);
+                  {
+                    PyObject* const __pyx_imported_names[] = {__pyx_mstate_global->__pyx_n_u_cython_filter_motion_boxes};
+                    __pyx_t_11 = 0; {
+                      __pyx_t_1 = __Pyx_ImportFrom(__pyx_t_6, __pyx_imported_names[__pyx_t_11]); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 518, __pyx_L212_error)
+                      __Pyx_GOTREF(__pyx_t_1);
+                      switch (__pyx_t_11) {
+                        case 0:
+                        __Pyx_INCREF(__pyx_t_1);
+                        __Pyx_XDECREF_SET(__pyx_v_cython_filter_motion_boxes, __pyx_t_1);
+                        break;
+                        default:;
+                      }
+                      __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
+                    }
+                  }
+                  __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
+
+                  /* "frigate/video/detect_cython.pyx":519
+ *                                 regions_array = np.array(regions, dtype=np.float32)
+ *                                 from frigate.motion.motion_cython import cython_filter_motion_boxes
+ *                                 standalone_motion_array = cython_filter_motion_boxes(             # <<<<<<<<<<<<<<
+ *                                     motion_boxes_array, regions_array
+ *                                 )
+*/
+                  __pyx_t_1 = NULL;
+                  __Pyx_INCREF(__pyx_v_cython_filter_motion_boxes);
+                  __pyx_t_4 = __pyx_v_cython_filter_motion_boxes; 
+
+                  /* "frigate/video/detect_cython.pyx":520
+ *                                 from frigate.motion.motion_cython import cython_filter_motion_boxes
+ *                                 standalone_motion_array = cython_filter_motion_boxes(
+ *                                     motion_boxes_array, regions_array             # <<<<<<<<<<<<<<
+ *                                 )
+ * 
+*/
+                  __pyx_t_3 = 1;
+                  #if CYTHON_UNPACK_METHODS
+                  if (unlikely(PyMethod_Check(__pyx_t_4))) {
+                    __pyx_t_1 = PyMethod_GET_SELF(__pyx_t_4);
+                    assert(__pyx_t_1);
+                    PyObject* __pyx__function = PyMethod_GET_FUNCTION(__pyx_t_4);
+                    __Pyx_INCREF(__pyx_t_1);
+                    __Pyx_INCREF(__pyx__function);
+                    __Pyx_DECREF_SET(__pyx_t_4, __pyx__function);
+                    __pyx_t_3 = 0;
+                  }
+                  #endif
+                  {
+                    PyObject *__pyx_callargs[3] = {__pyx_t_1, __pyx_v_motion_boxes_array, __pyx_v_regions_array};
+                    __pyx_t_6 = __Pyx_PyObject_FastCall((PyObject*)__pyx_t_4, __pyx_callargs+__pyx_t_3, (3-__pyx_t_3) | (__pyx_t_3*__Pyx_PY_VECTORCALL_ARGUMENTS_OFFSET));
+                    __Pyx_XDECREF(__pyx_t_1); __pyx_t_1 = 0;
+                    __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
+                    if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 519, __pyx_L212_error)
+                    __Pyx_GOTREF(__pyx_t_6);
+                  }
+                  __Pyx_XDECREF_SET(__pyx_v_standalone_motion_array, __pyx_t_6);
+                  __pyx_t_6 = 0;
+                }
+                __pyx_L235:;
+
+                /* "frigate/video/detect_cython.pyx":523
+ *                                 )
+ * 
+ *                             standalone_motion_boxes = [             # <<<<<<<<<<<<<<
+ *                                 tuple(int(v) for v in box) for box in standalone_motion_array
+ *                             ]
+*/
+                { /* enter inner scope */
+                  __pyx_t_6 = PyList_New(0); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 523, __pyx_L240_error)
+                  __Pyx_GOTREF(__pyx_t_6);
+
+                  /* "frigate/video/detect_cython.pyx":524
+ * 
+ *                             standalone_motion_boxes = [
+ *                                 tuple(int(v) for v in box) for box in standalone_motion_array             # <<<<<<<<<<<<<<
+ *                             ]
+ * 
+*/
+                  if (likely(PyList_CheckExact(__pyx_v_standalone_motion_array)) || PyTuple_CheckExact(__pyx_v_standalone_motion_array)) {
+                    __pyx_t_4 = __pyx_v_standalone_motion_array; __Pyx_INCREF(__pyx_t_4);
+                    __pyx_t_11 = 0;
+                    __pyx_t_15 = NULL;
+                  } else {
+                    __pyx_t_11 = -1; __pyx_t_4 = PyObject_GetIter(__pyx_v_standalone_motion_array); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 524, __pyx_L240_error)
+                    __Pyx_GOTREF(__pyx_t_4);
+                    __pyx_t_15 = (CYTHON_COMPILING_IN_LIMITED_API) ? PyIter_Next : __Pyx_PyObject_GetIterNextFunc(__pyx_t_4); if (unlikely(!__pyx_t_15)) __PYX_ERR(0, 524, __pyx_L240_error)
+                  }
+                  for (;;) {
+                    if (likely(!__pyx_t_15)) {
+                      if (likely(PyList_CheckExact(__pyx_t_4))) {
+                        {
+                          Py_ssize_t __pyx_temp = __Pyx_PyList_GET_SIZE(__pyx_t_4);
+                          #if !CYTHON_ASSUME_SAFE_SIZE
+                          if (unlikely((__pyx_temp < 0))) __PYX_ERR(0, 524, __pyx_L240_error)
+                          #endif
+                          if (__pyx_t_11 >= __pyx_temp) break;
+                        }
+                        __pyx_t_1 = __Pyx_PyList_GET_ITEM_REF(__pyx_t_4, __pyx_t_11, __Pyx_ReferenceSharing_OwnStrongReference);
+                        ++__pyx_t_11;
+                      } else {
+                        {
+                          Py_ssize_t __pyx_temp = __Pyx_PyTuple_GET_SIZE(__pyx_t_4);
+                          #if !CYTHON_ASSUME_SAFE_SIZE
+                          if (unlikely((__pyx_temp < 0))) __PYX_ERR(0, 524, __pyx_L240_error)
+                          #endif
+                          if (__pyx_t_11 >= __pyx_temp) break;
+                        }
+                        #if CYTHON_ASSUME_SAFE_MACROS && !CYTHON_AVOID_BORROWED_REFS
+                        __pyx_t_1 = __Pyx_NewRef(PyTuple_GET_ITEM(__pyx_t_4, __pyx_t_11));
+                        #else
+                        __pyx_t_1 = __Pyx_PySequence_ITEM(__pyx_t_4, __pyx_t_11);
+                        #endif
+                        ++__pyx_t_11;
+                      }
+                      if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 524, __pyx_L240_error)
+                    } else {
+                      __pyx_t_1 = __pyx_t_15(__pyx_t_4);
+                      if (unlikely(!__pyx_t_1)) {
+                        PyObject* exc_type = PyErr_Occurred();
+                        if (exc_type) {
+                          if (unlikely(!__Pyx_PyErr_GivenExceptionMatches(exc_type, PyExc_StopIteration))) __PYX_ERR(0, 524, __pyx_L240_error)
+                          PyErr_Clear();
+                        }
+                        break;
+                      }
+                    }
+                    __Pyx_GOTREF(__pyx_t_1);
+                    __Pyx_XDECREF_SET(__pyx_8genexpr3__pyx_v_box, __pyx_t_1);
+                    __pyx_t_1 = 0;
+                    __pyx_t_1 = __pyx_pf_7frigate_5video_13detect_cython_21cython_process_frames_8genexpr3_genexpr(NULL, __pyx_8genexpr3__pyx_v_box); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 524, __pyx_L240_error)
+                    __Pyx_GOTREF(__pyx_t_1);
+                    __pyx_t_17 = __Pyx_PySequence_Tuple(__pyx_t_1); if (unlikely(!__pyx_t_17)) __PYX_ERR(0, 524, __pyx_L240_error)
+                    __Pyx_GOTREF(__pyx_t_17);
+                    __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
+                    if (unlikely(__Pyx_ListComp_Append(__pyx_t_6, (PyObject*)__pyx_t_17))) __PYX_ERR(0, 523, __pyx_L240_error)
+                    __Pyx_DECREF(__pyx_t_17); __pyx_t_17 = 0;
+                  }
+                  __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
+                  __Pyx_XDECREF(__pyx_8genexpr3__pyx_v_box); __pyx_8genexpr3__pyx_v_box = 0;
+                  goto __pyx_L244_exit_scope;
+                  __pyx_L240_error:;
+                  __Pyx_XDECREF(__pyx_8genexpr3__pyx_v_box); __pyx_8genexpr3__pyx_v_box = 0;
+                  goto __pyx_L212_error;
+                  __pyx_L244_exit_scope:;
+                } /* exit inner scope */
+                __Pyx_DECREF_SET(__pyx_v_standalone_motion_boxes, __pyx_t_6);
+                __pyx_t_6 = 0;
+
+                /* "frigate/video/detect_cython.pyx":504
+ *                         standalone_motion_boxes = []
+ * 
+ *                         if m_count > 0 and r_count > 0:             # <<<<<<<<<<<<<<
+ *                             if (
+ *                                 m_count <= motion_boxes_buf.shape[0]
+*/
+              }
+
+              /* "frigate/video/detect_cython.pyx":527
+ *                             ]
+ * 
+ *                         if standalone_motion_boxes:             # <<<<<<<<<<<<<<
+ *                             from frigate.util.object import get_cluster_candidates, get_cluster_region_from_grid
+ *                             motion_clusters = get_cluster_candidates(
+*/
+              __pyx_t_13 = __Pyx_PyObject_IsTrue(__pyx_v_standalone_motion_boxes); if (unlikely((__pyx_t_13 < 0))) __PYX_ERR(0, 527, __pyx_L212_error)
+              if (__pyx_t_13) {
+
+                /* "frigate/video/detect_cython.pyx":528
+ * 
+ *                         if standalone_motion_boxes:
+ *                             from frigate.util.object import get_cluster_candidates, get_cluster_region_from_grid             # <<<<<<<<<<<<<<
+ *                             motion_clusters = get_cluster_candidates(
+ *                                 frame_shape, region_min_size, standalone_motion_boxes
+*/
+                {
+                  PyObject* const __pyx_imported_names[] = {__pyx_mstate_global->__pyx_n_u_get_cluster_candidates,__pyx_mstate_global->__pyx_n_u_get_cluster_region_from_grid};
+                  __pyx_t_19 = __Pyx_Import(__pyx_mstate_global->__pyx_n_u_frigate_util_object, __pyx_imported_names, 2, NULL, 0); if (unlikely(!__pyx_t_19)) __PYX_ERR(0, 528, __pyx_L212_error)
+                }
+                __pyx_t_6 = __pyx_t_19;
+                __Pyx_GOTREF(__pyx_t_6);
+                {
+                  PyObject* const __pyx_imported_names[] = {__pyx_mstate_global->__pyx_n_u_get_cluster_candidates,__pyx_mstate_global->__pyx_n_u_get_cluster_region_from_grid};
+                  for (__pyx_t_11=0; __pyx_t_11 < 2; __pyx_t_11++) {
+                    __pyx_t_4 = __Pyx_ImportFrom(__pyx_t_6, __pyx_imported_names[__pyx_t_11]); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 528, __pyx_L212_error)
+                    __Pyx_GOTREF(__pyx_t_4);
+                    switch (__pyx_t_11) {
+                      case 0:
+                      __Pyx_INCREF(__pyx_t_4);
+                      __Pyx_XDECREF_SET(__pyx_v_get_cluster_candidates, __pyx_t_4);
+                      break;
+                      case 1:
+                      __Pyx_INCREF(__pyx_t_4);
+                      __Pyx_XDECREF_SET(__pyx_v_get_cluster_region_from_grid, __pyx_t_4);
+                      break;
+                      default:;
+                    }
+                    __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
+                  }
+                }
+                __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
+
+                /* "frigate/video/detect_cython.pyx":529
+ *                         if standalone_motion_boxes:
+ *                             from frigate.util.object import get_cluster_candidates, get_cluster_region_from_grid
+ *                             motion_clusters = get_cluster_candidates(             # <<<<<<<<<<<<<<
+ *                                 frame_shape, region_min_size, standalone_motion_boxes
+ *                             )
+*/
+                __pyx_t_4 = NULL;
+                __Pyx_INCREF(__pyx_v_get_cluster_candidates);
+                __pyx_t_17 = __pyx_v_get_cluster_candidates; 
+
+                /* "frigate/video/detect_cython.pyx":530
+ *                             from frigate.util.object import get_cluster_candidates, get_cluster_region_from_grid
+ *                             motion_clusters = get_cluster_candidates(
+ *                                 frame_shape, region_min_size, standalone_motion_boxes             # <<<<<<<<<<<<<<
+ *                             )
+ *                             motion_regions = [
+*/
+                __pyx_t_1 = __Pyx_PyLong_From_int(__pyx_v_region_min_size); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 530, __pyx_L212_error)
+                __Pyx_GOTREF(__pyx_t_1);
+                __pyx_t_3 = 1;
+                #if CYTHON_UNPACK_METHODS
+                if (unlikely(PyMethod_Check(__pyx_t_17))) {
+                  __pyx_t_4 = PyMethod_GET_SELF(__pyx_t_17);
+                  assert(__pyx_t_4);
+                  PyObject* __pyx__function = PyMethod_GET_FUNCTION(__pyx_t_17);
+                  __Pyx_INCREF(__pyx_t_4);
+                  __Pyx_INCREF(__pyx__function);
+                  __Pyx_DECREF_SET(__pyx_t_17, __pyx__function);
+                  __pyx_t_3 = 0;
+                }
+                #endif
+                {
+                  PyObject *__pyx_callargs[4] = {__pyx_t_4, __pyx_v_frame_shape, __pyx_t_1, __pyx_v_standalone_motion_boxes};
+                  __pyx_t_6 = __Pyx_PyObject_FastCall((PyObject*)__pyx_t_17, __pyx_callargs+__pyx_t_3, (4-__pyx_t_3) | (__pyx_t_3*__Pyx_PY_VECTORCALL_ARGUMENTS_OFFSET));
+                  __Pyx_XDECREF(__pyx_t_4); __pyx_t_4 = 0;
+                  __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
+                  __Pyx_DECREF(__pyx_t_17); __pyx_t_17 = 0;
+                  if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 529, __pyx_L212_error)
+                  __Pyx_GOTREF(__pyx_t_6);
+                }
+                __Pyx_XDECREF_SET(__pyx_v_motion_clusters, __pyx_t_6);
+                __pyx_t_6 = 0;
+
+                /* "frigate/video/detect_cython.pyx":532
+ *                                 frame_shape, region_min_size, standalone_motion_boxes
+ *                             )
+ *                             motion_regions = [             # <<<<<<<<<<<<<<
+ *                                 get_cluster_region_from_grid(
+ *                                     frame_shape,
+*/
+                { /* enter inner scope */
+                  __pyx_t_6 = PyList_New(0); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 532, __pyx_L248_error)
+                  __Pyx_GOTREF(__pyx_t_6);
+
+                  /* "frigate/video/detect_cython.pyx":540
+ *                                     region_grid,
+ *                                 )
+ *                                 for candidate in motion_clusters             # <<<<<<<<<<<<<<
+ *                             ]
+ *                             regions += motion_regions
+*/
+                  if (likely(PyList_CheckExact(__pyx_v_motion_clusters)) || PyTuple_CheckExact(__pyx_v_motion_clusters)) {
+                    __pyx_t_17 = __pyx_v_motion_clusters; __Pyx_INCREF(__pyx_t_17);
+                    __pyx_t_11 = 0;
+                    __pyx_t_15 = NULL;
+                  } else {
+                    __pyx_t_11 = -1; __pyx_t_17 = PyObject_GetIter(__pyx_v_motion_clusters); if (unlikely(!__pyx_t_17)) __PYX_ERR(0, 540, __pyx_L248_error)
+                    __Pyx_GOTREF(__pyx_t_17);
+                    __pyx_t_15 = (CYTHON_COMPILING_IN_LIMITED_API) ? PyIter_Next : __Pyx_PyObject_GetIterNextFunc(__pyx_t_17); if (unlikely(!__pyx_t_15)) __PYX_ERR(0, 540, __pyx_L248_error)
+                  }
+                  for (;;) {
+                    if (likely(!__pyx_t_15)) {
+                      if (likely(PyList_CheckExact(__pyx_t_17))) {
+                        {
+                          Py_ssize_t __pyx_temp = __Pyx_PyList_GET_SIZE(__pyx_t_17);
+                          #if !CYTHON_ASSUME_SAFE_SIZE
+                          if (unlikely((__pyx_temp < 0))) __PYX_ERR(0, 540, __pyx_L248_error)
+                          #endif
+                          if (__pyx_t_11 >= __pyx_temp) break;
+                        }
+                        __pyx_t_1 = __Pyx_PyList_GET_ITEM_REF(__pyx_t_17, __pyx_t_11, __Pyx_ReferenceSharing_OwnStrongReference);
+                        ++__pyx_t_11;
+                      } else {
+                        {
+                          Py_ssize_t __pyx_temp = __Pyx_PyTuple_GET_SIZE(__pyx_t_17);
+                          #if !CYTHON_ASSUME_SAFE_SIZE
+                          if (unlikely((__pyx_temp < 0))) __PYX_ERR(0, 540, __pyx_L248_error)
+                          #endif
+                          if (__pyx_t_11 >= __pyx_temp) break;
+                        }
+                        #if CYTHON_ASSUME_SAFE_MACROS && !CYTHON_AVOID_BORROWED_REFS
+                        __pyx_t_1 = __Pyx_NewRef(PyTuple_GET_ITEM(__pyx_t_17, __pyx_t_11));
+                        #else
+                        __pyx_t_1 = __Pyx_PySequence_ITEM(__pyx_t_17, __pyx_t_11);
+                        #endif
+                        ++__pyx_t_11;
+                      }
+                      if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 540, __pyx_L248_error)
+                    } else {
+                      __pyx_t_1 = __pyx_t_15(__pyx_t_17);
+                      if (unlikely(!__pyx_t_1)) {
+                        PyObject* exc_type = PyErr_Occurred();
+                        if (exc_type) {
+                          if (unlikely(!__Pyx_PyErr_GivenExceptionMatches(exc_type, PyExc_StopIteration))) __PYX_ERR(0, 540, __pyx_L248_error)
+                          PyErr_Clear();
+                        }
+                        break;
+                      }
+                    }
+                    __Pyx_GOTREF(__pyx_t_1);
+                    __Pyx_XDECREF_SET(__pyx_8genexpr5__pyx_v_candidate, __pyx_t_1);
+                    __pyx_t_1 = 0;
+
+                    /* "frigate/video/detect_cython.pyx":533
+ *                             )
+ *                             motion_regions = [
+ *                                 get_cluster_region_from_grid(             # <<<<<<<<<<<<<<
+ *                                     frame_shape,
+ *                                     region_min_size,
+*/
+                    __pyx_t_4 = NULL;
+                    __Pyx_INCREF(__pyx_v_get_cluster_region_from_grid);
+                    __pyx_t_5 = __pyx_v_get_cluster_region_from_grid; 
+
+                    /* "frigate/video/detect_cython.pyx":535
+ *                                 get_cluster_region_from_grid(
+ *                                     frame_shape,
+ *                                     region_min_size,             # <<<<<<<<<<<<<<
+ *                                     candidate,
+ *                                     standalone_motion_boxes,
+*/
+                    __pyx_t_2 = __Pyx_PyLong_From_int(__pyx_v_region_min_size); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 535, __pyx_L248_error)
+                    __Pyx_GOTREF(__pyx_t_2);
+
+                    /* "frigate/video/detect_cython.pyx":538
+ *                                     candidate,
+ *                                     standalone_motion_boxes,
+ *                                     region_grid,             # <<<<<<<<<<<<<<
+ *                                 )
+ *                                 for candidate in motion_clusters
+*/
+                    __pyx_t_3 = 1;
+                    #if CYTHON_UNPACK_METHODS
+                    if (unlikely(PyMethod_Check(__pyx_t_5))) {
+                      __pyx_t_4 = PyMethod_GET_SELF(__pyx_t_5);
+                      assert(__pyx_t_4);
+                      PyObject* __pyx__function = PyMethod_GET_FUNCTION(__pyx_t_5);
+                      __Pyx_INCREF(__pyx_t_4);
+                      __Pyx_INCREF(__pyx__function);
+                      __Pyx_DECREF_SET(__pyx_t_5, __pyx__function);
+                      __pyx_t_3 = 0;
+                    }
+                    #endif
+                    {
+                      PyObject *__pyx_callargs[6] = {__pyx_t_4, __pyx_v_frame_shape, __pyx_t_2, __pyx_8genexpr5__pyx_v_candidate, __pyx_v_standalone_motion_boxes, __pyx_v_region_grid};
+                      __pyx_t_1 = __Pyx_PyObject_FastCall((PyObject*)__pyx_t_5, __pyx_callargs+__pyx_t_3, (6-__pyx_t_3) | (__pyx_t_3*__Pyx_PY_VECTORCALL_ARGUMENTS_OFFSET));
+                      __Pyx_XDECREF(__pyx_t_4); __pyx_t_4 = 0;
+                      __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
+                      __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
+                      if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 533, __pyx_L248_error)
+                      __Pyx_GOTREF(__pyx_t_1);
+                    }
+                    if (unlikely(__Pyx_ListComp_Append(__pyx_t_6, (PyObject*)__pyx_t_1))) __PYX_ERR(0, 532, __pyx_L248_error)
+                    __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
+
+                    /* "frigate/video/detect_cython.pyx":540
+ *                                     region_grid,
+ *                                 )
+ *                                 for candidate in motion_clusters             # <<<<<<<<<<<<<<
+ *                             ]
+ *                             regions += motion_regions
+*/
+                  }
+                  __Pyx_DECREF(__pyx_t_17); __pyx_t_17 = 0;
+                  __Pyx_XDECREF(__pyx_8genexpr5__pyx_v_candidate); __pyx_8genexpr5__pyx_v_candidate = 0;
+                  goto __pyx_L252_exit_scope;
+                  __pyx_L248_error:;
+                  __Pyx_XDECREF(__pyx_8genexpr5__pyx_v_candidate); __pyx_8genexpr5__pyx_v_candidate = 0;
+                  goto __pyx_L212_error;
+                  __pyx_L252_exit_scope:;
+                } /* exit inner scope */
+                __Pyx_XDECREF_SET(__pyx_v_motion_regions, __pyx_t_6);
+                __pyx_t_6 = 0;
+
+                /* "frigate/video/detect_cython.pyx":542
+ *                                 for candidate in motion_clusters
+ *                             ]
+ *                             regions += motion_regions             # <<<<<<<<<<<<<<
+ *             except Exception:
+ *                 pass
+*/
+                __pyx_t_6 = PyNumber_InPlaceAdd(__pyx_v_regions, __pyx_v_motion_regions); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 542, __pyx_L212_error)
+                __Pyx_GOTREF(__pyx_t_6);
+                __Pyx_DECREF_SET(__pyx_v_regions, __pyx_t_6);
+                __pyx_t_6 = 0;
+
+                /* "frigate/video/detect_cython.pyx":527
+ *                             ]
+ * 
+ *                         if standalone_motion_boxes:             # <<<<<<<<<<<<<<
+ *                             from frigate.util.object import get_cluster_candidates, get_cluster_region_from_grid
+ *                             motion_clusters = get_cluster_candidates(
+*/
+              }
+
+              /* "frigate/video/detect_cython.pyx":499
+ *                         ptz_moving = False
+ * 
+ *                     if not ptz_moving:             # <<<<<<<<<<<<<<
+ *                         m_count = len(motion_boxes)
+ *                         r_count = len(regions)
+*/
+            }
+
+            /* "frigate/video/detect_cython.pyx":489
+ *             try:
+ *                 is_calibrating = motion_detector.is_calibrating()
+ *                 if not is_calibrating:             # <<<<<<<<<<<<<<
+ *                     try:
+ *                         ptz_moving = ptz_moving_at_frame_time(
+*/
+          }
+
+          /* "frigate/video/detect_cython.pyx":487
+ * 
+ *             # Add motion boxes to regions
+ *             try:             # <<<<<<<<<<<<<<
+ *                 is_calibrating = motion_detector.is_calibrating()
+ *                 if not is_calibrating:
+*/
+        }
+        __Pyx_XDECREF(__pyx_t_9); __pyx_t_9 = 0;
+        __Pyx_XDECREF(__pyx_t_8); __pyx_t_8 = 0;
+        __Pyx_XDECREF(__pyx_t_7); __pyx_t_7 = 0;
+        goto __pyx_L219_try_end;
+        __pyx_L212_error:;
+        __Pyx_XDECREF(__pyx_t_1); __pyx_t_1 = 0;
+        __Pyx_XDECREF(__pyx_t_17); __pyx_t_17 = 0;
+        __Pyx_XDECREF(__pyx_t_2); __pyx_t_2 = 0;
+        __Pyx_XDECREF(__pyx_t_4); __pyx_t_4 = 0;
+        __Pyx_XDECREF(__pyx_t_5); __pyx_t_5 = 0;
+        __Pyx_XDECREF(__pyx_t_6); __pyx_t_6 = 0;
+
+        /* "frigate/video/detect_cython.pyx":543
+ *                             ]
+ *                             regions += motion_regions
+ *             except Exception:             # <<<<<<<<<<<<<<
+ *                 pass
+ * 
+*/
+        __pyx_t_12 = __Pyx_PyErr_ExceptionMatches(((PyObject *)(((PyTypeObject*)PyExc_Exception))));
+        if (__pyx_t_12) {
+          __Pyx_ErrRestore(0,0,0);
+          goto __pyx_L213_exception_handled;
+        }
+        goto __pyx_L214_except_error;
+
+        /* "frigate/video/detect_cython.pyx":487
+ * 
+ *             # Add motion boxes to regions
+ *             try:             # <<<<<<<<<<<<<<
+ *                 is_calibrating = motion_detector.is_calibrating()
+ *                 if not is_calibrating:
+*/
+        __pyx_L214_except_error:;
+        __Pyx_XGIVEREF(__pyx_t_9);
+        __Pyx_XGIVEREF(__pyx_t_8);
+        __Pyx_XGIVEREF(__pyx_t_7);
+        __Pyx_ExceptionReset(__pyx_t_9, __pyx_t_8, __pyx_t_7);
+        goto __pyx_L1_error;
+        __pyx_L213_exception_handled:;
+        __Pyx_XGIVEREF(__pyx_t_9);
+        __Pyx_XGIVEREF(__pyx_t_8);
+        __Pyx_XGIVEREF(__pyx_t_7);
+        __Pyx_ExceptionReset(__pyx_t_9, __pyx_t_8, __pyx_t_7);
+        __pyx_L219_try_end:;
+      }
+
+      /* "frigate/video/detect_cython.pyx":547
+ * 
+ *             # Startup scan
+ *             if startup_scan:             # <<<<<<<<<<<<<<
+ *                 try:
+ *                     from frigate.util.object import get_startup_regions
+*/
+      if (__pyx_v_startup_scan) {
+
+        /* "frigate/video/detect_cython.pyx":548
+ *             # Startup scan
+ *             if startup_scan:
+ *                 try:             # <<<<<<<<<<<<<<
+ *                     from frigate.util.object import get_startup_regions
+ *                     for region in get_startup_regions(frame_shape, region_min_size, region_grid):
+*/
+        {
+          __Pyx_PyThreadState_declare
+          __Pyx_PyThreadState_assign
+          __Pyx_ExceptionSave(&__pyx_t_7, &__pyx_t_8, &__pyx_t_9);
+          __Pyx_XGOTREF(__pyx_t_7);
+          __Pyx_XGOTREF(__pyx_t_8);
+          __Pyx_XGOTREF(__pyx_t_9);
+          /*try:*/ {
+
+            /* "frigate/video/detect_cython.pyx":549
+ *             if startup_scan:
+ *                 try:
+ *                     from frigate.util.object import get_startup_regions             # <<<<<<<<<<<<<<
+ *                     for region in get_startup_regions(frame_shape, region_min_size, region_grid):
+ *                         regions.append(region)
+*/
+            {
+              PyObject* const __pyx_imported_names[] = {__pyx_mstate_global->__pyx_n_u_get_startup_regions};
+              __pyx_t_19 = __Pyx_Import(__pyx_mstate_global->__pyx_n_u_frigate_util_object, __pyx_imported_names, 1, NULL, 0); if (unlikely(!__pyx_t_19)) __PYX_ERR(0, 549, __pyx_L256_error)
+            }
+            __pyx_t_6 = __pyx_t_19;
+            __Pyx_GOTREF(__pyx_t_6);
+            {
+              PyObject* const __pyx_imported_names[] = {__pyx_mstate_global->__pyx_n_u_get_startup_regions};
+              __pyx_t_11 = 0; {
+                __pyx_t_17 = __Pyx_ImportFrom(__pyx_t_6, __pyx_imported_names[__pyx_t_11]); if (unlikely(!__pyx_t_17)) __PYX_ERR(0, 549, __pyx_L256_error)
+                __Pyx_GOTREF(__pyx_t_17);
+                switch (__pyx_t_11) {
+                  case 0:
+                  __Pyx_INCREF(__pyx_t_17);
+                  __Pyx_XDECREF_SET(__pyx_v_get_startup_regions, __pyx_t_17);
+                  break;
+                  default:;
+                }
+                __Pyx_DECREF(__pyx_t_17); __pyx_t_17 = 0;
+              }
+            }
+            __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
+
+            /* "frigate/video/detect_cython.pyx":550
+ *                 try:
+ *                     from frigate.util.object import get_startup_regions
+ *                     for region in get_startup_regions(frame_shape, region_min_size, region_grid):             # <<<<<<<<<<<<<<
+ *                         regions.append(region)
+ *                     startup_scan = False
+*/
+            __pyx_t_17 = NULL;
+            __Pyx_INCREF(__pyx_v_get_startup_regions);
+            __pyx_t_1 = __pyx_v_get_startup_regions; 
+            __pyx_t_5 = __Pyx_PyLong_From_int(__pyx_v_region_min_size); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 550, __pyx_L256_error)
+            __Pyx_GOTREF(__pyx_t_5);
+            __pyx_t_3 = 1;
+            #if CYTHON_UNPACK_METHODS
+            if (unlikely(PyMethod_Check(__pyx_t_1))) {
+              __pyx_t_17 = PyMethod_GET_SELF(__pyx_t_1);
+              assert(__pyx_t_17);
+              PyObject* __pyx__function = PyMethod_GET_FUNCTION(__pyx_t_1);
+              __Pyx_INCREF(__pyx_t_17);
+              __Pyx_INCREF(__pyx__function);
+              __Pyx_DECREF_SET(__pyx_t_1, __pyx__function);
+              __pyx_t_3 = 0;
+            }
+            #endif
+            {
+              PyObject *__pyx_callargs[4] = {__pyx_t_17, __pyx_v_frame_shape, __pyx_t_5, __pyx_v_region_grid};
+              __pyx_t_6 = __Pyx_PyObject_FastCall((PyObject*)__pyx_t_1, __pyx_callargs+__pyx_t_3, (4-__pyx_t_3) | (__pyx_t_3*__Pyx_PY_VECTORCALL_ARGUMENTS_OFFSET));
+              __Pyx_XDECREF(__pyx_t_17); __pyx_t_17 = 0;
+              __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
+              __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
+              if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 550, __pyx_L256_error)
+              __Pyx_GOTREF(__pyx_t_6);
+            }
+            if (likely(PyList_CheckExact(__pyx_t_6)) || PyTuple_CheckExact(__pyx_t_6)) {
+              __pyx_t_1 = __pyx_t_6; __Pyx_INCREF(__pyx_t_1);
+              __pyx_t_11 = 0;
+              __pyx_t_15 = NULL;
+            } else {
+              __pyx_t_11 = -1; __pyx_t_1 = PyObject_GetIter(__pyx_t_6); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 550, __pyx_L256_error)
+              __Pyx_GOTREF(__pyx_t_1);
+              __pyx_t_15 = (CYTHON_COMPILING_IN_LIMITED_API) ? PyIter_Next : __Pyx_PyObject_GetIterNextFunc(__pyx_t_1); if (unlikely(!__pyx_t_15)) __PYX_ERR(0, 550, __pyx_L256_error)
+            }
+            __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
+            for (;;) {
+              if (likely(!__pyx_t_15)) {
+                if (likely(PyList_CheckExact(__pyx_t_1))) {
+                  {
+                    Py_ssize_t __pyx_temp = __Pyx_PyList_GET_SIZE(__pyx_t_1);
+                    #if !CYTHON_ASSUME_SAFE_SIZE
+                    if (unlikely((__pyx_temp < 0))) __PYX_ERR(0, 550, __pyx_L256_error)
+                    #endif
+                    if (__pyx_t_11 >= __pyx_temp) break;
+                  }
+                  __pyx_t_6 = __Pyx_PyList_GET_ITEM_REF(__pyx_t_1, __pyx_t_11, __Pyx_ReferenceSharing_OwnStrongReference);
+                  ++__pyx_t_11;
+                } else {
+                  {
+                    Py_ssize_t __pyx_temp = __Pyx_PyTuple_GET_SIZE(__pyx_t_1);
+                    #if !CYTHON_ASSUME_SAFE_SIZE
+                    if (unlikely((__pyx_temp < 0))) __PYX_ERR(0, 550, __pyx_L256_error)
+                    #endif
+                    if (__pyx_t_11 >= __pyx_temp) break;
+                  }
+                  #if CYTHON_ASSUME_SAFE_MACROS && !CYTHON_AVOID_BORROWED_REFS
+                  __pyx_t_6 = __Pyx_NewRef(PyTuple_GET_ITEM(__pyx_t_1, __pyx_t_11));
+                  #else
+                  __pyx_t_6 = __Pyx_PySequence_ITEM(__pyx_t_1, __pyx_t_11);
+                  #endif
+                  ++__pyx_t_11;
+                }
+                if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 550, __pyx_L256_error)
+              } else {
+                __pyx_t_6 = __pyx_t_15(__pyx_t_1);
+                if (unlikely(!__pyx_t_6)) {
+                  PyObject* exc_type = PyErr_Occurred();
+                  if (exc_type) {
+                    if (unlikely(!__Pyx_PyErr_GivenExceptionMatches(exc_type, PyExc_StopIteration))) __PYX_ERR(0, 550, __pyx_L256_error)
+                    PyErr_Clear();
+                  }
+                  break;
+                }
+              }
+              __Pyx_GOTREF(__pyx_t_6);
+              __Pyx_XDECREF_SET(__pyx_v_region, __pyx_t_6);
+              __pyx_t_6 = 0;
+
+              /* "frigate/video/detect_cython.pyx":551
+ *                     from frigate.util.object import get_startup_regions
+ *                     for region in get_startup_regions(frame_shape, region_min_size, region_grid):
+ *                         regions.append(region)             # <<<<<<<<<<<<<<
+ *                     startup_scan = False
+ *                 except Exception:
+*/
+              __pyx_t_20 = __Pyx_PyObject_Append(__pyx_v_regions, __pyx_v_region); if (unlikely(__pyx_t_20 == ((int)-1))) __PYX_ERR(0, 551, __pyx_L256_error)
+
+              /* "frigate/video/detect_cython.pyx":550
+ *                 try:
+ *                     from frigate.util.object import get_startup_regions
+ *                     for region in get_startup_regions(frame_shape, region_min_size, region_grid):             # <<<<<<<<<<<<<<
+ *                         regions.append(region)
+ *                     startup_scan = False
+*/
+            }
+            __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
+
+            /* "frigate/video/detect_cython.pyx":552
+ *                     for region in get_startup_regions(frame_shape, region_min_size, region_grid):
+ *                         regions.append(region)
+ *                     startup_scan = False             # <<<<<<<<<<<<<<
+ *                 except Exception:
+ *                     startup_scan = False
+*/
+            __pyx_v_startup_scan = 0;
+
+            /* "frigate/video/detect_cython.pyx":548
+ *             # Startup scan
+ *             if startup_scan:
+ *                 try:             # <<<<<<<<<<<<<<
+ *                     from frigate.util.object import get_startup_regions
+ *                     for region in get_startup_regions(frame_shape, region_min_size, region_grid):
+*/
+          }
+          __Pyx_XDECREF(__pyx_t_7); __pyx_t_7 = 0;
+          __Pyx_XDECREF(__pyx_t_8); __pyx_t_8 = 0;
+          __Pyx_XDECREF(__pyx_t_9); __pyx_t_9 = 0;
+          goto __pyx_L263_try_end;
+          __pyx_L256_error:;
+          __Pyx_XDECREF(__pyx_t_1); __pyx_t_1 = 0;
+          __Pyx_XDECREF(__pyx_t_17); __pyx_t_17 = 0;
+          __Pyx_XDECREF(__pyx_t_2); __pyx_t_2 = 0;
+          __Pyx_XDECREF(__pyx_t_4); __pyx_t_4 = 0;
+          __Pyx_XDECREF(__pyx_t_5); __pyx_t_5 = 0;
+          __Pyx_XDECREF(__pyx_t_6); __pyx_t_6 = 0;
+
+          /* "frigate/video/detect_cython.pyx":553
+ *                         regions.append(region)
+ *                     startup_scan = False
+ *                 except Exception:             # <<<<<<<<<<<<<<
+ *                     startup_scan = False
+ * 
+*/
+          __pyx_t_12 = __Pyx_PyErr_ExceptionMatches(((PyObject *)(((PyTypeObject*)PyExc_Exception))));
+          if (__pyx_t_12) {
+            __Pyx_ErrRestore(0,0,0);
+
+            /* "frigate/video/detect_cython.pyx":554
+ *                     startup_scan = False
+ *                 except Exception:
+ *                     startup_scan = False             # <<<<<<<<<<<<<<
+ * 
+ *             # Batch detection
+*/
+            __pyx_v_startup_scan = 0;
+            goto __pyx_L257_exception_handled;
+          }
+          goto __pyx_L258_except_error;
+
+          /* "frigate/video/detect_cython.pyx":548
+ *             # Startup scan
+ *             if startup_scan:
+ *                 try:             # <<<<<<<<<<<<<<
+ *                     from frigate.util.object import get_startup_regions
+ *                     for region in get_startup_regions(frame_shape, region_min_size, region_grid):
+*/
+          __pyx_L258_except_error:;
+          __Pyx_XGIVEREF(__pyx_t_7);
+          __Pyx_XGIVEREF(__pyx_t_8);
+          __Pyx_XGIVEREF(__pyx_t_9);
+          __Pyx_ExceptionReset(__pyx_t_7, __pyx_t_8, __pyx_t_9);
+          goto __pyx_L1_error;
+          __pyx_L257_exception_handled:;
+          __Pyx_XGIVEREF(__pyx_t_7);
+          __Pyx_XGIVEREF(__pyx_t_8);
+          __Pyx_XGIVEREF(__pyx_t_9);
+          __Pyx_ExceptionReset(__pyx_t_7, __pyx_t_8, __pyx_t_9);
+          __pyx_L263_try_end:;
+        }
+
+        /* "frigate/video/detect_cython.pyx":547
+ * 
+ *             # Startup scan
+ *             if startup_scan:             # <<<<<<<<<<<<<<
+ *                 try:
+ *                     from frigate.util.object import get_startup_regions
+*/
+      }
+
+      /* "frigate/video/detect_cython.pyx":557
+ * 
+ *             # Batch detection
+ *             if regions:             # <<<<<<<<<<<<<<
+ *                 try:
+ *                     batch_results = object_detector.detect_batch(
+*/
+      __pyx_t_13 = __Pyx_PyObject_IsTrue(__pyx_v_regions); if (unlikely((__pyx_t_13 < 0))) __PYX_ERR(0, 557, __pyx_L1_error)
+      if (__pyx_t_13) {
+
+        /* "frigate/video/detect_cython.pyx":558
+ *             # Batch detection
+ *             if regions:
+ *                 try:             # <<<<<<<<<<<<<<
+ *                     batch_results = object_detector.detect_batch(
+ *                         regions, frame, model_config, frame_name
+*/
+        {
+          __Pyx_PyThreadState_declare
+          __Pyx_PyThreadState_assign
+          __Pyx_ExceptionSave(&__pyx_t_9, &__pyx_t_8, &__pyx_t_7);
+          __Pyx_XGOTREF(__pyx_t_9);
+          __Pyx_XGOTREF(__pyx_t_8);
+          __Pyx_XGOTREF(__pyx_t_7);
+          /*try:*/ {
+
+            /* "frigate/video/detect_cython.pyx":559
+ *             if regions:
+ *                 try:
+ *                     batch_results = object_detector.detect_batch(             # <<<<<<<<<<<<<<
+ *                         regions, frame, model_config, frame_name
+ *                     )
+*/
+            __pyx_t_6 = __pyx_v_object_detector;
+            __Pyx_INCREF(__pyx_t_6);
+
+            /* "frigate/video/detect_cython.pyx":560
+ *                 try:
+ *                     batch_results = object_detector.detect_batch(
+ *                         regions, frame, model_config, frame_name             # <<<<<<<<<<<<<<
+ *                     )
+ * 
+*/
+            __pyx_t_3 = 0;
+            {
+              PyObject *__pyx_callargs[5] = {__pyx_t_6, __pyx_v_regions, __pyx_v_frame, __pyx_v_model_config, __pyx_v_frame_name};
+              __pyx_t_1 = __Pyx_PyObject_FastCallMethod((PyObject*)__pyx_mstate_global->__pyx_n_u_detect_batch, __pyx_callargs+__pyx_t_3, (5-__pyx_t_3) | (1*__Pyx_PY_VECTORCALL_ARGUMENTS_OFFSET));
+              __Pyx_XDECREF(__pyx_t_6); __pyx_t_6 = 0;
+              if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 559, __pyx_L270_error)
+              __Pyx_GOTREF(__pyx_t_1);
+            }
+            __Pyx_XDECREF_SET(__pyx_v_batch_results, __pyx_t_1);
+            __pyx_t_1 = 0;
+
+            /* "frigate/video/detect_cython.pyx":564
+ * 
+ *                     # Process each region's detections
+ *                     for i, region in enumerate(regions):             # <<<<<<<<<<<<<<
+ *                         region_detections = batch_results[i]
+ * 
+*/
+            __pyx_t_12 = 0;
+            if (likely(PyList_CheckExact(__pyx_v_regions)) || PyTuple_CheckExact(__pyx_v_regions)) {
+              __pyx_t_1 = __pyx_v_regions; __Pyx_INCREF(__pyx_t_1);
+              __pyx_t_11 = 0;
+              __pyx_t_15 = NULL;
+            } else {
+              __pyx_t_11 = -1; __pyx_t_1 = PyObject_GetIter(__pyx_v_regions); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 564, __pyx_L270_error)
+              __Pyx_GOTREF(__pyx_t_1);
+              __pyx_t_15 = (CYTHON_COMPILING_IN_LIMITED_API) ? PyIter_Next : __Pyx_PyObject_GetIterNextFunc(__pyx_t_1); if (unlikely(!__pyx_t_15)) __PYX_ERR(0, 564, __pyx_L270_error)
+            }
+            for (;;) {
+              if (likely(!__pyx_t_15)) {
+                if (likely(PyList_CheckExact(__pyx_t_1))) {
+                  {
+                    Py_ssize_t __pyx_temp = __Pyx_PyList_GET_SIZE(__pyx_t_1);
+                    #if !CYTHON_ASSUME_SAFE_SIZE
+                    if (unlikely((__pyx_temp < 0))) __PYX_ERR(0, 564, __pyx_L270_error)
+                    #endif
+                    if (__pyx_t_11 >= __pyx_temp) break;
+                  }
+                  __pyx_t_6 = __Pyx_PyList_GET_ITEM_REF(__pyx_t_1, __pyx_t_11, __Pyx_ReferenceSharing_OwnStrongReference);
+                  ++__pyx_t_11;
+                } else {
+                  {
+                    Py_ssize_t __pyx_temp = __Pyx_PyTuple_GET_SIZE(__pyx_t_1);
+                    #if !CYTHON_ASSUME_SAFE_SIZE
+                    if (unlikely((__pyx_temp < 0))) __PYX_ERR(0, 564, __pyx_L270_error)
+                    #endif
+                    if (__pyx_t_11 >= __pyx_temp) break;
+                  }
+                  #if CYTHON_ASSUME_SAFE_MACROS && !CYTHON_AVOID_BORROWED_REFS
+                  __pyx_t_6 = __Pyx_NewRef(PyTuple_GET_ITEM(__pyx_t_1, __pyx_t_11));
+                  #else
+                  __pyx_t_6 = __Pyx_PySequence_ITEM(__pyx_t_1, __pyx_t_11);
+                  #endif
+                  ++__pyx_t_11;
+                }
+                if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 564, __pyx_L270_error)
+              } else {
+                __pyx_t_6 = __pyx_t_15(__pyx_t_1);
+                if (unlikely(!__pyx_t_6)) {
+                  PyObject* exc_type = PyErr_Occurred();
+                  if (exc_type) {
+                    if (unlikely(!__Pyx_PyErr_GivenExceptionMatches(exc_type, PyExc_StopIteration))) __PYX_ERR(0, 564, __pyx_L270_error)
+                    PyErr_Clear();
+                  }
+                  break;
+                }
+              }
+              __Pyx_GOTREF(__pyx_t_6);
+              __Pyx_XDECREF_SET(__pyx_v_region, __pyx_t_6);
+              __pyx_t_6 = 0;
+              __pyx_v_i = __pyx_t_12;
+              __pyx_t_12 = (__pyx_t_12 + 1);
+
+              /* "frigate/video/detect_cython.pyx":565
+ *                     # Process each region's detections
+ *                     for i, region in enumerate(regions):
+ *                         region_detections = batch_results[i]             # <<<<<<<<<<<<<<
+ * 
+ *                         if not region_detections:
+*/
+              __pyx_t_6 = __Pyx_GetItemInt(__pyx_v_batch_results, __pyx_v_i, int, 1, __Pyx_PyLong_From_int, 0, 0, 0, 1, __Pyx_ReferenceSharing_OwnStrongReference); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 565, __pyx_L270_error)
+              __Pyx_GOTREF(__pyx_t_6);
+              __Pyx_XDECREF_SET(__pyx_v_region_detections, __pyx_t_6);
+              __pyx_t_6 = 0;
+
+              /* "frigate/video/detect_cython.pyx":567
+ *                         region_detections = batch_results[i]
+ * 
+ *                         if not region_detections:             # <<<<<<<<<<<<<<
+ *                             continue
+ * 
+*/
+              __pyx_t_13 = __Pyx_PyObject_IsTrue(__pyx_v_region_detections); if (unlikely((__pyx_t_13 < 0))) __PYX_ERR(0, 567, __pyx_L270_error)
+              __pyx_t_14 = (!__pyx_t_13);
+              if (__pyx_t_14) {
+
+                /* "frigate/video/detect_cython.pyx":568
+ * 
+ *                         if not region_detections:
+ *                             continue             # <<<<<<<<<<<<<<
+ * 
+ *                         # Convert normalized boxes to frame coordinates
+*/
+                goto __pyx_L278_continue;
+
+                /* "frigate/video/detect_cython.pyx":567
+ *                         region_detections = batch_results[i]
+ * 
+ *                         if not region_detections:             # <<<<<<<<<<<<<<
+ *                             continue
+ * 
+*/
+              }
+
+              /* "frigate/video/detect_cython.pyx":571
+ * 
+ *                         # Convert normalized boxes to frame coordinates
+ *                         from frigate.detectors.detection_cython import convert_detection_boxes             # <<<<<<<<<<<<<<
+ *                         converted = convert_detection_boxes(
+ *                             camera_config.detect.width,
+*/
+              {
+                PyObject* const __pyx_imported_names[] = {__pyx_mstate_global->__pyx_n_u_convert_detection_boxes};
+                __pyx_t_19 = __Pyx_Import(__pyx_mstate_global->__pyx_n_u_frigate_detectors_detection_cyth, __pyx_imported_names, 1, NULL, 0); if (unlikely(!__pyx_t_19)) __PYX_ERR(0, 571, __pyx_L270_error)
+              }
+              __pyx_t_6 = __pyx_t_19;
+              __Pyx_GOTREF(__pyx_t_6);
+              {
+                PyObject* const __pyx_imported_names[] = {__pyx_mstate_global->__pyx_n_u_convert_detection_boxes};
+                __pyx_t_21 = 0; {
+                  __pyx_t_5 = __Pyx_ImportFrom(__pyx_t_6, __pyx_imported_names[__pyx_t_21]); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 571, __pyx_L270_error)
+                  __Pyx_GOTREF(__pyx_t_5);
+                  switch (__pyx_t_21) {
+                    case 0:
+                    __Pyx_INCREF(__pyx_t_5);
+                    __Pyx_XDECREF_SET(__pyx_v_convert_detection_boxes, __pyx_t_5);
+                    break;
+                    default:;
+                  }
+                  __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
+                }
+              }
+              __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
+
+              /* "frigate/video/detect_cython.pyx":572
+ *                         # Convert normalized boxes to frame coordinates
+ *                         from frigate.detectors.detection_cython import convert_detection_boxes
+ *                         converted = convert_detection_boxes(             # <<<<<<<<<<<<<<
+ *                             camera_config.detect.width,
+ *                             camera_config.detect.height,
+*/
+              __pyx_t_5 = NULL;
+              __Pyx_INCREF(__pyx_v_convert_detection_boxes);
+              __pyx_t_17 = __pyx_v_convert_detection_boxes; 
+
+              /* "frigate/video/detect_cython.pyx":573
+ *                         from frigate.detectors.detection_cython import convert_detection_boxes
+ *                         converted = convert_detection_boxes(
+ *                             camera_config.detect.width,             # <<<<<<<<<<<<<<
+ *                             camera_config.detect.height,
+ *                             region[0],
+*/
+              __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_v_camera_config, __pyx_mstate_global->__pyx_n_u_detect); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 573, __pyx_L270_error)
+              __Pyx_GOTREF(__pyx_t_2);
+              __pyx_t_4 = __Pyx_PyObject_GetAttrStr(__pyx_t_2, __pyx_mstate_global->__pyx_n_u_width); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 573, __pyx_L270_error)
+              __Pyx_GOTREF(__pyx_t_4);
+              __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
+
+              /* "frigate/video/detect_cython.pyx":574
+ *                         converted = convert_detection_boxes(
+ *                             camera_config.detect.width,
+ *                             camera_config.detect.height,             # <<<<<<<<<<<<<<
+ *                             region[0],
+ *                             region[1],
+*/
+              __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_v_camera_config, __pyx_mstate_global->__pyx_n_u_detect); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 574, __pyx_L270_error)
+              __Pyx_GOTREF(__pyx_t_2);
+              __pyx_t_22 = __Pyx_PyObject_GetAttrStr(__pyx_t_2, __pyx_mstate_global->__pyx_n_u_height); if (unlikely(!__pyx_t_22)) __PYX_ERR(0, 574, __pyx_L270_error)
+              __Pyx_GOTREF(__pyx_t_22);
+              __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
+
+              /* "frigate/video/detect_cython.pyx":575
+ *                             camera_config.detect.width,
+ *                             camera_config.detect.height,
+ *                             region[0],             # <<<<<<<<<<<<<<
+ *                             region[1],
+ *                             region[2] - region[0],
+*/
+              __pyx_t_2 = __Pyx_GetItemInt(__pyx_v_region, 0, long, 1, __Pyx_PyLong_From_long, 0, 0, 0, 1, __Pyx_ReferenceSharing_OwnStrongReference); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 575, __pyx_L270_error)
+              __Pyx_GOTREF(__pyx_t_2);
+
+              /* "frigate/video/detect_cython.pyx":576
+ *                             camera_config.detect.height,
+ *                             region[0],
+ *                             region[1],             # <<<<<<<<<<<<<<
+ *                             region[2] - region[0],
+ *                             region_detections,
+*/
+              __pyx_t_23 = __Pyx_GetItemInt(__pyx_v_region, 1, long, 1, __Pyx_PyLong_From_long, 0, 0, 0, 1, __Pyx_ReferenceSharing_OwnStrongReference); if (unlikely(!__pyx_t_23)) __PYX_ERR(0, 576, __pyx_L270_error)
+              __Pyx_GOTREF(__pyx_t_23);
+
+              /* "frigate/video/detect_cython.pyx":577
+ *                             region[0],
+ *                             region[1],
+ *                             region[2] - region[0],             # <<<<<<<<<<<<<<
+ *                             region_detections,
+ *                             region,
+*/
+              __pyx_t_24 = __Pyx_GetItemInt(__pyx_v_region, 2, long, 1, __Pyx_PyLong_From_long, 0, 0, 0, 1, __Pyx_ReferenceSharing_OwnStrongReference); if (unlikely(!__pyx_t_24)) __PYX_ERR(0, 577, __pyx_L270_error)
+              __Pyx_GOTREF(__pyx_t_24);
+              __pyx_t_25 = __Pyx_GetItemInt(__pyx_v_region, 0, long, 1, __Pyx_PyLong_From_long, 0, 0, 0, 1, __Pyx_ReferenceSharing_OwnStrongReference); if (unlikely(!__pyx_t_25)) __PYX_ERR(0, 577, __pyx_L270_error)
+              __Pyx_GOTREF(__pyx_t_25);
+              __pyx_t_26 = PyNumber_Subtract(__pyx_t_24, __pyx_t_25); if (unlikely(!__pyx_t_26)) __PYX_ERR(0, 577, __pyx_L270_error)
+              __Pyx_GOTREF(__pyx_t_26);
+              __Pyx_DECREF(__pyx_t_24); __pyx_t_24 = 0;
+              __Pyx_DECREF(__pyx_t_25); __pyx_t_25 = 0;
+
+              /* "frigate/video/detect_cython.pyx":579
+ *                             region[2] - region[0],
+ *                             region_detections,
+ *                             region,             # <<<<<<<<<<<<<<
+ *                         )
+ * 
+*/
+              __pyx_t_3 = 1;
+              #if CYTHON_UNPACK_METHODS
+              if (unlikely(PyMethod_Check(__pyx_t_17))) {
+                __pyx_t_5 = PyMethod_GET_SELF(__pyx_t_17);
+                assert(__pyx_t_5);
+                PyObject* __pyx__function = PyMethod_GET_FUNCTION(__pyx_t_17);
+                __Pyx_INCREF(__pyx_t_5);
+                __Pyx_INCREF(__pyx__function);
+                __Pyx_DECREF_SET(__pyx_t_17, __pyx__function);
+                __pyx_t_3 = 0;
+              }
+              #endif
+              {
+                PyObject *__pyx_callargs[8] = {__pyx_t_5, __pyx_t_4, __pyx_t_22, __pyx_t_2, __pyx_t_23, __pyx_t_26, __pyx_v_region_detections, __pyx_v_region};
+                __pyx_t_6 = __Pyx_PyObject_FastCall((PyObject*)__pyx_t_17, __pyx_callargs+__pyx_t_3, (8-__pyx_t_3) | (__pyx_t_3*__Pyx_PY_VECTORCALL_ARGUMENTS_OFFSET));
+                __Pyx_XDECREF(__pyx_t_5); __pyx_t_5 = 0;
+                __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
+                __Pyx_DECREF(__pyx_t_22); __pyx_t_22 = 0;
+                __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
+                __Pyx_DECREF(__pyx_t_23); __pyx_t_23 = 0;
+                __Pyx_DECREF(__pyx_t_26); __pyx_t_26 = 0;
+                __Pyx_DECREF(__pyx_t_17); __pyx_t_17 = 0;
+                if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 572, __pyx_L270_error)
+                __Pyx_GOTREF(__pyx_t_6);
+              }
+              __Pyx_XDECREF_SET(__pyx_v_converted, __pyx_t_6);
+              __pyx_t_6 = 0;
+
+              /* "frigate/video/detect_cython.pyx":582
+ *                         )
+ * 
+ *                         if converted:             # <<<<<<<<<<<<<<
+ *                             from frigate.detectors.detection_cython import is_object_filtered_batch
+ *                             labels = [d[0] for d in converted]
+*/
+              __pyx_t_14 = __Pyx_PyObject_IsTrue(__pyx_v_converted); if (unlikely((__pyx_t_14 < 0))) __PYX_ERR(0, 582, __pyx_L270_error)
+              if (__pyx_t_14) {
+
+                /* "frigate/video/detect_cython.pyx":583
+ * 
+ *                         if converted:
+ *                             from frigate.detectors.detection_cython import is_object_filtered_batch             # <<<<<<<<<<<<<<
+ *                             labels = [d[0] for d in converted]
+ *                             scores = [d[1] for d in converted]
+*/
+                {
+                  PyObject* const __pyx_imported_names[] = {__pyx_mstate_global->__pyx_n_u_is_object_filtered_batch};
+                  __pyx_t_19 = __Pyx_Import(__pyx_mstate_global->__pyx_n_u_frigate_detectors_detection_cyth, __pyx_imported_names, 1, NULL, 0); if (unlikely(!__pyx_t_19)) __PYX_ERR(0, 583, __pyx_L270_error)
+                }
+                __pyx_t_6 = __pyx_t_19;
+                __Pyx_GOTREF(__pyx_t_6);
+                {
+                  PyObject* const __pyx_imported_names[] = {__pyx_mstate_global->__pyx_n_u_is_object_filtered_batch};
+                  __pyx_t_21 = 0; {
+                    __pyx_t_17 = __Pyx_ImportFrom(__pyx_t_6, __pyx_imported_names[__pyx_t_21]); if (unlikely(!__pyx_t_17)) __PYX_ERR(0, 583, __pyx_L270_error)
+                    __Pyx_GOTREF(__pyx_t_17);
+                    switch (__pyx_t_21) {
+                      case 0:
+                      __Pyx_INCREF(__pyx_t_17);
+                      __Pyx_XDECREF_SET(__pyx_v_is_object_filtered_batch, __pyx_t_17);
+                      break;
+                      default:;
+                    }
+                    __Pyx_DECREF(__pyx_t_17); __pyx_t_17 = 0;
+                  }
+                }
+                __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
+
+                /* "frigate/video/detect_cython.pyx":584
+ *                         if converted:
+ *                             from frigate.detectors.detection_cython import is_object_filtered_batch
+ *                             labels = [d[0] for d in converted]             # <<<<<<<<<<<<<<
+ *                             scores = [d[1] for d in converted]
+ *                             boxes = [d[2] for d in converted]
+*/
+                { /* enter inner scope */
+                  __pyx_t_6 = PyList_New(0); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 584, __pyx_L284_error)
+                  __Pyx_GOTREF(__pyx_t_6);
+                  if (likely(PyList_CheckExact(__pyx_v_converted)) || PyTuple_CheckExact(__pyx_v_converted)) {
+                    __pyx_t_17 = __pyx_v_converted; __Pyx_INCREF(__pyx_t_17);
+                    __pyx_t_21 = 0;
+                    __pyx_t_27 = NULL;
+                  } else {
+                    __pyx_t_21 = -1; __pyx_t_17 = PyObject_GetIter(__pyx_v_converted); if (unlikely(!__pyx_t_17)) __PYX_ERR(0, 584, __pyx_L284_error)
+                    __Pyx_GOTREF(__pyx_t_17);
+                    __pyx_t_27 = (CYTHON_COMPILING_IN_LIMITED_API) ? PyIter_Next : __Pyx_PyObject_GetIterNextFunc(__pyx_t_17); if (unlikely(!__pyx_t_27)) __PYX_ERR(0, 584, __pyx_L284_error)
+                  }
+                  for (;;) {
+                    if (likely(!__pyx_t_27)) {
+                      if (likely(PyList_CheckExact(__pyx_t_17))) {
+                        {
+                          Py_ssize_t __pyx_temp = __Pyx_PyList_GET_SIZE(__pyx_t_17);
+                          #if !CYTHON_ASSUME_SAFE_SIZE
+                          if (unlikely((__pyx_temp < 0))) __PYX_ERR(0, 584, __pyx_L284_error)
+                          #endif
+                          if (__pyx_t_21 >= __pyx_temp) break;
+                        }
+                        __pyx_t_26 = __Pyx_PyList_GET_ITEM_REF(__pyx_t_17, __pyx_t_21, __Pyx_ReferenceSharing_OwnStrongReference);
+                        ++__pyx_t_21;
+                      } else {
+                        {
+                          Py_ssize_t __pyx_temp = __Pyx_PyTuple_GET_SIZE(__pyx_t_17);
+                          #if !CYTHON_ASSUME_SAFE_SIZE
+                          if (unlikely((__pyx_temp < 0))) __PYX_ERR(0, 584, __pyx_L284_error)
+                          #endif
+                          if (__pyx_t_21 >= __pyx_temp) break;
+                        }
+                        #if CYTHON_ASSUME_SAFE_MACROS && !CYTHON_AVOID_BORROWED_REFS
+                        __pyx_t_26 = __Pyx_NewRef(PyTuple_GET_ITEM(__pyx_t_17, __pyx_t_21));
+                        #else
+                        __pyx_t_26 = __Pyx_PySequence_ITEM(__pyx_t_17, __pyx_t_21);
+                        #endif
+                        ++__pyx_t_21;
+                      }
+                      if (unlikely(!__pyx_t_26)) __PYX_ERR(0, 584, __pyx_L284_error)
+                    } else {
+                      __pyx_t_26 = __pyx_t_27(__pyx_t_17);
+                      if (unlikely(!__pyx_t_26)) {
+                        PyObject* exc_type = PyErr_Occurred();
+                        if (exc_type) {
+                          if (unlikely(!__Pyx_PyErr_GivenExceptionMatches(exc_type, PyExc_StopIteration))) __PYX_ERR(0, 584, __pyx_L284_error)
+                          PyErr_Clear();
+                        }
+                        break;
+                      }
+                    }
+                    __Pyx_GOTREF(__pyx_t_26);
+                    __Pyx_XDECREF_SET(__pyx_8genexpr6__pyx_v_d, __pyx_t_26);
+                    __pyx_t_26 = 0;
+                    __pyx_t_26 = __Pyx_GetItemInt(__pyx_8genexpr6__pyx_v_d, 0, long, 1, __Pyx_PyLong_From_long, 0, 0, 0, 1, __Pyx_ReferenceSharing_SharedReference); if (unlikely(!__pyx_t_26)) __PYX_ERR(0, 584, __pyx_L284_error)
+                    __Pyx_GOTREF(__pyx_t_26);
+                    if (unlikely(__Pyx_ListComp_Append(__pyx_t_6, (PyObject*)__pyx_t_26))) __PYX_ERR(0, 584, __pyx_L284_error)
+                    __Pyx_DECREF(__pyx_t_26); __pyx_t_26 = 0;
+                  }
+                  __Pyx_DECREF(__pyx_t_17); __pyx_t_17 = 0;
+                  __Pyx_XDECREF(__pyx_8genexpr6__pyx_v_d); __pyx_8genexpr6__pyx_v_d = 0;
+                  goto __pyx_L288_exit_scope;
+                  __pyx_L284_error:;
+                  __Pyx_XDECREF(__pyx_8genexpr6__pyx_v_d); __pyx_8genexpr6__pyx_v_d = 0;
+                  goto __pyx_L270_error;
+                  __pyx_L288_exit_scope:;
+                } /* exit inner scope */
+                __Pyx_XDECREF_SET(__pyx_v_labels, ((PyObject*)__pyx_t_6));
+                __pyx_t_6 = 0;
+
+                /* "frigate/video/detect_cython.pyx":585
+ *                             from frigate.detectors.detection_cython import is_object_filtered_batch
+ *                             labels = [d[0] for d in converted]
+ *                             scores = [d[1] for d in converted]             # <<<<<<<<<<<<<<
+ *                             boxes = [d[2] for d in converted]
+ *                             areas = [d[3] for d in converted]
+*/
+                { /* enter inner scope */
+                  __pyx_t_6 = PyList_New(0); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 585, __pyx_L291_error)
+                  __Pyx_GOTREF(__pyx_t_6);
+                  if (likely(PyList_CheckExact(__pyx_v_converted)) || PyTuple_CheckExact(__pyx_v_converted)) {
+                    __pyx_t_17 = __pyx_v_converted; __Pyx_INCREF(__pyx_t_17);
+                    __pyx_t_21 = 0;
+                    __pyx_t_27 = NULL;
+                  } else {
+                    __pyx_t_21 = -1; __pyx_t_17 = PyObject_GetIter(__pyx_v_converted); if (unlikely(!__pyx_t_17)) __PYX_ERR(0, 585, __pyx_L291_error)
+                    __Pyx_GOTREF(__pyx_t_17);
+                    __pyx_t_27 = (CYTHON_COMPILING_IN_LIMITED_API) ? PyIter_Next : __Pyx_PyObject_GetIterNextFunc(__pyx_t_17); if (unlikely(!__pyx_t_27)) __PYX_ERR(0, 585, __pyx_L291_error)
+                  }
+                  for (;;) {
+                    if (likely(!__pyx_t_27)) {
+                      if (likely(PyList_CheckExact(__pyx_t_17))) {
+                        {
+                          Py_ssize_t __pyx_temp = __Pyx_PyList_GET_SIZE(__pyx_t_17);
+                          #if !CYTHON_ASSUME_SAFE_SIZE
+                          if (unlikely((__pyx_temp < 0))) __PYX_ERR(0, 585, __pyx_L291_error)
+                          #endif
+                          if (__pyx_t_21 >= __pyx_temp) break;
+                        }
+                        __pyx_t_26 = __Pyx_PyList_GET_ITEM_REF(__pyx_t_17, __pyx_t_21, __Pyx_ReferenceSharing_OwnStrongReference);
+                        ++__pyx_t_21;
+                      } else {
+                        {
+                          Py_ssize_t __pyx_temp = __Pyx_PyTuple_GET_SIZE(__pyx_t_17);
+                          #if !CYTHON_ASSUME_SAFE_SIZE
+                          if (unlikely((__pyx_temp < 0))) __PYX_ERR(0, 585, __pyx_L291_error)
+                          #endif
+                          if (__pyx_t_21 >= __pyx_temp) break;
+                        }
+                        #if CYTHON_ASSUME_SAFE_MACROS && !CYTHON_AVOID_BORROWED_REFS
+                        __pyx_t_26 = __Pyx_NewRef(PyTuple_GET_ITEM(__pyx_t_17, __pyx_t_21));
+                        #else
+                        __pyx_t_26 = __Pyx_PySequence_ITEM(__pyx_t_17, __pyx_t_21);
+                        #endif
+                        ++__pyx_t_21;
+                      }
+                      if (unlikely(!__pyx_t_26)) __PYX_ERR(0, 585, __pyx_L291_error)
+                    } else {
+                      __pyx_t_26 = __pyx_t_27(__pyx_t_17);
+                      if (unlikely(!__pyx_t_26)) {
+                        PyObject* exc_type = PyErr_Occurred();
+                        if (exc_type) {
+                          if (unlikely(!__Pyx_PyErr_GivenExceptionMatches(exc_type, PyExc_StopIteration))) __PYX_ERR(0, 585, __pyx_L291_error)
+                          PyErr_Clear();
+                        }
+                        break;
+                      }
+                    }
+                    __Pyx_GOTREF(__pyx_t_26);
+                    __Pyx_XDECREF_SET(__pyx_8genexpr7__pyx_v_d, __pyx_t_26);
+                    __pyx_t_26 = 0;
+                    __pyx_t_26 = __Pyx_GetItemInt(__pyx_8genexpr7__pyx_v_d, 1, long, 1, __Pyx_PyLong_From_long, 0, 0, 0, 1, __Pyx_ReferenceSharing_SharedReference); if (unlikely(!__pyx_t_26)) __PYX_ERR(0, 585, __pyx_L291_error)
+                    __Pyx_GOTREF(__pyx_t_26);
+                    if (unlikely(__Pyx_ListComp_Append(__pyx_t_6, (PyObject*)__pyx_t_26))) __PYX_ERR(0, 585, __pyx_L291_error)
+                    __Pyx_DECREF(__pyx_t_26); __pyx_t_26 = 0;
+                  }
+                  __Pyx_DECREF(__pyx_t_17); __pyx_t_17 = 0;
+                  __Pyx_XDECREF(__pyx_8genexpr7__pyx_v_d); __pyx_8genexpr7__pyx_v_d = 0;
+                  goto __pyx_L295_exit_scope;
+                  __pyx_L291_error:;
+                  __Pyx_XDECREF(__pyx_8genexpr7__pyx_v_d); __pyx_8genexpr7__pyx_v_d = 0;
+                  goto __pyx_L270_error;
+                  __pyx_L295_exit_scope:;
+                } /* exit inner scope */
+                __Pyx_XDECREF_SET(__pyx_v_scores, ((PyObject*)__pyx_t_6));
+                __pyx_t_6 = 0;
+
+                /* "frigate/video/detect_cython.pyx":586
+ *                             labels = [d[0] for d in converted]
+ *                             scores = [d[1] for d in converted]
+ *                             boxes = [d[2] for d in converted]             # <<<<<<<<<<<<<<
+ *                             areas = [d[3] for d in converted]
+ *                             ratios = [d[4] for d in converted]
+*/
+                { /* enter inner scope */
+                  __pyx_t_6 = PyList_New(0); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 586, __pyx_L298_error)
+                  __Pyx_GOTREF(__pyx_t_6);
+                  if (likely(PyList_CheckExact(__pyx_v_converted)) || PyTuple_CheckExact(__pyx_v_converted)) {
+                    __pyx_t_17 = __pyx_v_converted; __Pyx_INCREF(__pyx_t_17);
+                    __pyx_t_21 = 0;
+                    __pyx_t_27 = NULL;
+                  } else {
+                    __pyx_t_21 = -1; __pyx_t_17 = PyObject_GetIter(__pyx_v_converted); if (unlikely(!__pyx_t_17)) __PYX_ERR(0, 586, __pyx_L298_error)
+                    __Pyx_GOTREF(__pyx_t_17);
+                    __pyx_t_27 = (CYTHON_COMPILING_IN_LIMITED_API) ? PyIter_Next : __Pyx_PyObject_GetIterNextFunc(__pyx_t_17); if (unlikely(!__pyx_t_27)) __PYX_ERR(0, 586, __pyx_L298_error)
+                  }
+                  for (;;) {
+                    if (likely(!__pyx_t_27)) {
+                      if (likely(PyList_CheckExact(__pyx_t_17))) {
+                        {
+                          Py_ssize_t __pyx_temp = __Pyx_PyList_GET_SIZE(__pyx_t_17);
+                          #if !CYTHON_ASSUME_SAFE_SIZE
+                          if (unlikely((__pyx_temp < 0))) __PYX_ERR(0, 586, __pyx_L298_error)
+                          #endif
+                          if (__pyx_t_21 >= __pyx_temp) break;
+                        }
+                        __pyx_t_26 = __Pyx_PyList_GET_ITEM_REF(__pyx_t_17, __pyx_t_21, __Pyx_ReferenceSharing_OwnStrongReference);
+                        ++__pyx_t_21;
+                      } else {
+                        {
+                          Py_ssize_t __pyx_temp = __Pyx_PyTuple_GET_SIZE(__pyx_t_17);
+                          #if !CYTHON_ASSUME_SAFE_SIZE
+                          if (unlikely((__pyx_temp < 0))) __PYX_ERR(0, 586, __pyx_L298_error)
+                          #endif
+                          if (__pyx_t_21 >= __pyx_temp) break;
+                        }
+                        #if CYTHON_ASSUME_SAFE_MACROS && !CYTHON_AVOID_BORROWED_REFS
+                        __pyx_t_26 = __Pyx_NewRef(PyTuple_GET_ITEM(__pyx_t_17, __pyx_t_21));
+                        #else
+                        __pyx_t_26 = __Pyx_PySequence_ITEM(__pyx_t_17, __pyx_t_21);
+                        #endif
+                        ++__pyx_t_21;
+                      }
+                      if (unlikely(!__pyx_t_26)) __PYX_ERR(0, 586, __pyx_L298_error)
+                    } else {
+                      __pyx_t_26 = __pyx_t_27(__pyx_t_17);
+                      if (unlikely(!__pyx_t_26)) {
+                        PyObject* exc_type = PyErr_Occurred();
+                        if (exc_type) {
+                          if (unlikely(!__Pyx_PyErr_GivenExceptionMatches(exc_type, PyExc_StopIteration))) __PYX_ERR(0, 586, __pyx_L298_error)
+                          PyErr_Clear();
+                        }
+                        break;
+                      }
+                    }
+                    __Pyx_GOTREF(__pyx_t_26);
+                    __Pyx_XDECREF_SET(__pyx_8genexpr8__pyx_v_d, __pyx_t_26);
+                    __pyx_t_26 = 0;
+                    __pyx_t_26 = __Pyx_GetItemInt(__pyx_8genexpr8__pyx_v_d, 2, long, 1, __Pyx_PyLong_From_long, 0, 0, 0, 1, __Pyx_ReferenceSharing_SharedReference); if (unlikely(!__pyx_t_26)) __PYX_ERR(0, 586, __pyx_L298_error)
+                    __Pyx_GOTREF(__pyx_t_26);
+                    if (unlikely(__Pyx_ListComp_Append(__pyx_t_6, (PyObject*)__pyx_t_26))) __PYX_ERR(0, 586, __pyx_L298_error)
+                    __Pyx_DECREF(__pyx_t_26); __pyx_t_26 = 0;
+                  }
+                  __Pyx_DECREF(__pyx_t_17); __pyx_t_17 = 0;
+                  __Pyx_XDECREF(__pyx_8genexpr8__pyx_v_d); __pyx_8genexpr8__pyx_v_d = 0;
+                  goto __pyx_L302_exit_scope;
+                  __pyx_L298_error:;
+                  __Pyx_XDECREF(__pyx_8genexpr8__pyx_v_d); __pyx_8genexpr8__pyx_v_d = 0;
+                  goto __pyx_L270_error;
+                  __pyx_L302_exit_scope:;
+                } /* exit inner scope */
+                __Pyx_XDECREF_SET(__pyx_v_boxes, ((PyObject*)__pyx_t_6));
+                __pyx_t_6 = 0;
+
+                /* "frigate/video/detect_cython.pyx":587
+ *                             scores = [d[1] for d in converted]
+ *                             boxes = [d[2] for d in converted]
+ *                             areas = [d[3] for d in converted]             # <<<<<<<<<<<<<<
+ *                             ratios = [d[4] for d in converted]
+ * 
+*/
+                { /* enter inner scope */
+                  __pyx_t_6 = PyList_New(0); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 587, __pyx_L305_error)
+                  __Pyx_GOTREF(__pyx_t_6);
+                  if (likely(PyList_CheckExact(__pyx_v_converted)) || PyTuple_CheckExact(__pyx_v_converted)) {
+                    __pyx_t_17 = __pyx_v_converted; __Pyx_INCREF(__pyx_t_17);
+                    __pyx_t_21 = 0;
+                    __pyx_t_27 = NULL;
+                  } else {
+                    __pyx_t_21 = -1; __pyx_t_17 = PyObject_GetIter(__pyx_v_converted); if (unlikely(!__pyx_t_17)) __PYX_ERR(0, 587, __pyx_L305_error)
+                    __Pyx_GOTREF(__pyx_t_17);
+                    __pyx_t_27 = (CYTHON_COMPILING_IN_LIMITED_API) ? PyIter_Next : __Pyx_PyObject_GetIterNextFunc(__pyx_t_17); if (unlikely(!__pyx_t_27)) __PYX_ERR(0, 587, __pyx_L305_error)
+                  }
+                  for (;;) {
+                    if (likely(!__pyx_t_27)) {
+                      if (likely(PyList_CheckExact(__pyx_t_17))) {
+                        {
+                          Py_ssize_t __pyx_temp = __Pyx_PyList_GET_SIZE(__pyx_t_17);
+                          #if !CYTHON_ASSUME_SAFE_SIZE
+                          if (unlikely((__pyx_temp < 0))) __PYX_ERR(0, 587, __pyx_L305_error)
+                          #endif
+                          if (__pyx_t_21 >= __pyx_temp) break;
+                        }
+                        __pyx_t_26 = __Pyx_PyList_GET_ITEM_REF(__pyx_t_17, __pyx_t_21, __Pyx_ReferenceSharing_OwnStrongReference);
+                        ++__pyx_t_21;
+                      } else {
+                        {
+                          Py_ssize_t __pyx_temp = __Pyx_PyTuple_GET_SIZE(__pyx_t_17);
+                          #if !CYTHON_ASSUME_SAFE_SIZE
+                          if (unlikely((__pyx_temp < 0))) __PYX_ERR(0, 587, __pyx_L305_error)
+                          #endif
+                          if (__pyx_t_21 >= __pyx_temp) break;
+                        }
+                        #if CYTHON_ASSUME_SAFE_MACROS && !CYTHON_AVOID_BORROWED_REFS
+                        __pyx_t_26 = __Pyx_NewRef(PyTuple_GET_ITEM(__pyx_t_17, __pyx_t_21));
+                        #else
+                        __pyx_t_26 = __Pyx_PySequence_ITEM(__pyx_t_17, __pyx_t_21);
+                        #endif
+                        ++__pyx_t_21;
+                      }
+                      if (unlikely(!__pyx_t_26)) __PYX_ERR(0, 587, __pyx_L305_error)
+                    } else {
+                      __pyx_t_26 = __pyx_t_27(__pyx_t_17);
+                      if (unlikely(!__pyx_t_26)) {
+                        PyObject* exc_type = PyErr_Occurred();
+                        if (exc_type) {
+                          if (unlikely(!__Pyx_PyErr_GivenExceptionMatches(exc_type, PyExc_StopIteration))) __PYX_ERR(0, 587, __pyx_L305_error)
+                          PyErr_Clear();
+                        }
+                        break;
+                      }
+                    }
+                    __Pyx_GOTREF(__pyx_t_26);
+                    __Pyx_XDECREF_SET(__pyx_8genexpr9__pyx_v_d, __pyx_t_26);
+                    __pyx_t_26 = 0;
+                    __pyx_t_26 = __Pyx_GetItemInt(__pyx_8genexpr9__pyx_v_d, 3, long, 1, __Pyx_PyLong_From_long, 0, 0, 0, 1, __Pyx_ReferenceSharing_SharedReference); if (unlikely(!__pyx_t_26)) __PYX_ERR(0, 587, __pyx_L305_error)
+                    __Pyx_GOTREF(__pyx_t_26);
+                    if (unlikely(__Pyx_ListComp_Append(__pyx_t_6, (PyObject*)__pyx_t_26))) __PYX_ERR(0, 587, __pyx_L305_error)
+                    __Pyx_DECREF(__pyx_t_26); __pyx_t_26 = 0;
+                  }
+                  __Pyx_DECREF(__pyx_t_17); __pyx_t_17 = 0;
+                  __Pyx_XDECREF(__pyx_8genexpr9__pyx_v_d); __pyx_8genexpr9__pyx_v_d = 0;
+                  goto __pyx_L309_exit_scope;
+                  __pyx_L305_error:;
+                  __Pyx_XDECREF(__pyx_8genexpr9__pyx_v_d); __pyx_8genexpr9__pyx_v_d = 0;
+                  goto __pyx_L270_error;
+                  __pyx_L309_exit_scope:;
+                } /* exit inner scope */
+                __Pyx_XDECREF_SET(__pyx_v_areas, ((PyObject*)__pyx_t_6));
+                __pyx_t_6 = 0;
+
+                /* "frigate/video/detect_cython.pyx":588
+ *                             boxes = [d[2] for d in converted]
+ *                             areas = [d[3] for d in converted]
+ *                             ratios = [d[4] for d in converted]             # <<<<<<<<<<<<<<
+ * 
+ *                             filtered = is_object_filtered_batch(
+*/
+                { /* enter inner scope */
+                  __pyx_t_6 = PyList_New(0); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 588, __pyx_L312_error)
+                  __Pyx_GOTREF(__pyx_t_6);
+                  if (likely(PyList_CheckExact(__pyx_v_converted)) || PyTuple_CheckExact(__pyx_v_converted)) {
+                    __pyx_t_17 = __pyx_v_converted; __Pyx_INCREF(__pyx_t_17);
+                    __pyx_t_21 = 0;
+                    __pyx_t_27 = NULL;
+                  } else {
+                    __pyx_t_21 = -1; __pyx_t_17 = PyObject_GetIter(__pyx_v_converted); if (unlikely(!__pyx_t_17)) __PYX_ERR(0, 588, __pyx_L312_error)
+                    __Pyx_GOTREF(__pyx_t_17);
+                    __pyx_t_27 = (CYTHON_COMPILING_IN_LIMITED_API) ? PyIter_Next : __Pyx_PyObject_GetIterNextFunc(__pyx_t_17); if (unlikely(!__pyx_t_27)) __PYX_ERR(0, 588, __pyx_L312_error)
+                  }
+                  for (;;) {
+                    if (likely(!__pyx_t_27)) {
+                      if (likely(PyList_CheckExact(__pyx_t_17))) {
+                        {
+                          Py_ssize_t __pyx_temp = __Pyx_PyList_GET_SIZE(__pyx_t_17);
+                          #if !CYTHON_ASSUME_SAFE_SIZE
+                          if (unlikely((__pyx_temp < 0))) __PYX_ERR(0, 588, __pyx_L312_error)
+                          #endif
+                          if (__pyx_t_21 >= __pyx_temp) break;
+                        }
+                        __pyx_t_26 = __Pyx_PyList_GET_ITEM_REF(__pyx_t_17, __pyx_t_21, __Pyx_ReferenceSharing_OwnStrongReference);
+                        ++__pyx_t_21;
+                      } else {
+                        {
+                          Py_ssize_t __pyx_temp = __Pyx_PyTuple_GET_SIZE(__pyx_t_17);
+                          #if !CYTHON_ASSUME_SAFE_SIZE
+                          if (unlikely((__pyx_temp < 0))) __PYX_ERR(0, 588, __pyx_L312_error)
+                          #endif
+                          if (__pyx_t_21 >= __pyx_temp) break;
+                        }
+                        #if CYTHON_ASSUME_SAFE_MACROS && !CYTHON_AVOID_BORROWED_REFS
+                        __pyx_t_26 = __Pyx_NewRef(PyTuple_GET_ITEM(__pyx_t_17, __pyx_t_21));
+                        #else
+                        __pyx_t_26 = __Pyx_PySequence_ITEM(__pyx_t_17, __pyx_t_21);
+                        #endif
+                        ++__pyx_t_21;
+                      }
+                      if (unlikely(!__pyx_t_26)) __PYX_ERR(0, 588, __pyx_L312_error)
+                    } else {
+                      __pyx_t_26 = __pyx_t_27(__pyx_t_17);
+                      if (unlikely(!__pyx_t_26)) {
+                        PyObject* exc_type = PyErr_Occurred();
+                        if (exc_type) {
+                          if (unlikely(!__Pyx_PyErr_GivenExceptionMatches(exc_type, PyExc_StopIteration))) __PYX_ERR(0, 588, __pyx_L312_error)
+                          PyErr_Clear();
+                        }
+                        break;
+                      }
+                    }
+                    __Pyx_GOTREF(__pyx_t_26);
+                    __Pyx_XDECREF_SET(__pyx_9genexpr10__pyx_v_d, __pyx_t_26);
+                    __pyx_t_26 = 0;
+                    __pyx_t_26 = __Pyx_GetItemInt(__pyx_9genexpr10__pyx_v_d, 4, long, 1, __Pyx_PyLong_From_long, 0, 0, 0, 1, __Pyx_ReferenceSharing_SharedReference); if (unlikely(!__pyx_t_26)) __PYX_ERR(0, 588, __pyx_L312_error)
+                    __Pyx_GOTREF(__pyx_t_26);
+                    if (unlikely(__Pyx_ListComp_Append(__pyx_t_6, (PyObject*)__pyx_t_26))) __PYX_ERR(0, 588, __pyx_L312_error)
+                    __Pyx_DECREF(__pyx_t_26); __pyx_t_26 = 0;
+                  }
+                  __Pyx_DECREF(__pyx_t_17); __pyx_t_17 = 0;
+                  __Pyx_XDECREF(__pyx_9genexpr10__pyx_v_d); __pyx_9genexpr10__pyx_v_d = 0;
+                  goto __pyx_L316_exit_scope;
+                  __pyx_L312_error:;
+                  __Pyx_XDECREF(__pyx_9genexpr10__pyx_v_d); __pyx_9genexpr10__pyx_v_d = 0;
+                  goto __pyx_L270_error;
+                  __pyx_L316_exit_scope:;
+                } /* exit inner scope */
+                __Pyx_XDECREF_SET(__pyx_v_ratios, ((PyObject*)__pyx_t_6));
+                __pyx_t_6 = 0;
+
+                /* "frigate/video/detect_cython.pyx":590
+ *                             ratios = [d[4] for d in converted]
+ * 
+ *                             filtered = is_object_filtered_batch(             # <<<<<<<<<<<<<<
+ *                                 labels, scores, boxes, areas, ratios,
+ *                                 camera_config.objects.track,
+*/
+                __pyx_t_17 = NULL;
+                __Pyx_INCREF(__pyx_v_is_object_filtered_batch);
+                __pyx_t_26 = __pyx_v_is_object_filtered_batch; 
+
+                /* "frigate/video/detect_cython.pyx":592
+ *                             filtered = is_object_filtered_batch(
+ *                                 labels, scores, boxes, areas, ratios,
+ *                                 camera_config.objects.track,             # <<<<<<<<<<<<<<
+ *                                 camera_config.objects.filters,
+ *                             )
+*/
+                __pyx_t_23 = __Pyx_PyObject_GetAttrStr(__pyx_v_camera_config, __pyx_mstate_global->__pyx_n_u_objects); if (unlikely(!__pyx_t_23)) __PYX_ERR(0, 592, __pyx_L270_error)
+                __Pyx_GOTREF(__pyx_t_23);
+                __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_t_23, __pyx_mstate_global->__pyx_n_u_track); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 592, __pyx_L270_error)
+                __Pyx_GOTREF(__pyx_t_2);
+                __Pyx_DECREF(__pyx_t_23); __pyx_t_23 = 0;
+
+                /* "frigate/video/detect_cython.pyx":593
+ *                                 labels, scores, boxes, areas, ratios,
+ *                                 camera_config.objects.track,
+ *                                 camera_config.objects.filters,             # <<<<<<<<<<<<<<
+ *                             )
+ * 
+*/
+                __pyx_t_23 = __Pyx_PyObject_GetAttrStr(__pyx_v_camera_config, __pyx_mstate_global->__pyx_n_u_objects); if (unlikely(!__pyx_t_23)) __PYX_ERR(0, 593, __pyx_L270_error)
+                __Pyx_GOTREF(__pyx_t_23);
+                __pyx_t_22 = __Pyx_PyObject_GetAttrStr(__pyx_t_23, __pyx_mstate_global->__pyx_n_u_filters); if (unlikely(!__pyx_t_22)) __PYX_ERR(0, 593, __pyx_L270_error)
+                __Pyx_GOTREF(__pyx_t_22);
+                __Pyx_DECREF(__pyx_t_23); __pyx_t_23 = 0;
+                __pyx_t_3 = 1;
+                #if CYTHON_UNPACK_METHODS
+                if (unlikely(PyMethod_Check(__pyx_t_26))) {
+                  __pyx_t_17 = PyMethod_GET_SELF(__pyx_t_26);
+                  assert(__pyx_t_17);
+                  PyObject* __pyx__function = PyMethod_GET_FUNCTION(__pyx_t_26);
+                  __Pyx_INCREF(__pyx_t_17);
+                  __Pyx_INCREF(__pyx__function);
+                  __Pyx_DECREF_SET(__pyx_t_26, __pyx__function);
+                  __pyx_t_3 = 0;
+                }
+                #endif
+                {
+                  PyObject *__pyx_callargs[8] = {__pyx_t_17, __pyx_v_labels, __pyx_v_scores, __pyx_v_boxes, __pyx_v_areas, __pyx_v_ratios, __pyx_t_2, __pyx_t_22};
+                  __pyx_t_6 = __Pyx_PyObject_FastCall((PyObject*)__pyx_t_26, __pyx_callargs+__pyx_t_3, (8-__pyx_t_3) | (__pyx_t_3*__Pyx_PY_VECTORCALL_ARGUMENTS_OFFSET));
+                  __Pyx_XDECREF(__pyx_t_17); __pyx_t_17 = 0;
+                  __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
+                  __Pyx_DECREF(__pyx_t_22); __pyx_t_22 = 0;
+                  __Pyx_DECREF(__pyx_t_26); __pyx_t_26 = 0;
+                  if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 590, __pyx_L270_error)
+                  __Pyx_GOTREF(__pyx_t_6);
+                }
+                __Pyx_XDECREF_SET(__pyx_v_filtered, __pyx_t_6);
+                __pyx_t_6 = 0;
+
+                /* "frigate/video/detect_cython.pyx":596
+ *                             )
+ * 
+ *                             for j, d in enumerate(converted):             # <<<<<<<<<<<<<<
+ *                                 if not filtered[j]:
+ *                                     detections.append(d)
+*/
+                __pyx_t_28 = 0;
+                if (likely(PyList_CheckExact(__pyx_v_converted)) || PyTuple_CheckExact(__pyx_v_converted)) {
+                  __pyx_t_6 = __pyx_v_converted; __Pyx_INCREF(__pyx_t_6);
+                  __pyx_t_21 = 0;
+                  __pyx_t_27 = NULL;
+                } else {
+                  __pyx_t_21 = -1; __pyx_t_6 = PyObject_GetIter(__pyx_v_converted); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 596, __pyx_L270_error)
+                  __Pyx_GOTREF(__pyx_t_6);
+                  __pyx_t_27 = (CYTHON_COMPILING_IN_LIMITED_API) ? PyIter_Next : __Pyx_PyObject_GetIterNextFunc(__pyx_t_6); if (unlikely(!__pyx_t_27)) __PYX_ERR(0, 596, __pyx_L270_error)
+                }
+                for (;;) {
+                  if (likely(!__pyx_t_27)) {
+                    if (likely(PyList_CheckExact(__pyx_t_6))) {
+                      {
+                        Py_ssize_t __pyx_temp = __Pyx_PyList_GET_SIZE(__pyx_t_6);
+                        #if !CYTHON_ASSUME_SAFE_SIZE
+                        if (unlikely((__pyx_temp < 0))) __PYX_ERR(0, 596, __pyx_L270_error)
+                        #endif
+                        if (__pyx_t_21 >= __pyx_temp) break;
+                      }
+                      __pyx_t_26 = __Pyx_PyList_GET_ITEM_REF(__pyx_t_6, __pyx_t_21, __Pyx_ReferenceSharing_OwnStrongReference);
+                      ++__pyx_t_21;
+                    } else {
+                      {
+                        Py_ssize_t __pyx_temp = __Pyx_PyTuple_GET_SIZE(__pyx_t_6);
+                        #if !CYTHON_ASSUME_SAFE_SIZE
+                        if (unlikely((__pyx_temp < 0))) __PYX_ERR(0, 596, __pyx_L270_error)
+                        #endif
+                        if (__pyx_t_21 >= __pyx_temp) break;
+                      }
+                      #if CYTHON_ASSUME_SAFE_MACROS && !CYTHON_AVOID_BORROWED_REFS
+                      __pyx_t_26 = __Pyx_NewRef(PyTuple_GET_ITEM(__pyx_t_6, __pyx_t_21));
+                      #else
+                      __pyx_t_26 = __Pyx_PySequence_ITEM(__pyx_t_6, __pyx_t_21);
+                      #endif
+                      ++__pyx_t_21;
+                    }
+                    if (unlikely(!__pyx_t_26)) __PYX_ERR(0, 596, __pyx_L270_error)
+                  } else {
+                    __pyx_t_26 = __pyx_t_27(__pyx_t_6);
+                    if (unlikely(!__pyx_t_26)) {
+                      PyObject* exc_type = PyErr_Occurred();
+                      if (exc_type) {
+                        if (unlikely(!__Pyx_PyErr_GivenExceptionMatches(exc_type, PyExc_StopIteration))) __PYX_ERR(0, 596, __pyx_L270_error)
+                        PyErr_Clear();
+                      }
+                      break;
+                    }
+                  }
+                  __Pyx_GOTREF(__pyx_t_26);
+                  __Pyx_XDECREF_SET(__pyx_v_d, __pyx_t_26);
+                  __pyx_t_26 = 0;
+                  __pyx_v_j = __pyx_t_28;
+                  __pyx_t_28 = (__pyx_t_28 + 1);
+
+                  /* "frigate/video/detect_cython.pyx":597
+ * 
+ *                             for j, d in enumerate(converted):
+ *                                 if not filtered[j]:             # <<<<<<<<<<<<<<
+ *                                     detections.append(d)
+ *                 except Exception:
+*/
+                  __pyx_t_26 = __Pyx_GetItemInt(__pyx_v_filtered, __pyx_v_j, int, 1, __Pyx_PyLong_From_int, 0, 0, 0, 1, __Pyx_ReferenceSharing_OwnStrongReference); if (unlikely(!__pyx_t_26)) __PYX_ERR(0, 597, __pyx_L270_error)
+                  __Pyx_GOTREF(__pyx_t_26);
+                  __pyx_t_14 = __Pyx_PyObject_IsTrue(__pyx_t_26); if (unlikely((__pyx_t_14 < 0))) __PYX_ERR(0, 597, __pyx_L270_error)
+                  __Pyx_DECREF(__pyx_t_26); __pyx_t_26 = 0;
+                  __pyx_t_13 = (!__pyx_t_14);
+                  if (__pyx_t_13) {
+
+                    /* "frigate/video/detect_cython.pyx":598
+ *                             for j, d in enumerate(converted):
+ *                                 if not filtered[j]:
+ *                                     detections.append(d)             # <<<<<<<<<<<<<<
+ *                 except Exception:
+ *                     detections = []
+*/
+                    __pyx_t_20 = __Pyx_PyObject_Append(__pyx_v_detections, __pyx_v_d); if (unlikely(__pyx_t_20 == ((int)-1))) __PYX_ERR(0, 598, __pyx_L270_error)
+
+                    /* "frigate/video/detect_cython.pyx":597
+ * 
+ *                             for j, d in enumerate(converted):
+ *                                 if not filtered[j]:             # <<<<<<<<<<<<<<
+ *                                     detections.append(d)
+ *                 except Exception:
+*/
+                  }
+
+                  /* "frigate/video/detect_cython.pyx":596
+ *                             )
+ * 
+ *                             for j, d in enumerate(converted):             # <<<<<<<<<<<<<<
+ *                                 if not filtered[j]:
+ *                                     detections.append(d)
+*/
+                }
+                __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
+
+                /* "frigate/video/detect_cython.pyx":582
+ *                         )
+ * 
+ *                         if converted:             # <<<<<<<<<<<<<<
+ *                             from frigate.detectors.detection_cython import is_object_filtered_batch
+ *                             labels = [d[0] for d in converted]
+*/
+              }
+
+              /* "frigate/video/detect_cython.pyx":564
+ * 
+ *                     # Process each region's detections
+ *                     for i, region in enumerate(regions):             # <<<<<<<<<<<<<<
+ *                         region_detections = batch_results[i]
+ * 
+*/
+              __pyx_L278_continue:;
+            }
+            __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
+
+            /* "frigate/video/detect_cython.pyx":558
+ *             # Batch detection
+ *             if regions:
+ *                 try:             # <<<<<<<<<<<<<<
+ *                     batch_results = object_detector.detect_batch(
+ *                         regions, frame, model_config, frame_name
+*/
+          }
+          __Pyx_XDECREF(__pyx_t_9); __pyx_t_9 = 0;
+          __Pyx_XDECREF(__pyx_t_8); __pyx_t_8 = 0;
+          __Pyx_XDECREF(__pyx_t_7); __pyx_t_7 = 0;
+          goto __pyx_L277_try_end;
+          __pyx_L270_error:;
+          __Pyx_XDECREF(__pyx_t_1); __pyx_t_1 = 0;
+          __Pyx_XDECREF(__pyx_t_17); __pyx_t_17 = 0;
+          __Pyx_XDECREF(__pyx_t_2); __pyx_t_2 = 0;
+          __Pyx_XDECREF(__pyx_t_22); __pyx_t_22 = 0;
+          __Pyx_XDECREF(__pyx_t_23); __pyx_t_23 = 0;
+          __Pyx_XDECREF(__pyx_t_24); __pyx_t_24 = 0;
+          __Pyx_XDECREF(__pyx_t_25); __pyx_t_25 = 0;
+          __Pyx_XDECREF(__pyx_t_26); __pyx_t_26 = 0;
+          __Pyx_XDECREF(__pyx_t_4); __pyx_t_4 = 0;
+          __Pyx_XDECREF(__pyx_t_5); __pyx_t_5 = 0;
+          __Pyx_XDECREF(__pyx_t_6); __pyx_t_6 = 0;
+
+          /* "frigate/video/detect_cython.pyx":599
+ *                                 if not filtered[j]:
+ *                                     detections.append(d)
+ *                 except Exception:             # <<<<<<<<<<<<<<
+ *                     detections = []
+ *             else:
+*/
+          __pyx_t_12 = __Pyx_PyErr_ExceptionMatches(((PyObject *)(((PyTypeObject*)PyExc_Exception))));
+          if (__pyx_t_12) {
+            __Pyx_AddTraceback("frigate.video.detect_cython.cython_process_frames", __pyx_clineno, __pyx_lineno, __pyx_filename);
+            if (__Pyx_GetException(&__pyx_t_1, &__pyx_t_6, &__pyx_t_26) < 0) __PYX_ERR(0, 599, __pyx_L272_except_error)
+            __Pyx_XGOTREF(__pyx_t_1);
+            __Pyx_XGOTREF(__pyx_t_6);
+            __Pyx_XGOTREF(__pyx_t_26);
+
+            /* "frigate/video/detect_cython.pyx":600
+ *                                     detections.append(d)
+ *                 except Exception:
+ *                     detections = []             # <<<<<<<<<<<<<<
+ *             else:
+ *                 detections = []
+*/
+            __pyx_t_22 = PyList_New(0); if (unlikely(!__pyx_t_22)) __PYX_ERR(0, 600, __pyx_L272_except_error)
+            __Pyx_GOTREF(__pyx_t_22);
+            __Pyx_DECREF_SET(__pyx_v_detections, __pyx_t_22);
+            __pyx_t_22 = 0;
+            __Pyx_XDECREF(__pyx_t_1); __pyx_t_1 = 0;
+            __Pyx_XDECREF(__pyx_t_6); __pyx_t_6 = 0;
+            __Pyx_XDECREF(__pyx_t_26); __pyx_t_26 = 0;
+            goto __pyx_L271_exception_handled;
+          }
+          goto __pyx_L272_except_error;
+
+          /* "frigate/video/detect_cython.pyx":558
+ *             # Batch detection
+ *             if regions:
+ *                 try:             # <<<<<<<<<<<<<<
+ *                     batch_results = object_detector.detect_batch(
+ *                         regions, frame, model_config, frame_name
+*/
+          __pyx_L272_except_error:;
+          __Pyx_XGIVEREF(__pyx_t_9);
+          __Pyx_XGIVEREF(__pyx_t_8);
+          __Pyx_XGIVEREF(__pyx_t_7);
+          __Pyx_ExceptionReset(__pyx_t_9, __pyx_t_8, __pyx_t_7);
+          goto __pyx_L1_error;
+          __pyx_L271_exception_handled:;
+          __Pyx_XGIVEREF(__pyx_t_9);
+          __Pyx_XGIVEREF(__pyx_t_8);
+          __Pyx_XGIVEREF(__pyx_t_7);
+          __Pyx_ExceptionReset(__pyx_t_9, __pyx_t_8, __pyx_t_7);
+          __pyx_L277_try_end:;
+        }
+
+        /* "frigate/video/detect_cython.pyx":557
+ * 
+ *             # Batch detection
+ *             if regions:             # <<<<<<<<<<<<<<
+ *                 try:
+ *                     batch_results = object_detector.detect_batch(
+*/
+        goto __pyx_L269;
+      }
+
+      /* "frigate/video/detect_cython.pyx":602
+ *                     detections = []
+ *             else:
+ *                 detections = []             # <<<<<<<<<<<<<<
+ * 
+ *             consolidated_detections = reduce_detections(frame_shape, detections)
+*/
+      /*else*/ {
+        __pyx_t_26 = PyList_New(0); if (unlikely(!__pyx_t_26)) __PYX_ERR(0, 602, __pyx_L1_error)
+        __Pyx_GOTREF(__pyx_t_26);
+        __Pyx_DECREF_SET(__pyx_v_detections, __pyx_t_26);
+        __pyx_t_26 = 0;
+      }
+      __pyx_L269:;
+
+      /* "frigate/video/detect_cython.pyx":604
+ *                 detections = []
+ * 
+ *             consolidated_detections = reduce_detections(frame_shape, detections)             # <<<<<<<<<<<<<<
+ * 
+ *             # Track objects or update frame times
+*/
+      __pyx_t_6 = NULL;
+      __Pyx_INCREF(__pyx_v_reduce_detections);
+      __pyx_t_1 = __pyx_v_reduce_detections; 
+      __pyx_t_3 = 1;
+      #if CYTHON_UNPACK_METHODS
+      if (unlikely(PyMethod_Check(__pyx_t_1))) {
+        __pyx_t_6 = PyMethod_GET_SELF(__pyx_t_1);
+        assert(__pyx_t_6);
+        PyObject* __pyx__function = PyMethod_GET_FUNCTION(__pyx_t_1);
+        __Pyx_INCREF(__pyx_t_6);
+        __Pyx_INCREF(__pyx__function);
+        __Pyx_DECREF_SET(__pyx_t_1, __pyx__function);
+        __pyx_t_3 = 0;
+      }
+      #endif
+      {
+        PyObject *__pyx_callargs[3] = {__pyx_t_6, __pyx_v_frame_shape, __pyx_v_detections};
+        __pyx_t_26 = __Pyx_PyObject_FastCall((PyObject*)__pyx_t_1, __pyx_callargs+__pyx_t_3, (3-__pyx_t_3) | (__pyx_t_3*__Pyx_PY_VECTORCALL_ARGUMENTS_OFFSET));
+        __Pyx_XDECREF(__pyx_t_6); __pyx_t_6 = 0;
+        __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
+        if (unlikely(!__pyx_t_26)) __PYX_ERR(0, 604, __pyx_L1_error)
+        __Pyx_GOTREF(__pyx_t_26);
+      }
+      __Pyx_DECREF_SET(__pyx_v_consolidated_detections, __pyx_t_26);
+      __pyx_t_26 = 0;
+
+      /* "frigate/video/detect_cython.pyx":607
+ * 
+ *             # Track objects or update frame times
+ *             if len(regions) > 0:             # <<<<<<<<<<<<<<
+ *                 tracked_detections = cython_filter_detections_by_label(
+ *                     consolidated_detections, all_attributes
+*/
+      __pyx_t_11 = PyObject_Length(__pyx_v_regions); if (unlikely(__pyx_t_11 == ((Py_ssize_t)-1))) __PYX_ERR(0, 607, __pyx_L1_error)
+      __pyx_t_13 = (__pyx_t_11 > 0);
+      if (__pyx_t_13) {
+
+        /* "frigate/video/detect_cython.pyx":608
+ *             # Track objects or update frame times
+ *             if len(regions) > 0:
+ *                 tracked_detections = cython_filter_detections_by_label(             # <<<<<<<<<<<<<<
+ *                     consolidated_detections, all_attributes
+ *                 )
+*/
+        __pyx_t_1 = NULL;
+        __Pyx_GetModuleGlobalName(__pyx_t_6, __pyx_mstate_global->__pyx_n_u_cython_filter_detections_by_labe); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 608, __pyx_L1_error)
+        __Pyx_GOTREF(__pyx_t_6);
+
+        /* "frigate/video/detect_cython.pyx":609
+ *             if len(regions) > 0:
+ *                 tracked_detections = cython_filter_detections_by_label(
+ *                     consolidated_detections, all_attributes             # <<<<<<<<<<<<<<
+ *                 )
+ *                 try:
+*/
+        __pyx_t_3 = 1;
+        #if CYTHON_UNPACK_METHODS
+        if (unlikely(PyMethod_Check(__pyx_t_6))) {
+          __pyx_t_1 = PyMethod_GET_SELF(__pyx_t_6);
+          assert(__pyx_t_1);
+          PyObject* __pyx__function = PyMethod_GET_FUNCTION(__pyx_t_6);
+          __Pyx_INCREF(__pyx_t_1);
+          __Pyx_INCREF(__pyx__function);
+          __Pyx_DECREF_SET(__pyx_t_6, __pyx__function);
+          __pyx_t_3 = 0;
+        }
+        #endif
+        {
+          PyObject *__pyx_callargs[3] = {__pyx_t_1, __pyx_v_consolidated_detections, __pyx_v_all_attributes};
+          __pyx_t_26 = __Pyx_PyObject_FastCall((PyObject*)__pyx_t_6, __pyx_callargs+__pyx_t_3, (3-__pyx_t_3) | (__pyx_t_3*__Pyx_PY_VECTORCALL_ARGUMENTS_OFFSET));
+          __Pyx_XDECREF(__pyx_t_1); __pyx_t_1 = 0;
+          __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
+          if (unlikely(!__pyx_t_26)) __PYX_ERR(0, 608, __pyx_L1_error)
+          __Pyx_GOTREF(__pyx_t_26);
+        }
+        __Pyx_XDECREF_SET(__pyx_v_tracked_detections, __pyx_t_26);
+        __pyx_t_26 = 0;
+
+        /* "frigate/video/detect_cython.pyx":611
+ *                     consolidated_detections, all_attributes
+ *                 )
+ *                 try:             # <<<<<<<<<<<<<<
+ *                     object_tracker.match_and_update(
+ *                         frame_name, frame_time, tracked_detections
+*/
+        {
+          __Pyx_PyThreadState_declare
+          __Pyx_PyThreadState_assign
+          __Pyx_ExceptionSave(&__pyx_t_7, &__pyx_t_8, &__pyx_t_9);
+          __Pyx_XGOTREF(__pyx_t_7);
+          __Pyx_XGOTREF(__pyx_t_8);
+          __Pyx_XGOTREF(__pyx_t_9);
+          /*try:*/ {
+
+            /* "frigate/video/detect_cython.pyx":612
+ *                 )
+ *                 try:
+ *                     object_tracker.match_and_update(             # <<<<<<<<<<<<<<
+ *                         frame_name, frame_time, tracked_detections
+ *                     )
+*/
+            __pyx_t_6 = __pyx_v_object_tracker;
+            __Pyx_INCREF(__pyx_t_6);
+
+            /* "frigate/video/detect_cython.pyx":613
+ *                 try:
+ *                     object_tracker.match_and_update(
+ *                         frame_name, frame_time, tracked_detections             # <<<<<<<<<<<<<<
+ *                     )
+ *                 except Exception:
+*/
+            __pyx_t_3 = 0;
+            {
+              PyObject *__pyx_callargs[4] = {__pyx_t_6, __pyx_v_frame_name, __pyx_v_frame_time, __pyx_v_tracked_detections};
+              __pyx_t_26 = __Pyx_PyObject_FastCallMethod((PyObject*)__pyx_mstate_global->__pyx_n_u_match_and_update, __pyx_callargs+__pyx_t_3, (4-__pyx_t_3) | (1*__Pyx_PY_VECTORCALL_ARGUMENTS_OFFSET));
+              __Pyx_XDECREF(__pyx_t_6); __pyx_t_6 = 0;
+              if (unlikely(!__pyx_t_26)) __PYX_ERR(0, 612, __pyx_L325_error)
+              __Pyx_GOTREF(__pyx_t_26);
+            }
+            __Pyx_DECREF(__pyx_t_26); __pyx_t_26 = 0;
+
+            /* "frigate/video/detect_cython.pyx":611
+ *                     consolidated_detections, all_attributes
+ *                 )
+ *                 try:             # <<<<<<<<<<<<<<
+ *                     object_tracker.match_and_update(
+ *                         frame_name, frame_time, tracked_detections
+*/
+          }
+          __Pyx_XDECREF(__pyx_t_7); __pyx_t_7 = 0;
+          __Pyx_XDECREF(__pyx_t_8); __pyx_t_8 = 0;
+          __Pyx_XDECREF(__pyx_t_9); __pyx_t_9 = 0;
+          goto __pyx_L332_try_end;
+          __pyx_L325_error:;
+          __Pyx_XDECREF(__pyx_t_1); __pyx_t_1 = 0;
+          __Pyx_XDECREF(__pyx_t_17); __pyx_t_17 = 0;
+          __Pyx_XDECREF(__pyx_t_2); __pyx_t_2 = 0;
+          __Pyx_XDECREF(__pyx_t_22); __pyx_t_22 = 0;
+          __Pyx_XDECREF(__pyx_t_23); __pyx_t_23 = 0;
+          __Pyx_XDECREF(__pyx_t_24); __pyx_t_24 = 0;
+          __Pyx_XDECREF(__pyx_t_25); __pyx_t_25 = 0;
+          __Pyx_XDECREF(__pyx_t_26); __pyx_t_26 = 0;
+          __Pyx_XDECREF(__pyx_t_4); __pyx_t_4 = 0;
+          __Pyx_XDECREF(__pyx_t_5); __pyx_t_5 = 0;
+          __Pyx_XDECREF(__pyx_t_6); __pyx_t_6 = 0;
+
+          /* "frigate/video/detect_cython.pyx":615
+ *                         frame_name, frame_time, tracked_detections
+ *                     )
+ *                 except Exception:             # <<<<<<<<<<<<<<
+ *                     pass
+ *             else:
+*/
+          __pyx_t_12 = __Pyx_PyErr_ExceptionMatches(((PyObject *)(((PyTypeObject*)PyExc_Exception))));
+          if (__pyx_t_12) {
+            __Pyx_ErrRestore(0,0,0);
+            goto __pyx_L326_exception_handled;
+          }
+          goto __pyx_L327_except_error;
+
+          /* "frigate/video/detect_cython.pyx":611
+ *                     consolidated_detections, all_attributes
+ *                 )
+ *                 try:             # <<<<<<<<<<<<<<
+ *                     object_tracker.match_and_update(
+ *                         frame_name, frame_time, tracked_detections
+*/
+          __pyx_L327_except_error:;
+          __Pyx_XGIVEREF(__pyx_t_7);
+          __Pyx_XGIVEREF(__pyx_t_8);
+          __Pyx_XGIVEREF(__pyx_t_9);
+          __Pyx_ExceptionReset(__pyx_t_7, __pyx_t_8, __pyx_t_9);
+          goto __pyx_L1_error;
+          __pyx_L326_exception_handled:;
+          __Pyx_XGIVEREF(__pyx_t_7);
+          __Pyx_XGIVEREF(__pyx_t_8);
+          __Pyx_XGIVEREF(__pyx_t_9);
+          __Pyx_ExceptionReset(__pyx_t_7, __pyx_t_8, __pyx_t_9);
+          __pyx_L332_try_end:;
+        }
+
+        /* "frigate/video/detect_cython.pyx":607
+ * 
+ *             # Track objects or update frame times
+ *             if len(regions) > 0:             # <<<<<<<<<<<<<<
+ *                 tracked_detections = cython_filter_detections_by_label(
+ *                     consolidated_detections, all_attributes
+*/
+        goto __pyx_L324;
+      }
+
+      /* "frigate/video/detect_cython.pyx":618
+ *                     pass
+ *             else:
+ *                 try:             # <<<<<<<<<<<<<<
+ *                     object_tracker.update_frame_times(frame_name, frame_time)
+ *                 except Exception:
+*/
+      /*else*/ {
+        {
+          __Pyx_PyThreadState_declare
+          __Pyx_PyThreadState_assign
+          __Pyx_ExceptionSave(&__pyx_t_9, &__pyx_t_8, &__pyx_t_7);
+          __Pyx_XGOTREF(__pyx_t_9);
+          __Pyx_XGOTREF(__pyx_t_8);
+          __Pyx_XGOTREF(__pyx_t_7);
+          /*try:*/ {
+
+            /* "frigate/video/detect_cython.pyx":619
+ *             else:
+ *                 try:
+ *                     object_tracker.update_frame_times(frame_name, frame_time)             # <<<<<<<<<<<<<<
+ *                 except Exception:
+ *                     pass
+*/
+            __pyx_t_6 = __pyx_v_object_tracker;
+            __Pyx_INCREF(__pyx_t_6);
+            __pyx_t_3 = 0;
+            {
+              PyObject *__pyx_callargs[3] = {__pyx_t_6, __pyx_v_frame_name, __pyx_v_frame_time};
+              __pyx_t_26 = __Pyx_PyObject_FastCallMethod((PyObject*)__pyx_mstate_global->__pyx_n_u_update_frame_times, __pyx_callargs+__pyx_t_3, (3-__pyx_t_3) | (1*__Pyx_PY_VECTORCALL_ARGUMENTS_OFFSET));
+              __Pyx_XDECREF(__pyx_t_6); __pyx_t_6 = 0;
+              if (unlikely(!__pyx_t_26)) __PYX_ERR(0, 619, __pyx_L335_error)
+              __Pyx_GOTREF(__pyx_t_26);
+            }
+            __Pyx_DECREF(__pyx_t_26); __pyx_t_26 = 0;
+
+            /* "frigate/video/detect_cython.pyx":618
+ *                     pass
+ *             else:
+ *                 try:             # <<<<<<<<<<<<<<
+ *                     object_tracker.update_frame_times(frame_name, frame_time)
+ *                 except Exception:
+*/
+          }
+          __Pyx_XDECREF(__pyx_t_9); __pyx_t_9 = 0;
+          __Pyx_XDECREF(__pyx_t_8); __pyx_t_8 = 0;
+          __Pyx_XDECREF(__pyx_t_7); __pyx_t_7 = 0;
+          goto __pyx_L342_try_end;
+          __pyx_L335_error:;
+          __Pyx_XDECREF(__pyx_t_1); __pyx_t_1 = 0;
+          __Pyx_XDECREF(__pyx_t_17); __pyx_t_17 = 0;
+          __Pyx_XDECREF(__pyx_t_2); __pyx_t_2 = 0;
+          __Pyx_XDECREF(__pyx_t_22); __pyx_t_22 = 0;
+          __Pyx_XDECREF(__pyx_t_23); __pyx_t_23 = 0;
+          __Pyx_XDECREF(__pyx_t_24); __pyx_t_24 = 0;
+          __Pyx_XDECREF(__pyx_t_25); __pyx_t_25 = 0;
+          __Pyx_XDECREF(__pyx_t_26); __pyx_t_26 = 0;
+          __Pyx_XDECREF(__pyx_t_4); __pyx_t_4 = 0;
+          __Pyx_XDECREF(__pyx_t_5); __pyx_t_5 = 0;
+          __Pyx_XDECREF(__pyx_t_6); __pyx_t_6 = 0;
+
+          /* "frigate/video/detect_cython.pyx":620
+ *                 try:
+ *                     object_tracker.update_frame_times(frame_name, frame_time)
+ *                 except Exception:             # <<<<<<<<<<<<<<
+ *                     pass
+ * 
+*/
+          __pyx_t_12 = __Pyx_PyErr_ExceptionMatches(((PyObject *)(((PyTypeObject*)PyExc_Exception))));
+          if (__pyx_t_12) {
+            __Pyx_ErrRestore(0,0,0);
+            goto __pyx_L336_exception_handled;
+          }
+          goto __pyx_L337_except_error;
+
+          /* "frigate/video/detect_cython.pyx":618
+ *                     pass
+ *             else:
+ *                 try:             # <<<<<<<<<<<<<<
+ *                     object_tracker.update_frame_times(frame_name, frame_time)
+ *                 except Exception:
+*/
+          __pyx_L337_except_error:;
+          __Pyx_XGIVEREF(__pyx_t_9);
+          __Pyx_XGIVEREF(__pyx_t_8);
+          __Pyx_XGIVEREF(__pyx_t_7);
+          __Pyx_ExceptionReset(__pyx_t_9, __pyx_t_8, __pyx_t_7);
+          goto __pyx_L1_error;
+          __pyx_L336_exception_handled:;
+          __Pyx_XGIVEREF(__pyx_t_9);
+          __Pyx_XGIVEREF(__pyx_t_8);
+          __Pyx_XGIVEREF(__pyx_t_7);
+          __Pyx_ExceptionReset(__pyx_t_9, __pyx_t_8, __pyx_t_7);
+          __pyx_L342_try_end:;
+        }
+      }
+      __pyx_L324:;
+    }
+    __pyx_L151:;
+
+    /* "frigate/video/detect_cython.pyx":624
+ * 
+ *         # Build detections with attributes
+ *         try:             # <<<<<<<<<<<<<<
+ *             detections = cython_build_detections_with_attributes(
+ *                 object_tracker.tracked_objects,
+*/
+    {
+      __Pyx_PyThreadState_declare
+      __Pyx_PyThreadState_assign
+      __Pyx_ExceptionSave(&__pyx_t_7, &__pyx_t_8, &__pyx_t_9);
+      __Pyx_XGOTREF(__pyx_t_7);
+      __Pyx_XGOTREF(__pyx_t_8);
+      __Pyx_XGOTREF(__pyx_t_9);
+      /*try:*/ {
+
+        /* "frigate/video/detect_cython.pyx":625
+ *         # Build detections with attributes
+ *         try:
+ *             detections = cython_build_detections_with_attributes(             # <<<<<<<<<<<<<<
+ *                 object_tracker.tracked_objects,
+ *                 consolidated_detections,
+*/
+        __pyx_t_6 = NULL;
+        __Pyx_GetModuleGlobalName(__pyx_t_1, __pyx_mstate_global->__pyx_n_u_cython_build_detections_with_att); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 625, __pyx_L345_error)
+        __Pyx_GOTREF(__pyx_t_1);
+
+        /* "frigate/video/detect_cython.pyx":626
+ *         try:
+ *             detections = cython_build_detections_with_attributes(
+ *                 object_tracker.tracked_objects,             # <<<<<<<<<<<<<<
+ *                 consolidated_detections,
+ *                 all_attributes,
+*/
+        __pyx_t_22 = __Pyx_PyObject_GetAttrStr(__pyx_v_object_tracker, __pyx_mstate_global->__pyx_n_u_tracked_objects); if (unlikely(!__pyx_t_22)) __PYX_ERR(0, 626, __pyx_L345_error)
+        __Pyx_GOTREF(__pyx_t_22);
+
+        /* "frigate/video/detect_cython.pyx":630
+ *                 all_attributes,
+ *                 attributes_map,
+ *                 cython_find_best_object,             # <<<<<<<<<<<<<<
+ *             )
+ *         except Exception:
+*/
+        __pyx_t_3 = 1;
+        #if CYTHON_UNPACK_METHODS
+        if (unlikely(PyMethod_Check(__pyx_t_1))) {
+          __pyx_t_6 = PyMethod_GET_SELF(__pyx_t_1);
+          assert(__pyx_t_6);
+          PyObject* __pyx__function = PyMethod_GET_FUNCTION(__pyx_t_1);
+          __Pyx_INCREF(__pyx_t_6);
+          __Pyx_INCREF(__pyx__function);
+          __Pyx_DECREF_SET(__pyx_t_1, __pyx__function);
+          __pyx_t_3 = 0;
+        }
+        #endif
+        {
+          PyObject *__pyx_callargs[6] = {__pyx_t_6, __pyx_t_22, __pyx_v_consolidated_detections, __pyx_v_all_attributes, __pyx_v_attributes_map, __pyx_v_cython_find_best_object};
+          __pyx_t_26 = __Pyx_PyObject_FastCall((PyObject*)__pyx_t_1, __pyx_callargs+__pyx_t_3, (6-__pyx_t_3) | (__pyx_t_3*__Pyx_PY_VECTORCALL_ARGUMENTS_OFFSET));
+          __Pyx_XDECREF(__pyx_t_6); __pyx_t_6 = 0;
+          __Pyx_DECREF(__pyx_t_22); __pyx_t_22 = 0;
+          __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
+          if (unlikely(!__pyx_t_26)) __PYX_ERR(0, 625, __pyx_L345_error)
+          __Pyx_GOTREF(__pyx_t_26);
+        }
+        __Pyx_XDECREF_SET(__pyx_v_detections, __pyx_t_26);
+        __pyx_t_26 = 0;
+
+        /* "frigate/video/detect_cython.pyx":624
+ * 
+ *         # Build detections with attributes
+ *         try:             # <<<<<<<<<<<<<<
+ *             detections = cython_build_detections_with_attributes(
+ *                 object_tracker.tracked_objects,
+*/
+      }
+      __Pyx_XDECREF(__pyx_t_7); __pyx_t_7 = 0;
+      __Pyx_XDECREF(__pyx_t_8); __pyx_t_8 = 0;
+      __Pyx_XDECREF(__pyx_t_9); __pyx_t_9 = 0;
+      goto __pyx_L352_try_end;
+      __pyx_L345_error:;
+      __Pyx_XDECREF(__pyx_t_1); __pyx_t_1 = 0;
+      __Pyx_XDECREF(__pyx_t_17); __pyx_t_17 = 0;
+      __Pyx_XDECREF(__pyx_t_2); __pyx_t_2 = 0;
+      __Pyx_XDECREF(__pyx_t_22); __pyx_t_22 = 0;
+      __Pyx_XDECREF(__pyx_t_23); __pyx_t_23 = 0;
+      __Pyx_XDECREF(__pyx_t_24); __pyx_t_24 = 0;
+      __Pyx_XDECREF(__pyx_t_25); __pyx_t_25 = 0;
+      __Pyx_XDECREF(__pyx_t_26); __pyx_t_26 = 0;
+      __Pyx_XDECREF(__pyx_t_4); __pyx_t_4 = 0;
+      __Pyx_XDECREF(__pyx_t_5); __pyx_t_5 = 0;
+      __Pyx_XDECREF(__pyx_t_6); __pyx_t_6 = 0;
+
+      /* "frigate/video/detect_cython.pyx":632
+ *                 cython_find_best_object,
+ *             )
+ *         except Exception:             # <<<<<<<<<<<<<<
+ *             pass
+ * 
+*/
+      __pyx_t_12 = __Pyx_PyErr_ExceptionMatches(((PyObject *)(((PyTypeObject*)PyExc_Exception))));
+      if (__pyx_t_12) {
+        __Pyx_ErrRestore(0,0,0);
+        goto __pyx_L346_exception_handled;
+      }
+      goto __pyx_L347_except_error;
+
+      /* "frigate/video/detect_cython.pyx":624
+ * 
+ *         # Build detections with attributes
+ *         try:             # <<<<<<<<<<<<<<
+ *             detections = cython_build_detections_with_attributes(
+ *                 object_tracker.tracked_objects,
+*/
+      __pyx_L347_except_error:;
+      __Pyx_XGIVEREF(__pyx_t_7);
+      __Pyx_XGIVEREF(__pyx_t_8);
+      __Pyx_XGIVEREF(__pyx_t_9);
+      __Pyx_ExceptionReset(__pyx_t_7, __pyx_t_8, __pyx_t_9);
+      goto __pyx_L1_error;
+      __pyx_L346_exception_handled:;
+      __Pyx_XGIVEREF(__pyx_t_7);
+      __Pyx_XGIVEREF(__pyx_t_8);
+      __Pyx_XGIVEREF(__pyx_t_9);
+      __Pyx_ExceptionReset(__pyx_t_7, __pyx_t_8, __pyx_t_9);
+      __pyx_L352_try_end:;
+    }
+
+    /* "frigate/video/detect_cython.pyx":636
+ * 
+ *         # Add to output queue
+ *         try:             # <<<<<<<<<<<<<<
+ *             if detected_objects_queue.full():
+ *                 frame_manager.close(frame_name)
+*/
+    {
+      __Pyx_PyThreadState_declare
+      __Pyx_PyThreadState_assign
+      __Pyx_ExceptionSave(&__pyx_t_9, &__pyx_t_8, &__pyx_t_7);
+      __Pyx_XGOTREF(__pyx_t_9);
+      __Pyx_XGOTREF(__pyx_t_8);
+      __Pyx_XGOTREF(__pyx_t_7);
+      /*try:*/ {
+
+        /* "frigate/video/detect_cython.pyx":637
+ *         # Add to output queue
+ *         try:
+ *             if detected_objects_queue.full():             # <<<<<<<<<<<<<<
+ *                 frame_manager.close(frame_name)
+ *                 continue
+*/
+        __pyx_t_1 = __pyx_v_detected_objects_queue;
+        __Pyx_INCREF(__pyx_t_1);
+        __pyx_t_3 = 0;
+        {
+          PyObject *__pyx_callargs[2] = {__pyx_t_1, NULL};
+          __pyx_t_26 = __Pyx_PyObject_FastCallMethod((PyObject*)__pyx_mstate_global->__pyx_n_u_full, __pyx_callargs+__pyx_t_3, (1-__pyx_t_3) | (1*__Pyx_PY_VECTORCALL_ARGUMENTS_OFFSET));
+          __Pyx_XDECREF(__pyx_t_1); __pyx_t_1 = 0;
+          if (unlikely(!__pyx_t_26)) __PYX_ERR(0, 637, __pyx_L355_error)
+          __Pyx_GOTREF(__pyx_t_26);
+        }
+        __pyx_t_13 = __Pyx_PyObject_IsTrue(__pyx_t_26); if (unlikely((__pyx_t_13 < 0))) __PYX_ERR(0, 637, __pyx_L355_error)
+        __Pyx_DECREF(__pyx_t_26); __pyx_t_26 = 0;
+        if (__pyx_t_13) {
+
+          /* "frigate/video/detect_cython.pyx":638
+ *         try:
+ *             if detected_objects_queue.full():
+ *                 frame_manager.close(frame_name)             # <<<<<<<<<<<<<<
+ *                 continue
+ *             else:
+*/
+          __pyx_t_1 = __pyx_v_frame_manager;
+          __Pyx_INCREF(__pyx_t_1);
+          __pyx_t_3 = 0;
+          {
+            PyObject *__pyx_callargs[2] = {__pyx_t_1, __pyx_v_frame_name};
+            __pyx_t_26 = __Pyx_PyObject_FastCallMethod((PyObject*)__pyx_mstate_global->__pyx_n_u_close, __pyx_callargs+__pyx_t_3, (2-__pyx_t_3) | (1*__Pyx_PY_VECTORCALL_ARGUMENTS_OFFSET));
+            __Pyx_XDECREF(__pyx_t_1); __pyx_t_1 = 0;
+            if (unlikely(!__pyx_t_26)) __PYX_ERR(0, 638, __pyx_L355_error)
+            __Pyx_GOTREF(__pyx_t_26);
+          }
+          __Pyx_DECREF(__pyx_t_26); __pyx_t_26 = 0;
+
+          /* "frigate/video/detect_cython.pyx":639
+ *             if detected_objects_queue.full():
+ *                 frame_manager.close(frame_name)
+ *                 continue             # <<<<<<<<<<<<<<
+ *             else:
+ *                 fps_tracker.update()
+*/
+          goto __pyx_L361_try_continue;
+
+          /* "frigate/video/detect_cython.pyx":637
+ *         # Add to output queue
+ *         try:
+ *             if detected_objects_queue.full():             # <<<<<<<<<<<<<<
+ *                 frame_manager.close(frame_name)
+ *                 continue
+*/
+        }
+
+        /* "frigate/video/detect_cython.pyx":641
+ *                 continue
+ *             else:
+ *                 fps_tracker.update()             # <<<<<<<<<<<<<<
+ *                 camera_metrics.process_fps.value = fps_tracker.eps()
+ *                 detected_objects_queue.put(
+*/
+        /*else*/ {
+          __pyx_t_1 = __pyx_v_fps_tracker;
+          __Pyx_INCREF(__pyx_t_1);
+          __pyx_t_3 = 0;
+          {
+            PyObject *__pyx_callargs[2] = {__pyx_t_1, NULL};
+            __pyx_t_26 = __Pyx_PyObject_FastCallMethod((PyObject*)__pyx_mstate_global->__pyx_n_u_update, __pyx_callargs+__pyx_t_3, (1-__pyx_t_3) | (1*__Pyx_PY_VECTORCALL_ARGUMENTS_OFFSET));
+            __Pyx_XDECREF(__pyx_t_1); __pyx_t_1 = 0;
+            if (unlikely(!__pyx_t_26)) __PYX_ERR(0, 641, __pyx_L355_error)
+            __Pyx_GOTREF(__pyx_t_26);
+          }
+          __Pyx_DECREF(__pyx_t_26); __pyx_t_26 = 0;
+
+          /* "frigate/video/detect_cython.pyx":642
+ *             else:
+ *                 fps_tracker.update()
+ *                 camera_metrics.process_fps.value = fps_tracker.eps()             # <<<<<<<<<<<<<<
+ *                 detected_objects_queue.put(
+ *                     (
+*/
+          __pyx_t_1 = __pyx_v_fps_tracker;
+          __Pyx_INCREF(__pyx_t_1);
+          __pyx_t_3 = 0;
+          {
+            PyObject *__pyx_callargs[2] = {__pyx_t_1, NULL};
+            __pyx_t_26 = __Pyx_PyObject_FastCallMethod((PyObject*)__pyx_mstate_global->__pyx_n_u_eps, __pyx_callargs+__pyx_t_3, (1-__pyx_t_3) | (1*__Pyx_PY_VECTORCALL_ARGUMENTS_OFFSET));
+            __Pyx_XDECREF(__pyx_t_1); __pyx_t_1 = 0;
+            if (unlikely(!__pyx_t_26)) __PYX_ERR(0, 642, __pyx_L355_error)
+            __Pyx_GOTREF(__pyx_t_26);
+          }
+          __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_v_camera_metrics, __pyx_mstate_global->__pyx_n_u_process_fps); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 642, __pyx_L355_error)
+          __Pyx_GOTREF(__pyx_t_1);
+          if (__Pyx_PyObject_SetAttrStr(__pyx_t_1, __pyx_mstate_global->__pyx_n_u_value, __pyx_t_26) < (0)) __PYX_ERR(0, 642, __pyx_L355_error)
+          __Pyx_DECREF(__pyx_t_26); __pyx_t_26 = 0;
+          __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
+
+          /* "frigate/video/detect_cython.pyx":643
+ *                 fps_tracker.update()
+ *                 camera_metrics.process_fps.value = fps_tracker.eps()
+ *                 detected_objects_queue.put(             # <<<<<<<<<<<<<<
+ *                     (
+ *                         camera_config.name,
+*/
+          __pyx_t_26 = __pyx_v_detected_objects_queue;
+          __Pyx_INCREF(__pyx_t_26);
+
+          /* "frigate/video/detect_cython.pyx":645
+ *                 detected_objects_queue.put(
+ *                     (
+ *                         camera_config.name,             # <<<<<<<<<<<<<<
+ *                         frame_name,
+ *                         frame_time,
+*/
+          __pyx_t_22 = __Pyx_PyObject_GetAttrStr(__pyx_v_camera_config, __pyx_mstate_global->__pyx_n_u_name); if (unlikely(!__pyx_t_22)) __PYX_ERR(0, 645, __pyx_L355_error)
+          __Pyx_GOTREF(__pyx_t_22);
+
+          /* "frigate/video/detect_cython.pyx":648
+ *                         frame_name,
+ *                         frame_time,
+ *                         detections,             # <<<<<<<<<<<<<<
+ *                         motion_boxes,
+ *                         regions,
+*/
+          if (unlikely(!__pyx_v_detections)) { __Pyx_RaiseUnboundLocalError("detections"); __PYX_ERR(0, 648, __pyx_L355_error) }
+
+          /* "frigate/video/detect_cython.pyx":645
+ *                 detected_objects_queue.put(
+ *                     (
+ *                         camera_config.name,             # <<<<<<<<<<<<<<
+ *                         frame_name,
+ *                         frame_time,
+*/
+          __pyx_t_6 = PyTuple_New(6); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 645, __pyx_L355_error)
+          __Pyx_GOTREF(__pyx_t_6);
+          __Pyx_GIVEREF(__pyx_t_22);
+          if (__Pyx_PyTuple_SET_ITEM(__pyx_t_6, 0, __pyx_t_22) != (0)) __PYX_ERR(0, 645, __pyx_L355_error);
+          __Pyx_INCREF(__pyx_v_frame_name);
+          __Pyx_GIVEREF(__pyx_v_frame_name);
+          if (__Pyx_PyTuple_SET_ITEM(__pyx_t_6, 1, __pyx_v_frame_name) != (0)) __PYX_ERR(0, 645, __pyx_L355_error);
+          __Pyx_INCREF(__pyx_v_frame_time);
+          __Pyx_GIVEREF(__pyx_v_frame_time);
+          if (__Pyx_PyTuple_SET_ITEM(__pyx_t_6, 2, __pyx_v_frame_time) != (0)) __PYX_ERR(0, 645, __pyx_L355_error);
+          __Pyx_INCREF(__pyx_v_detections);
+          __Pyx_GIVEREF(__pyx_v_detections);
+          if (__Pyx_PyTuple_SET_ITEM(__pyx_t_6, 3, __pyx_v_detections) != (0)) __PYX_ERR(0, 645, __pyx_L355_error);
+          __Pyx_INCREF(__pyx_v_motion_boxes);
+          __Pyx_GIVEREF(__pyx_v_motion_boxes);
+          if (__Pyx_PyTuple_SET_ITEM(__pyx_t_6, 4, __pyx_v_motion_boxes) != (0)) __PYX_ERR(0, 645, __pyx_L355_error);
+          __Pyx_INCREF(__pyx_v_regions);
+          __Pyx_GIVEREF(__pyx_v_regions);
+          if (__Pyx_PyTuple_SET_ITEM(__pyx_t_6, 5, __pyx_v_regions) != (0)) __PYX_ERR(0, 645, __pyx_L355_error);
+          __pyx_t_22 = 0;
+          __pyx_t_3 = 0;
+          {
+            PyObject *__pyx_callargs[2] = {__pyx_t_26, __pyx_t_6};
+            __pyx_t_1 = __Pyx_PyObject_FastCallMethod((PyObject*)__pyx_mstate_global->__pyx_n_u_put, __pyx_callargs+__pyx_t_3, (2-__pyx_t_3) | (1*__Pyx_PY_VECTORCALL_ARGUMENTS_OFFSET));
+            __Pyx_XDECREF(__pyx_t_26); __pyx_t_26 = 0;
+            __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
+            if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 643, __pyx_L355_error)
+            __Pyx_GOTREF(__pyx_t_1);
+          }
+          __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
+
+          /* "frigate/video/detect_cython.pyx":653
+ *                     )
+ *                 )
+ *                 camera_metrics.detection_fps.value = object_detector.fps.eps()             # <<<<<<<<<<<<<<
+ *                 frame_manager.close(frame_name)
+ *         except Exception:
+*/
+          __pyx_t_26 = __Pyx_PyObject_GetAttrStr(__pyx_v_object_detector, __pyx_mstate_global->__pyx_n_u_fps); if (unlikely(!__pyx_t_26)) __PYX_ERR(0, 653, __pyx_L355_error)
+          __Pyx_GOTREF(__pyx_t_26);
+          __pyx_t_6 = __pyx_t_26;
+          __Pyx_INCREF(__pyx_t_6);
+          __pyx_t_3 = 0;
+          {
+            PyObject *__pyx_callargs[2] = {__pyx_t_6, NULL};
+            __pyx_t_1 = __Pyx_PyObject_FastCallMethod((PyObject*)__pyx_mstate_global->__pyx_n_u_eps, __pyx_callargs+__pyx_t_3, (1-__pyx_t_3) | (1*__Pyx_PY_VECTORCALL_ARGUMENTS_OFFSET));
+            __Pyx_XDECREF(__pyx_t_6); __pyx_t_6 = 0;
+            __Pyx_DECREF(__pyx_t_26); __pyx_t_26 = 0;
+            if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 653, __pyx_L355_error)
+            __Pyx_GOTREF(__pyx_t_1);
+          }
+          __pyx_t_26 = __Pyx_PyObject_GetAttrStr(__pyx_v_camera_metrics, __pyx_mstate_global->__pyx_n_u_detection_fps); if (unlikely(!__pyx_t_26)) __PYX_ERR(0, 653, __pyx_L355_error)
+          __Pyx_GOTREF(__pyx_t_26);
+          if (__Pyx_PyObject_SetAttrStr(__pyx_t_26, __pyx_mstate_global->__pyx_n_u_value, __pyx_t_1) < (0)) __PYX_ERR(0, 653, __pyx_L355_error)
+          __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
+          __Pyx_DECREF(__pyx_t_26); __pyx_t_26 = 0;
+
+          /* "frigate/video/detect_cython.pyx":654
+ *                 )
+ *                 camera_metrics.detection_fps.value = object_detector.fps.eps()
+ *                 frame_manager.close(frame_name)             # <<<<<<<<<<<<<<
+ *         except Exception:
+ *             pass
+*/
+          __pyx_t_1 = __pyx_v_frame_manager;
+          __Pyx_INCREF(__pyx_t_1);
+          __pyx_t_3 = 0;
+          {
+            PyObject *__pyx_callargs[2] = {__pyx_t_1, __pyx_v_frame_name};
+            __pyx_t_26 = __Pyx_PyObject_FastCallMethod((PyObject*)__pyx_mstate_global->__pyx_n_u_close, __pyx_callargs+__pyx_t_3, (2-__pyx_t_3) | (1*__Pyx_PY_VECTORCALL_ARGUMENTS_OFFSET));
+            __Pyx_XDECREF(__pyx_t_1); __pyx_t_1 = 0;
+            if (unlikely(!__pyx_t_26)) __PYX_ERR(0, 654, __pyx_L355_error)
+            __Pyx_GOTREF(__pyx_t_26);
+          }
+          __Pyx_DECREF(__pyx_t_26); __pyx_t_26 = 0;
+        }
+
+        /* "frigate/video/detect_cython.pyx":636
+ * 
+ *         # Add to output queue
+ *         try:             # <<<<<<<<<<<<<<
+ *             if detected_objects_queue.full():
+ *                 frame_manager.close(frame_name)
+*/
+      }
+      __Pyx_XDECREF(__pyx_t_9); __pyx_t_9 = 0;
+      __Pyx_XDECREF(__pyx_t_8); __pyx_t_8 = 0;
+      __Pyx_XDECREF(__pyx_t_7); __pyx_t_7 = 0;
+      goto __pyx_L362_try_end;
+      __pyx_L355_error:;
+      __Pyx_XDECREF(__pyx_t_1); __pyx_t_1 = 0;
+      __Pyx_XDECREF(__pyx_t_17); __pyx_t_17 = 0;
+      __Pyx_XDECREF(__pyx_t_2); __pyx_t_2 = 0;
+      __Pyx_XDECREF(__pyx_t_22); __pyx_t_22 = 0;
+      __Pyx_XDECREF(__pyx_t_23); __pyx_t_23 = 0;
+      __Pyx_XDECREF(__pyx_t_24); __pyx_t_24 = 0;
+      __Pyx_XDECREF(__pyx_t_25); __pyx_t_25 = 0;
+      __Pyx_XDECREF(__pyx_t_26); __pyx_t_26 = 0;
+      __Pyx_XDECREF(__pyx_t_4); __pyx_t_4 = 0;
+      __Pyx_XDECREF(__pyx_t_5); __pyx_t_5 = 0;
+      __Pyx_XDECREF(__pyx_t_6); __pyx_t_6 = 0;
+
+      /* "frigate/video/detect_cython.pyx":655
+ *                 camera_metrics.detection_fps.value = object_detector.fps.eps()
+ *                 frame_manager.close(frame_name)
+ *         except Exception:             # <<<<<<<<<<<<<<
+ *             pass
+ * 
+*/
+      __pyx_t_12 = __Pyx_PyErr_ExceptionMatches(((PyObject *)(((PyTypeObject*)PyExc_Exception))));
+      if (__pyx_t_12) {
+        __Pyx_ErrRestore(0,0,0);
+        goto __pyx_L356_exception_handled;
+      }
+      goto __pyx_L357_except_error;
+
+      /* "frigate/video/detect_cython.pyx":636
+ * 
+ *         # Add to output queue
+ *         try:             # <<<<<<<<<<<<<<
+ *             if detected_objects_queue.full():
+ *                 frame_manager.close(frame_name)
+*/
+      __pyx_L357_except_error:;
+      __Pyx_XGIVEREF(__pyx_t_9);
+      __Pyx_XGIVEREF(__pyx_t_8);
+      __Pyx_XGIVEREF(__pyx_t_7);
+      __Pyx_ExceptionReset(__pyx_t_9, __pyx_t_8, __pyx_t_7);
+      goto __pyx_L1_error;
+      __pyx_L361_try_continue:;
+      __Pyx_XGIVEREF(__pyx_t_9);
+      __Pyx_XGIVEREF(__pyx_t_8);
+      __Pyx_XGIVEREF(__pyx_t_7);
+      __Pyx_ExceptionReset(__pyx_t_9, __pyx_t_8, __pyx_t_7);
+      goto __pyx_L57_continue;
+      __pyx_L356_exception_handled:;
+      __Pyx_XGIVEREF(__pyx_t_9);
+      __Pyx_XGIVEREF(__pyx_t_8);
+      __Pyx_XGIVEREF(__pyx_t_7);
+      __Pyx_ExceptionReset(__pyx_t_9, __pyx_t_8, __pyx_t_7);
+      __pyx_L362_try_end:;
+    }
+    __pyx_L57_continue:;
+  }
+  __pyx_L58_break:;
+
+  /* "frigate/video/detect_cython.pyx":659
+ * 
+ *     # Cleanup (one-time)
+ *     try:             # <<<<<<<<<<<<<<
+ *         motion_detector.stop()
+ *         requestor.stop()
+*/
+  {
+    __Pyx_PyThreadState_declare
+    __Pyx_PyThreadState_assign
+    __Pyx_ExceptionSave(&__pyx_t_7, &__pyx_t_8, &__pyx_t_9);
+    __Pyx_XGOTREF(__pyx_t_7);
+    __Pyx_XGOTREF(__pyx_t_8);
+    __Pyx_XGOTREF(__pyx_t_9);
+    /*try:*/ {
+
+      /* "frigate/video/detect_cython.pyx":660
+ *     # Cleanup (one-time)
+ *     try:
+ *         motion_detector.stop()             # <<<<<<<<<<<<<<
+ *         requestor.stop()
+ *     except Exception:
+*/
+      __pyx_t_1 = __pyx_v_motion_detector;
+      __Pyx_INCREF(__pyx_t_1);
+      __pyx_t_3 = 0;
+      {
+        PyObject *__pyx_callargs[2] = {__pyx_t_1, NULL};
+        __pyx_t_26 = __Pyx_PyObject_FastCallMethod((PyObject*)__pyx_mstate_global->__pyx_n_u_stop, __pyx_callargs+__pyx_t_3, (1-__pyx_t_3) | (1*__Pyx_PY_VECTORCALL_ARGUMENTS_OFFSET));
+        __Pyx_XDECREF(__pyx_t_1); __pyx_t_1 = 0;
+        if (unlikely(!__pyx_t_26)) __PYX_ERR(0, 660, __pyx_L366_error)
+        __Pyx_GOTREF(__pyx_t_26);
+      }
+      __Pyx_DECREF(__pyx_t_26); __pyx_t_26 = 0;
+
+      /* "frigate/video/detect_cython.pyx":661
+ *     try:
+ *         motion_detector.stop()
+ *         requestor.stop()             # <<<<<<<<<<<<<<
+ *     except Exception:
+ *         pass
+*/
+      __pyx_t_1 = __pyx_v_requestor;
+      __Pyx_INCREF(__pyx_t_1);
+      __pyx_t_3 = 0;
+      {
+        PyObject *__pyx_callargs[2] = {__pyx_t_1, NULL};
+        __pyx_t_26 = __Pyx_PyObject_FastCallMethod((PyObject*)__pyx_mstate_global->__pyx_n_u_stop, __pyx_callargs+__pyx_t_3, (1-__pyx_t_3) | (1*__Pyx_PY_VECTORCALL_ARGUMENTS_OFFSET));
+        __Pyx_XDECREF(__pyx_t_1); __pyx_t_1 = 0;
+        if (unlikely(!__pyx_t_26)) __PYX_ERR(0, 661, __pyx_L366_error)
+        __Pyx_GOTREF(__pyx_t_26);
+      }
+      __Pyx_DECREF(__pyx_t_26); __pyx_t_26 = 0;
+
+      /* "frigate/video/detect_cython.pyx":659
+ * 
+ *     # Cleanup (one-time)
+ *     try:             # <<<<<<<<<<<<<<
+ *         motion_detector.stop()
+ *         requestor.stop()
+*/
+    }
+    __Pyx_XDECREF(__pyx_t_7); __pyx_t_7 = 0;
+    __Pyx_XDECREF(__pyx_t_8); __pyx_t_8 = 0;
+    __Pyx_XDECREF(__pyx_t_9); __pyx_t_9 = 0;
+    goto __pyx_L371_try_end;
+    __pyx_L366_error:;
+    __Pyx_XDECREF(__pyx_t_1); __pyx_t_1 = 0;
+    __Pyx_XDECREF(__pyx_t_17); __pyx_t_17 = 0;
+    __Pyx_XDECREF(__pyx_t_2); __pyx_t_2 = 0;
+    __Pyx_XDECREF(__pyx_t_22); __pyx_t_22 = 0;
+    __Pyx_XDECREF(__pyx_t_23); __pyx_t_23 = 0;
+    __Pyx_XDECREF(__pyx_t_24); __pyx_t_24 = 0;
+    __Pyx_XDECREF(__pyx_t_25); __pyx_t_25 = 0;
+    __Pyx_XDECREF(__pyx_t_26); __pyx_t_26 = 0;
+    __Pyx_XDECREF(__pyx_t_4); __pyx_t_4 = 0;
+    __Pyx_XDECREF(__pyx_t_5); __pyx_t_5 = 0;
+    __Pyx_XDECREF(__pyx_t_6); __pyx_t_6 = 0;
+
+    /* "frigate/video/detect_cython.pyx":662
+ *         motion_detector.stop()
+ *         requestor.stop()
+ *     except Exception:             # <<<<<<<<<<<<<<
+ *         pass
+ * 
+*/
+    __pyx_t_12 = __Pyx_PyErr_ExceptionMatches(((PyObject *)(((PyTypeObject*)PyExc_Exception))));
+    if (__pyx_t_12) {
+      __Pyx_ErrRestore(0,0,0);
+      goto __pyx_L367_exception_handled;
+    }
+    goto __pyx_L368_except_error;
+
+    /* "frigate/video/detect_cython.pyx":659
+ * 
+ *     # Cleanup (one-time)
+ *     try:             # <<<<<<<<<<<<<<
+ *         motion_detector.stop()
+ *         requestor.stop()
+*/
+    __pyx_L368_except_error:;
+    __Pyx_XGIVEREF(__pyx_t_7);
+    __Pyx_XGIVEREF(__pyx_t_8);
+    __Pyx_XGIVEREF(__pyx_t_9);
+    __Pyx_ExceptionReset(__pyx_t_7, __pyx_t_8, __pyx_t_9);
+    goto __pyx_L1_error;
+    __pyx_L367_exception_handled:;
+    __Pyx_XGIVEREF(__pyx_t_7);
+    __Pyx_XGIVEREF(__pyx_t_8);
+    __Pyx_XGIVEREF(__pyx_t_9);
+    __Pyx_ExceptionReset(__pyx_t_7, __pyx_t_8, __pyx_t_9);
+    __pyx_L371_try_end:;
+  }
+
+  /* "frigate/video/detect_cython.pyx":179
+ * 
+ * 
+ * def cython_process_frames(             # <<<<<<<<<<<<<<
+ *     object requestor,
+ *     object frame_queue,
+*/
+
+  /* function exit code */
+  __pyx_r = Py_None; __Pyx_INCREF(Py_None);
+  goto __pyx_L0;
+  __pyx_L1_error:;
+  __Pyx_XDECREF(__pyx_t_1);
+  __Pyx_XDECREF(__pyx_t_2);
+  __Pyx_XDECREF(__pyx_t_4);
+  __Pyx_XDECREF(__pyx_t_5);
+  __Pyx_XDECREF(__pyx_t_6);
+  __Pyx_XDECREF(__pyx_t_17);
+  __Pyx_XDECREF(__pyx_t_22);
+  __Pyx_XDECREF(__pyx_t_23);
+  __Pyx_XDECREF(__pyx_t_24);
+  __Pyx_XDECREF(__pyx_t_25);
+  __Pyx_XDECREF(__pyx_t_26);
+  __Pyx_AddTraceback("frigate.video.detect_cython.cython_process_frames", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __pyx_r = NULL;
+  __pyx_L0:;
+  __Pyx_XDECREF(__pyx_v_next_region_update);
+  __Pyx_XDECREF(__pyx_v_config_subscriber);
+  __Pyx_XDECREF(__pyx_v_fps_tracker);
+  __Pyx_XDECREF(__pyx_v_attributes_map);
+  __Pyx_XDECREF(__pyx_v_all_attributes);
+  __Pyx_XDECREF(__pyx_v_motion_boxes_buf);
+  __Pyx_XDECREF(__pyx_v_regions_buf);
+  __Pyx_XDECREF(__pyx_v_updated_configs);
+  __Pyx_XDECREF(__pyx_v_frame_name);
+  __Pyx_XDECREF(__pyx_v_frame_time);
+  __Pyx_XDECREF(__pyx_v_frame);
+  __Pyx_XDECREF(__pyx_v_motion_boxes);
+  __Pyx_XDECREF(__pyx_v_regions);
+  __Pyx_XDECREF(__pyx_v_consolidated_detections);
+  __Pyx_XDECREF(__pyx_v_detections);
+  __Pyx_XDECREF(__pyx_v_tracked_detections);
+  __Pyx_XDECREF(__pyx_v_batch_results);
+  __Pyx_XDECREF(__pyx_v_region);
+  __Pyx_XDECREF(__pyx_v_region_detections);
+  __Pyx_XDECREF(__pyx_v_converted);
+  __Pyx_XDECREF(__pyx_v_filtered);
+  __Pyx_XDECREF(__pyx_v_standalone_motion_array);
+  __Pyx_XDECREF(__pyx_v_standalone_motion_boxes);
+  __Pyx_XDECREF(__pyx_v_motion_clusters);
+  __Pyx_XDECREF(__pyx_v_motion_regions);
+  __Pyx_XDECREF(__pyx_v_prev_enabled);
+  __Pyx_XDECREF(__pyx_v_time_module);
+  __Pyx_XDECREF(__pyx_v_datetime_module);
+  __Pyx_XDECREF(__pyx_v_request_module);
+  __Pyx_XDECREF(__pyx_v_queue_module);
+  __Pyx_XDECREF(__pyx_v_time_val);
+  __Pyx_XDECREF(__pyx_v_reduce_detections);
+  __Pyx_XDECREF(__pyx_v_cython_find_best_object);
+  __Pyx_XDECREF(__pyx_v_EventsPerSecond);
+  __Pyx_XDECREF(__pyx_v_largest_dimension);
+  __Pyx_XDECREF(__pyx_v_CameraTypeEnum);
+  __Pyx_XDECREF(__pyx_v_modified_attributes_map);
+  __Pyx_XDECREF(__pyx_v_stationary_object_ids);
+  __Pyx_XDECREF(__pyx_v_stationary_threshold);
+  __Pyx_XDECREF(__pyx_v_stationary_interval);
+  __Pyx_XDECREF(__pyx_v_is_calibrating);
+  __Pyx_XDECREF(__pyx_v_motion_boxes_for_check);
+  __Pyx_XDECREF(__pyx_v_cython_process_tracked_objects);
+  __Pyx_XDECREF(__pyx_v_tracked_object_boxes);
+  __Pyx_XDECREF(__pyx_v__);
+  __Pyx_XDECREF(__pyx_v_object_boxes);
+  __Pyx_XDECREF(__pyx_v_get_cluster_candidates);
+  __Pyx_XDECREF(__pyx_v_get_cluster_region);
+  __Pyx_XDECREF(__pyx_v_cython_filter_motion_boxes);
+  __Pyx_XDECREF(__pyx_v_motion_boxes_array);
+  __Pyx_XDECREF(__pyx_v_regions_array);
+  __Pyx_XDECREF(__pyx_v_get_cluster_region_from_grid);
+  __Pyx_XDECREF(__pyx_v_get_startup_regions);
+  __Pyx_XDECREF(__pyx_v_convert_detection_boxes);
+  __Pyx_XDECREF(__pyx_v_is_object_filtered_batch);
+  __Pyx_XDECREF(__pyx_v_labels);
+  __Pyx_XDECREF(__pyx_v_scores);
+  __Pyx_XDECREF(__pyx_v_boxes);
+  __Pyx_XDECREF(__pyx_v_areas);
+  __Pyx_XDECREF(__pyx_v_ratios);
+  __Pyx_XDECREF(__pyx_v_d);
+  __Pyx_XDECREF(__pyx_7genexpr__pyx_v_attr);
+  __Pyx_XDECREF(__pyx_8genexpr1__pyx_v_attr);
+  __Pyx_XDECREF(__pyx_8genexpr2__pyx_v_candidate);
+  __Pyx_XDECREF(__pyx_8genexpr3__pyx_v_box);
+  __Pyx_XDECREF(__pyx_8genexpr3__pyx_v_0);
+  __Pyx_XDECREF(__pyx_8genexpr5__pyx_v_candidate);
+  __Pyx_XDECREF(__pyx_8genexpr6__pyx_v_d);
+  __Pyx_XDECREF(__pyx_8genexpr7__pyx_v_d);
+  __Pyx_XDECREF(__pyx_8genexpr8__pyx_v_d);
+  __Pyx_XDECREF(__pyx_8genexpr9__pyx_v_d);
+  __Pyx_XDECREF(__pyx_9genexpr10__pyx_v_d);
+  __Pyx_XDECREF(__pyx_v_region_grid);
+  __Pyx_XGIVEREF(__pyx_r);
+  __Pyx_RefNannyFinishContext();
+  return __pyx_r;
+}
+
+/* "frigate/video/detect_cython.pyx":667
+ * 
+ * # Helper function to check if PTZ is moving at frame time
+ * cdef bint ptz_moving_at_frame_time(object frame_time, object start_time, object stop_time):             # <<<<<<<<<<<<<<
+ *     """Check if PTZ was moving at the given frame time."""
+ *     try:
+*/
+
+static int __pyx_f_7frigate_5video_13detect_cython_ptz_moving_at_frame_time(PyObject *__pyx_v_frame_time, PyObject *__pyx_v_start_time, PyObject *__pyx_v_stop_time) {
+  int __pyx_r;
+  __Pyx_RefNannyDeclarations
+  PyObject *__pyx_t_1 = NULL;
+  PyObject *__pyx_t_2 = NULL;
+  PyObject *__pyx_t_3 = NULL;
+  int __pyx_t_4;
+  int __pyx_t_5;
+  PyObject *__pyx_t_6 = NULL;
+  int __pyx_t_7;
+  int __pyx_lineno = 0;
+  const char *__pyx_filename = NULL;
+  int __pyx_clineno = 0;
+  __Pyx_RefNannySetupContext("ptz_moving_at_frame_time", 0);
+
+  /* "frigate/video/detect_cython.pyx":669
+ * cdef bint ptz_moving_at_frame_time(object frame_time, object start_time, object stop_time):
+ *     """Check if PTZ was moving at the given frame time."""
+ *     try:             # <<<<<<<<<<<<<<
+ *         if start_time is None or stop_time is None:
+ *             return False
+*/
+  {
+    __Pyx_PyThreadState_declare
+    __Pyx_PyThreadState_assign
+    __Pyx_ExceptionSave(&__pyx_t_1, &__pyx_t_2, &__pyx_t_3);
+    __Pyx_XGOTREF(__pyx_t_1);
+    __Pyx_XGOTREF(__pyx_t_2);
+    __Pyx_XGOTREF(__pyx_t_3);
+    /*try:*/ {
+
+      /* "frigate/video/detect_cython.pyx":670
+ *     """Check if PTZ was moving at the given frame time."""
+ *     try:
+ *         if start_time is None or stop_time is None:             # <<<<<<<<<<<<<<
+ *             return False
+ *         return start_time <= frame_time <= stop_time
+*/
+      __pyx_t_5 = (__pyx_v_start_time == Py_None);
+      if (!__pyx_t_5) {
+      } else {
+        __pyx_t_4 = __pyx_t_5;
+        goto __pyx_L10_bool_binop_done;
+      }
+      __pyx_t_5 = (__pyx_v_stop_time == Py_None);
+      __pyx_t_4 = __pyx_t_5;
+      __pyx_L10_bool_binop_done:;
+      if (__pyx_t_4) {
+
+        /* "frigate/video/detect_cython.pyx":671
+ *     try:
+ *         if start_time is None or stop_time is None:
+ *             return False             # <<<<<<<<<<<<<<
+ *         return start_time <= frame_time <= stop_time
+ *     except Exception:
+*/
+        __pyx_r = 0;
+        goto __pyx_L7_try_return;
+
+        /* "frigate/video/detect_cython.pyx":670
+ *     """Check if PTZ was moving at the given frame time."""
+ *     try:
+ *         if start_time is None or stop_time is None:             # <<<<<<<<<<<<<<
+ *             return False
+ *         return start_time <= frame_time <= stop_time
+*/
+      }
+
+      /* "frigate/video/detect_cython.pyx":672
+ *         if start_time is None or stop_time is None:
+ *             return False
+ *         return start_time <= frame_time <= stop_time             # <<<<<<<<<<<<<<
+ *     except Exception:
+ *         return False
+*/
+      __pyx_t_6 = PyObject_RichCompare(__pyx_v_start_time, __pyx_v_frame_time, Py_LE); __Pyx_XGOTREF(__pyx_t_6); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 672, __pyx_L3_error)
+      if (__Pyx_PyObject_IsTrue(__pyx_t_6)) {
+        __Pyx_DECREF(__pyx_t_6);
+        __pyx_t_6 = PyObject_RichCompare(__pyx_v_frame_time, __pyx_v_stop_time, Py_LE); __Pyx_XGOTREF(__pyx_t_6); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 672, __pyx_L3_error)
+      }
+      __pyx_t_4 = __Pyx_PyObject_IsTrue(__pyx_t_6); if (unlikely((__pyx_t_4 == (int)-1) && PyErr_Occurred())) __PYX_ERR(0, 672, __pyx_L3_error)
+      __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
+      __pyx_r = __pyx_t_4;
+      goto __pyx_L7_try_return;
+
+      /* "frigate/video/detect_cython.pyx":669
+ * cdef bint ptz_moving_at_frame_time(object frame_time, object start_time, object stop_time):
+ *     """Check if PTZ was moving at the given frame time."""
+ *     try:             # <<<<<<<<<<<<<<
+ *         if start_time is None or stop_time is None:
+ *             return False
+*/
+    }
+    __pyx_L3_error:;
+    __Pyx_XDECREF(__pyx_t_6); __pyx_t_6 = 0;
+
+    /* "frigate/video/detect_cython.pyx":673
+ *             return False
+ *         return start_time <= frame_time <= stop_time
+ *     except Exception:             # <<<<<<<<<<<<<<
+ *         return False
+ * 
+*/
+    __pyx_t_7 = __Pyx_PyErr_ExceptionMatches(((PyObject *)(((PyTypeObject*)PyExc_Exception))));
+    if (__pyx_t_7) {
+      __Pyx_ErrRestore(0,0,0);
+
+      /* "frigate/video/detect_cython.pyx":674
+ *         return start_time <= frame_time <= stop_time
+ *     except Exception:
+ *         return False             # <<<<<<<<<<<<<<
+ * 
+ * 
+*/
+      __pyx_r = 0;
+      goto __pyx_L6_except_return;
+    }
+    goto __pyx_L5_except_error;
+
+    /* "frigate/video/detect_cython.pyx":669
+ * cdef bint ptz_moving_at_frame_time(object frame_time, object start_time, object stop_time):
+ *     """Check if PTZ was moving at the given frame time."""
+ *     try:             # <<<<<<<<<<<<<<
+ *         if start_time is None or stop_time is None:
+ *             return False
+*/
+    __pyx_L5_except_error:;
+    __Pyx_XGIVEREF(__pyx_t_1);
+    __Pyx_XGIVEREF(__pyx_t_2);
+    __Pyx_XGIVEREF(__pyx_t_3);
+    __Pyx_ExceptionReset(__pyx_t_1, __pyx_t_2, __pyx_t_3);
+    goto __pyx_L1_error;
+    __pyx_L7_try_return:;
+    __Pyx_XGIVEREF(__pyx_t_1);
+    __Pyx_XGIVEREF(__pyx_t_2);
+    __Pyx_XGIVEREF(__pyx_t_3);
+    __Pyx_ExceptionReset(__pyx_t_1, __pyx_t_2, __pyx_t_3);
+    goto __pyx_L0;
+    __pyx_L6_except_return:;
+    __Pyx_XGIVEREF(__pyx_t_1);
+    __Pyx_XGIVEREF(__pyx_t_2);
+    __Pyx_XGIVEREF(__pyx_t_3);
+    __Pyx_ExceptionReset(__pyx_t_1, __pyx_t_2, __pyx_t_3);
+    goto __pyx_L0;
+  }
+
+  /* "frigate/video/detect_cython.pyx":667
+ * 
+ * # Helper function to check if PTZ is moving at frame time
+ * cdef bint ptz_moving_at_frame_time(object frame_time, object start_time, object stop_time):             # <<<<<<<<<<<<<<
+ *     """Check if PTZ was moving at the given frame time."""
+ *     try:
+*/
+
+  /* function exit code */
+  __pyx_L1_error:;
+  __Pyx_XDECREF(__pyx_t_6);
+  __Pyx_AddTraceback("frigate.video.detect_cython.ptz_moving_at_frame_time", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __pyx_r = -1;
+  __pyx_L0:;
+  __Pyx_RefNannyFinishContext();
+  return __pyx_r;
+}
+
+/* "frigate/video/detect_cython.pyx":677
  * 
  * 
  * def cython_build_detections_with_attributes(             # <<<<<<<<<<<<<<
@@ -6749,16 +14846,16 @@ static PyObject *__pyx_pf_7frigate_5video_13detect_cython_4cython_extract_tracke
 */
 
 /* Python wrapper */
-static PyObject *__pyx_pw_7frigate_5video_13detect_cython_7cython_build_detections_with_attributes(PyObject *__pyx_self, 
+static PyObject *__pyx_pw_7frigate_5video_13detect_cython_9cython_build_detections_with_attributes(PyObject *__pyx_self, 
 #if CYTHON_METH_FASTCALL
 PyObject *const *__pyx_args, Py_ssize_t __pyx_nargs, PyObject *__pyx_kwds
 #else
 PyObject *__pyx_args, PyObject *__pyx_kwds
 #endif
 ); /*proto*/
-PyDoc_STRVAR(__pyx_doc_7frigate_5video_13detect_cython_6cython_build_detections_with_attributes, "Build detections dict and assign attributes in a single pass.\n\n    Replaces the Python loops in video/detect.py that:\n    1. Build a detections dict from tracked_objects (lines 443-445)\n    2. Filter consolidated detections by attribute labels\n    3. For each detected attribute, find the best matching object\n\n    The Cython find_best_object is already used but the Python wrapper\n    TrackedObjectAttribute.find_best_object() is called instead.\n\n    Args:\n        tracked_objects: Dict of tracked object data\n        consolidated_detections: List of consolidated detection tuples\n        all_attributes: Set of attribute label names\n        attributes_map: Dict mapping attribute label -> list of parent labels\n        cython_find_best_object: cython_find_best_object function from object_cython\n\n    Returns:\n        Dict mapping object ID -> {**obj_data, \"attributes\": [...]}\n    ");
-static PyMethodDef __pyx_mdef_7frigate_5video_13detect_cython_7cython_build_detections_with_attributes = {"cython_build_detections_with_attributes", (PyCFunction)(void(*)(void))(__Pyx_PyCFunction_FastCallWithKeywords)__pyx_pw_7frigate_5video_13detect_cython_7cython_build_detections_with_attributes, __Pyx_METH_FASTCALL|METH_KEYWORDS, __pyx_doc_7frigate_5video_13detect_cython_6cython_build_detections_with_attributes};
-static PyObject *__pyx_pw_7frigate_5video_13detect_cython_7cython_build_detections_with_attributes(PyObject *__pyx_self, 
+PyDoc_STRVAR(__pyx_doc_7frigate_5video_13detect_cython_8cython_build_detections_with_attributes, "Build detections dict and assign attributes in a single pass.\n\n    Replaces the Python loops in video/detect.py that:\n    1. Build a detections dict from tracked_objects (lines 443-445)\n    2. Filter consolidated detections by attribute labels\n    3. For each detected attribute, find the best matching object\n\n    The Cython find_best_object is already used but the Python wrapper\n    TrackedObjectAttribute.find_best_object() is called instead.\n\n    Args:\n        tracked_objects: Dict of tracked object data\n        consolidated_detections: List of consolidated detection tuples\n        all_attributes: Set of attribute label names\n        attributes_map: Dict mapping attribute label -> list of parent labels\n        cython_find_best_object: cython_find_best_object function from object_cython\n\n    Returns:\n        Dict mapping object ID -> {**obj_data, \"attributes\": [...]}\n    ");
+static PyMethodDef __pyx_mdef_7frigate_5video_13detect_cython_9cython_build_detections_with_attributes = {"cython_build_detections_with_attributes", (PyCFunction)(void(*)(void))(__Pyx_PyCFunction_FastCallWithKeywords)__pyx_pw_7frigate_5video_13detect_cython_9cython_build_detections_with_attributes, __Pyx_METH_FASTCALL|METH_KEYWORDS, __pyx_doc_7frigate_5video_13detect_cython_8cython_build_detections_with_attributes};
+static PyObject *__pyx_pw_7frigate_5video_13detect_cython_9cython_build_detections_with_attributes(PyObject *__pyx_self, 
 #if CYTHON_METH_FASTCALL
 PyObject *const *__pyx_args, Py_ssize_t __pyx_nargs, PyObject *__pyx_kwds
 #else
@@ -6792,50 +14889,50 @@ PyObject *__pyx_args, PyObject *__pyx_kwds
   {
     PyObject ** const __pyx_pyargnames[] = {&__pyx_mstate_global->__pyx_n_u_tracked_objects,&__pyx_mstate_global->__pyx_n_u_consolidated_detections,&__pyx_mstate_global->__pyx_n_u_all_attributes,&__pyx_mstate_global->__pyx_n_u_attributes_map,&__pyx_mstate_global->__pyx_n_u_cython_find_best_object,0};
     const Py_ssize_t __pyx_kwds_len = (__pyx_kwds) ? __Pyx_NumKwargs_FASTCALL(__pyx_kwds) : 0;
-    if (unlikely(__pyx_kwds_len < 0)) __PYX_ERR(0, 174, __pyx_L3_error)
+    if (unlikely(__pyx_kwds_len < 0)) __PYX_ERR(0, 677, __pyx_L3_error)
     if (__pyx_kwds_len > 0) {
       switch (__pyx_nargs) {
         case  5:
         values[4] = __Pyx_ArgRef_FASTCALL(__pyx_args, 4);
-        if (!CYTHON_ASSUME_SAFE_MACROS && unlikely(!values[4])) __PYX_ERR(0, 174, __pyx_L3_error)
+        if (!CYTHON_ASSUME_SAFE_MACROS && unlikely(!values[4])) __PYX_ERR(0, 677, __pyx_L3_error)
         CYTHON_FALLTHROUGH;
         case  4:
         values[3] = __Pyx_ArgRef_FASTCALL(__pyx_args, 3);
-        if (!CYTHON_ASSUME_SAFE_MACROS && unlikely(!values[3])) __PYX_ERR(0, 174, __pyx_L3_error)
+        if (!CYTHON_ASSUME_SAFE_MACROS && unlikely(!values[3])) __PYX_ERR(0, 677, __pyx_L3_error)
         CYTHON_FALLTHROUGH;
         case  3:
         values[2] = __Pyx_ArgRef_FASTCALL(__pyx_args, 2);
-        if (!CYTHON_ASSUME_SAFE_MACROS && unlikely(!values[2])) __PYX_ERR(0, 174, __pyx_L3_error)
+        if (!CYTHON_ASSUME_SAFE_MACROS && unlikely(!values[2])) __PYX_ERR(0, 677, __pyx_L3_error)
         CYTHON_FALLTHROUGH;
         case  2:
         values[1] = __Pyx_ArgRef_FASTCALL(__pyx_args, 1);
-        if (!CYTHON_ASSUME_SAFE_MACROS && unlikely(!values[1])) __PYX_ERR(0, 174, __pyx_L3_error)
+        if (!CYTHON_ASSUME_SAFE_MACROS && unlikely(!values[1])) __PYX_ERR(0, 677, __pyx_L3_error)
         CYTHON_FALLTHROUGH;
         case  1:
         values[0] = __Pyx_ArgRef_FASTCALL(__pyx_args, 0);
-        if (!CYTHON_ASSUME_SAFE_MACROS && unlikely(!values[0])) __PYX_ERR(0, 174, __pyx_L3_error)
+        if (!CYTHON_ASSUME_SAFE_MACROS && unlikely(!values[0])) __PYX_ERR(0, 677, __pyx_L3_error)
         CYTHON_FALLTHROUGH;
         case  0: break;
         default: goto __pyx_L5_argtuple_error;
       }
       const Py_ssize_t kwd_pos_args = __pyx_nargs;
-      if (__Pyx_ParseKeywords(__pyx_kwds, __pyx_kwvalues, __pyx_pyargnames, 0, values, kwd_pos_args, __pyx_kwds_len, "cython_build_detections_with_attributes", 0) < (0)) __PYX_ERR(0, 174, __pyx_L3_error)
+      if (__Pyx_ParseKeywords(__pyx_kwds, __pyx_kwvalues, __pyx_pyargnames, 0, values, kwd_pos_args, __pyx_kwds_len, "cython_build_detections_with_attributes", 0) < (0)) __PYX_ERR(0, 677, __pyx_L3_error)
       for (Py_ssize_t i = __pyx_nargs; i < 5; i++) {
-        if (unlikely(!values[i])) { __Pyx_RaiseArgtupleInvalid("cython_build_detections_with_attributes", 1, 5, 5, i); __PYX_ERR(0, 174, __pyx_L3_error) }
+        if (unlikely(!values[i])) { __Pyx_RaiseArgtupleInvalid("cython_build_detections_with_attributes", 1, 5, 5, i); __PYX_ERR(0, 677, __pyx_L3_error) }
       }
     } else if (unlikely(__pyx_nargs != 5)) {
       goto __pyx_L5_argtuple_error;
     } else {
       values[0] = __Pyx_ArgRef_FASTCALL(__pyx_args, 0);
-      if (!CYTHON_ASSUME_SAFE_MACROS && unlikely(!values[0])) __PYX_ERR(0, 174, __pyx_L3_error)
+      if (!CYTHON_ASSUME_SAFE_MACROS && unlikely(!values[0])) __PYX_ERR(0, 677, __pyx_L3_error)
       values[1] = __Pyx_ArgRef_FASTCALL(__pyx_args, 1);
-      if (!CYTHON_ASSUME_SAFE_MACROS && unlikely(!values[1])) __PYX_ERR(0, 174, __pyx_L3_error)
+      if (!CYTHON_ASSUME_SAFE_MACROS && unlikely(!values[1])) __PYX_ERR(0, 677, __pyx_L3_error)
       values[2] = __Pyx_ArgRef_FASTCALL(__pyx_args, 2);
-      if (!CYTHON_ASSUME_SAFE_MACROS && unlikely(!values[2])) __PYX_ERR(0, 174, __pyx_L3_error)
+      if (!CYTHON_ASSUME_SAFE_MACROS && unlikely(!values[2])) __PYX_ERR(0, 677, __pyx_L3_error)
       values[3] = __Pyx_ArgRef_FASTCALL(__pyx_args, 3);
-      if (!CYTHON_ASSUME_SAFE_MACROS && unlikely(!values[3])) __PYX_ERR(0, 174, __pyx_L3_error)
+      if (!CYTHON_ASSUME_SAFE_MACROS && unlikely(!values[3])) __PYX_ERR(0, 677, __pyx_L3_error)
       values[4] = __Pyx_ArgRef_FASTCALL(__pyx_args, 4);
-      if (!CYTHON_ASSUME_SAFE_MACROS && unlikely(!values[4])) __PYX_ERR(0, 174, __pyx_L3_error)
+      if (!CYTHON_ASSUME_SAFE_MACROS && unlikely(!values[4])) __PYX_ERR(0, 677, __pyx_L3_error)
     }
     __pyx_v_tracked_objects = values[0];
     __pyx_v_consolidated_detections = values[1];
@@ -6845,7 +14942,7 @@ PyObject *__pyx_args, PyObject *__pyx_kwds
   }
   goto __pyx_L6_skip;
   __pyx_L5_argtuple_error:;
-  __Pyx_RaiseArgtupleInvalid("cython_build_detections_with_attributes", 1, 5, 5, __pyx_nargs); __PYX_ERR(0, 174, __pyx_L3_error)
+  __Pyx_RaiseArgtupleInvalid("cython_build_detections_with_attributes", 1, 5, 5, __pyx_nargs); __PYX_ERR(0, 677, __pyx_L3_error)
   __pyx_L6_skip:;
   goto __pyx_L4_argument_unpacking_done;
   __pyx_L3_error:;
@@ -6856,7 +14953,7 @@ PyObject *__pyx_args, PyObject *__pyx_kwds
   __Pyx_RefNannyFinishContext();
   return NULL;
   __pyx_L4_argument_unpacking_done:;
-  __pyx_r = __pyx_pf_7frigate_5video_13detect_cython_6cython_build_detections_with_attributes(__pyx_self, __pyx_v_tracked_objects, __pyx_v_consolidated_detections, __pyx_v_all_attributes, __pyx_v_attributes_map, __pyx_v_cython_find_best_object);
+  __pyx_r = __pyx_pf_7frigate_5video_13detect_cython_8cython_build_detections_with_attributes(__pyx_self, __pyx_v_tracked_objects, __pyx_v_consolidated_detections, __pyx_v_all_attributes, __pyx_v_attributes_map, __pyx_v_cython_find_best_object);
 
   /* function exit code */
   for (Py_ssize_t __pyx_temp=0; __pyx_temp < (Py_ssize_t)(sizeof(values)/sizeof(values[0])); ++__pyx_temp) {
@@ -6866,7 +14963,7 @@ PyObject *__pyx_args, PyObject *__pyx_kwds
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_7frigate_5video_13detect_cython_6cython_build_detections_with_attributes(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_tracked_objects, PyObject *__pyx_v_consolidated_detections, PyObject *__pyx_v_all_attributes, PyObject *__pyx_v_attributes_map, PyObject *__pyx_v_cython_find_best_object) {
+static PyObject *__pyx_pf_7frigate_5video_13detect_cython_8cython_build_detections_with_attributes(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_tracked_objects, PyObject *__pyx_v_consolidated_detections, PyObject *__pyx_v_all_attributes, PyObject *__pyx_v_attributes_map, PyObject *__pyx_v_cython_find_best_object) {
   PyObject *__pyx_v_detections = 0;
   PyObject *__pyx_v_obj = 0;
   PyObject *__pyx_v_obj_id = 0;
@@ -6905,55 +15002,55 @@ static PyObject *__pyx_pf_7frigate_5video_13detect_cython_6cython_build_detectio
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("cython_build_detections_with_attributes", 0);
 
-  /* "frigate/video/detect_cython.pyx":202
+  /* "frigate/video/detect_cython.pyx":705
  *     """
  *     cdef:
  *         dict detections = {}             # <<<<<<<<<<<<<<
  *         dict obj
  *         str obj_id
 */
-  __pyx_t_1 = __Pyx_PyDict_NewPresized(0); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 202, __pyx_L1_error)
+  __pyx_t_1 = __Pyx_PyDict_NewPresized(0); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 705, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   __pyx_v_detections = ((PyObject*)__pyx_t_1);
   __pyx_t_1 = 0;
 
-  /* "frigate/video/detect_cython.pyx":207
+  /* "frigate/video/detect_cython.pyx":710
  *         tuple det
  *         str label
  *         list filtered_boxes = []             # <<<<<<<<<<<<<<
  *         list filtered_ids = []
  *         list filtered_labels = []
 */
-  __pyx_t_1 = PyList_New(0); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 207, __pyx_L1_error)
+  __pyx_t_1 = PyList_New(0); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 710, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   __pyx_v_filtered_boxes = ((PyObject*)__pyx_t_1);
   __pyx_t_1 = 0;
 
-  /* "frigate/video/detect_cython.pyx":208
+  /* "frigate/video/detect_cython.pyx":711
  *         str label
  *         list filtered_boxes = []
  *         list filtered_ids = []             # <<<<<<<<<<<<<<
  *         list filtered_labels = []
  *         object best_id
 */
-  __pyx_t_1 = PyList_New(0); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 208, __pyx_L1_error)
+  __pyx_t_1 = PyList_New(0); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 711, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   __pyx_v_filtered_ids = ((PyObject*)__pyx_t_1);
   __pyx_t_1 = 0;
 
-  /* "frigate/video/detect_cython.pyx":209
+  /* "frigate/video/detect_cython.pyx":712
  *         list filtered_boxes = []
  *         list filtered_ids = []
  *         list filtered_labels = []             # <<<<<<<<<<<<<<
  *         object best_id
  *         object best_label
 */
-  __pyx_t_1 = PyList_New(0); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 209, __pyx_L1_error)
+  __pyx_t_1 = PyList_New(0); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 712, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   __pyx_v_filtered_labels = ((PyObject*)__pyx_t_1);
   __pyx_t_1 = 0;
 
-  /* "frigate/video/detect_cython.pyx":215
+  /* "frigate/video/detect_cython.pyx":718
  * 
  *     # Build detections dict (single pass)
  *     for obj_key in tracked_objects:             # <<<<<<<<<<<<<<
@@ -6965,9 +15062,9 @@ static PyObject *__pyx_pf_7frigate_5video_13detect_cython_6cython_build_detectio
     __pyx_t_2 = 0;
     __pyx_t_3 = NULL;
   } else {
-    __pyx_t_2 = -1; __pyx_t_1 = PyObject_GetIter(__pyx_v_tracked_objects); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 215, __pyx_L1_error)
+    __pyx_t_2 = -1; __pyx_t_1 = PyObject_GetIter(__pyx_v_tracked_objects); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 718, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_1);
-    __pyx_t_3 = (CYTHON_COMPILING_IN_LIMITED_API) ? PyIter_Next : __Pyx_PyObject_GetIterNextFunc(__pyx_t_1); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 215, __pyx_L1_error)
+    __pyx_t_3 = (CYTHON_COMPILING_IN_LIMITED_API) ? PyIter_Next : __Pyx_PyObject_GetIterNextFunc(__pyx_t_1); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 718, __pyx_L1_error)
   }
   for (;;) {
     if (likely(!__pyx_t_3)) {
@@ -6975,7 +15072,7 @@ static PyObject *__pyx_pf_7frigate_5video_13detect_cython_6cython_build_detectio
         {
           Py_ssize_t __pyx_temp = __Pyx_PyList_GET_SIZE(__pyx_t_1);
           #if !CYTHON_ASSUME_SAFE_SIZE
-          if (unlikely((__pyx_temp < 0))) __PYX_ERR(0, 215, __pyx_L1_error)
+          if (unlikely((__pyx_temp < 0))) __PYX_ERR(0, 718, __pyx_L1_error)
           #endif
           if (__pyx_t_2 >= __pyx_temp) break;
         }
@@ -6985,7 +15082,7 @@ static PyObject *__pyx_pf_7frigate_5video_13detect_cython_6cython_build_detectio
         {
           Py_ssize_t __pyx_temp = __Pyx_PyTuple_GET_SIZE(__pyx_t_1);
           #if !CYTHON_ASSUME_SAFE_SIZE
-          if (unlikely((__pyx_temp < 0))) __PYX_ERR(0, 215, __pyx_L1_error)
+          if (unlikely((__pyx_temp < 0))) __PYX_ERR(0, 718, __pyx_L1_error)
           #endif
           if (__pyx_t_2 >= __pyx_temp) break;
         }
@@ -6996,13 +15093,13 @@ static PyObject *__pyx_pf_7frigate_5video_13detect_cython_6cython_build_detectio
         #endif
         ++__pyx_t_2;
       }
-      if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 215, __pyx_L1_error)
+      if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 718, __pyx_L1_error)
     } else {
       __pyx_t_4 = __pyx_t_3(__pyx_t_1);
       if (unlikely(!__pyx_t_4)) {
         PyObject* exc_type = PyErr_Occurred();
         if (exc_type) {
-          if (unlikely(!__Pyx_PyErr_GivenExceptionMatches(exc_type, PyExc_StopIteration))) __PYX_ERR(0, 215, __pyx_L1_error)
+          if (unlikely(!__Pyx_PyErr_GivenExceptionMatches(exc_type, PyExc_StopIteration))) __PYX_ERR(0, 718, __pyx_L1_error)
           PyErr_Clear();
         }
         break;
@@ -7012,20 +15109,20 @@ static PyObject *__pyx_pf_7frigate_5video_13detect_cython_6cython_build_detectio
     __Pyx_XDECREF_SET(__pyx_v_obj_key, __pyx_t_4);
     __pyx_t_4 = 0;
 
-    /* "frigate/video/detect_cython.pyx":216
+    /* "frigate/video/detect_cython.pyx":719
  *     # Build detections dict (single pass)
  *     for obj_key in tracked_objects:
  *         obj = tracked_objects[obj_key]             # <<<<<<<<<<<<<<
  *         obj_id = obj["id"]
  *         detections[obj_id] = dict(obj)  # shallow copy
 */
-    __pyx_t_4 = __Pyx_PyObject_GetItem(__pyx_v_tracked_objects, __pyx_v_obj_key); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 216, __pyx_L1_error)
+    __pyx_t_4 = __Pyx_PyObject_GetItem(__pyx_v_tracked_objects, __pyx_v_obj_key); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 719, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_4);
-    if (!(likely(PyDict_CheckExact(__pyx_t_4))||((__pyx_t_4) == Py_None) || __Pyx_RaiseUnexpectedTypeError("dict", __pyx_t_4))) __PYX_ERR(0, 216, __pyx_L1_error)
+    if (!(likely(PyDict_CheckExact(__pyx_t_4))||((__pyx_t_4) == Py_None) || __Pyx_RaiseUnexpectedTypeError("dict", __pyx_t_4))) __PYX_ERR(0, 719, __pyx_L1_error)
     __Pyx_XDECREF_SET(__pyx_v_obj, ((PyObject*)__pyx_t_4));
     __pyx_t_4 = 0;
 
-    /* "frigate/video/detect_cython.pyx":217
+    /* "frigate/video/detect_cython.pyx":720
  *     for obj_key in tracked_objects:
  *         obj = tracked_objects[obj_key]
  *         obj_id = obj["id"]             # <<<<<<<<<<<<<<
@@ -7034,15 +15131,15 @@ static PyObject *__pyx_pf_7frigate_5video_13detect_cython_6cython_build_detectio
 */
     if (unlikely(__pyx_v_obj == Py_None)) {
       PyErr_SetString(PyExc_TypeError, "'NoneType' object is not subscriptable");
-      __PYX_ERR(0, 217, __pyx_L1_error)
+      __PYX_ERR(0, 720, __pyx_L1_error)
     }
-    __pyx_t_4 = __Pyx_PyDict_GetItem(__pyx_v_obj, __pyx_mstate_global->__pyx_n_u_id); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 217, __pyx_L1_error)
+    __pyx_t_4 = __Pyx_PyDict_GetItem(__pyx_v_obj, __pyx_mstate_global->__pyx_n_u_id); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 720, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_4);
-    if (!(likely(PyUnicode_CheckExact(__pyx_t_4))||((__pyx_t_4) == Py_None) || __Pyx_RaiseUnexpectedTypeError("str", __pyx_t_4))) __PYX_ERR(0, 217, __pyx_L1_error)
+    if (!(likely(PyUnicode_CheckExact(__pyx_t_4))||((__pyx_t_4) == Py_None) || __Pyx_RaiseUnexpectedTypeError("str", __pyx_t_4))) __PYX_ERR(0, 720, __pyx_L1_error)
     __Pyx_XDECREF_SET(__pyx_v_obj_id, ((PyObject*)__pyx_t_4));
     __pyx_t_4 = 0;
 
-    /* "frigate/video/detect_cython.pyx":218
+    /* "frigate/video/detect_cython.pyx":721
  *         obj = tracked_objects[obj_key]
  *         obj_id = obj["id"]
  *         detections[obj_id] = dict(obj)  # shallow copy             # <<<<<<<<<<<<<<
@@ -7051,29 +15148,29 @@ static PyObject *__pyx_pf_7frigate_5video_13detect_cython_6cython_build_detectio
 */
     if (unlikely(__pyx_v_obj == Py_None)) {
       PyErr_SetString(PyExc_TypeError, "'NoneType' is not iterable");
-      __PYX_ERR(0, 218, __pyx_L1_error)
+      __PYX_ERR(0, 721, __pyx_L1_error)
     }
-    __pyx_t_4 = PyDict_Copy(__pyx_v_obj); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 218, __pyx_L1_error)
+    __pyx_t_4 = PyDict_Copy(__pyx_v_obj); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 721, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_4);
-    if (unlikely((PyDict_SetItem(__pyx_v_detections, __pyx_v_obj_id, __pyx_t_4) < 0))) __PYX_ERR(0, 218, __pyx_L1_error)
+    if (unlikely((PyDict_SetItem(__pyx_v_detections, __pyx_v_obj_id, __pyx_t_4) < 0))) __PYX_ERR(0, 721, __pyx_L1_error)
     __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
 
-    /* "frigate/video/detect_cython.pyx":219
+    /* "frigate/video/detect_cython.pyx":722
  *         obj_id = obj["id"]
  *         detections[obj_id] = dict(obj)  # shallow copy
  *         detections[obj_id]["attributes"] = []             # <<<<<<<<<<<<<<
  * 
  *     # Process consolidated detections for attributes
 */
-    __pyx_t_4 = PyList_New(0); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 219, __pyx_L1_error)
+    __pyx_t_4 = PyList_New(0); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 722, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_4);
-    __pyx_t_5 = __Pyx_PyDict_GetItem(__pyx_v_detections, __pyx_v_obj_id); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 219, __pyx_L1_error)
+    __pyx_t_5 = __Pyx_PyDict_GetItem(__pyx_v_detections, __pyx_v_obj_id); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 722, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_5);
-    if (unlikely((PyObject_SetItem(__pyx_t_5, __pyx_mstate_global->__pyx_n_u_attributes, __pyx_t_4) < 0))) __PYX_ERR(0, 219, __pyx_L1_error)
+    if (unlikely((PyObject_SetItem(__pyx_t_5, __pyx_mstate_global->__pyx_n_u_attributes, __pyx_t_4) < 0))) __PYX_ERR(0, 722, __pyx_L1_error)
     __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
     __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
 
-    /* "frigate/video/detect_cython.pyx":215
+    /* "frigate/video/detect_cython.pyx":718
  * 
  *     # Build detections dict (single pass)
  *     for obj_key in tracked_objects:             # <<<<<<<<<<<<<<
@@ -7083,19 +15180,19 @@ static PyObject *__pyx_pf_7frigate_5video_13detect_cython_6cython_build_detectio
   }
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-  /* "frigate/video/detect_cython.pyx":223
+  /* "frigate/video/detect_cython.pyx":726
  *     # Process consolidated detections for attributes
  *     # Filter to only attribute detections
  *     attr_dets = []             # <<<<<<<<<<<<<<
  *     for det in consolidated_detections:
  *         label = det[0]
 */
-  __pyx_t_1 = PyList_New(0); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 223, __pyx_L1_error)
+  __pyx_t_1 = PyList_New(0); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 726, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   __pyx_v_attr_dets = ((PyObject*)__pyx_t_1);
   __pyx_t_1 = 0;
 
-  /* "frigate/video/detect_cython.pyx":224
+  /* "frigate/video/detect_cython.pyx":727
  *     # Filter to only attribute detections
  *     attr_dets = []
  *     for det in consolidated_detections:             # <<<<<<<<<<<<<<
@@ -7107,9 +15204,9 @@ static PyObject *__pyx_pf_7frigate_5video_13detect_cython_6cython_build_detectio
     __pyx_t_2 = 0;
     __pyx_t_3 = NULL;
   } else {
-    __pyx_t_2 = -1; __pyx_t_1 = PyObject_GetIter(__pyx_v_consolidated_detections); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 224, __pyx_L1_error)
+    __pyx_t_2 = -1; __pyx_t_1 = PyObject_GetIter(__pyx_v_consolidated_detections); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 727, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_1);
-    __pyx_t_3 = (CYTHON_COMPILING_IN_LIMITED_API) ? PyIter_Next : __Pyx_PyObject_GetIterNextFunc(__pyx_t_1); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 224, __pyx_L1_error)
+    __pyx_t_3 = (CYTHON_COMPILING_IN_LIMITED_API) ? PyIter_Next : __Pyx_PyObject_GetIterNextFunc(__pyx_t_1); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 727, __pyx_L1_error)
   }
   for (;;) {
     if (likely(!__pyx_t_3)) {
@@ -7117,7 +15214,7 @@ static PyObject *__pyx_pf_7frigate_5video_13detect_cython_6cython_build_detectio
         {
           Py_ssize_t __pyx_temp = __Pyx_PyList_GET_SIZE(__pyx_t_1);
           #if !CYTHON_ASSUME_SAFE_SIZE
-          if (unlikely((__pyx_temp < 0))) __PYX_ERR(0, 224, __pyx_L1_error)
+          if (unlikely((__pyx_temp < 0))) __PYX_ERR(0, 727, __pyx_L1_error)
           #endif
           if (__pyx_t_2 >= __pyx_temp) break;
         }
@@ -7127,7 +15224,7 @@ static PyObject *__pyx_pf_7frigate_5video_13detect_cython_6cython_build_detectio
         {
           Py_ssize_t __pyx_temp = __Pyx_PyTuple_GET_SIZE(__pyx_t_1);
           #if !CYTHON_ASSUME_SAFE_SIZE
-          if (unlikely((__pyx_temp < 0))) __PYX_ERR(0, 224, __pyx_L1_error)
+          if (unlikely((__pyx_temp < 0))) __PYX_ERR(0, 727, __pyx_L1_error)
           #endif
           if (__pyx_t_2 >= __pyx_temp) break;
         }
@@ -7138,24 +15235,24 @@ static PyObject *__pyx_pf_7frigate_5video_13detect_cython_6cython_build_detectio
         #endif
         ++__pyx_t_2;
       }
-      if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 224, __pyx_L1_error)
+      if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 727, __pyx_L1_error)
     } else {
       __pyx_t_4 = __pyx_t_3(__pyx_t_1);
       if (unlikely(!__pyx_t_4)) {
         PyObject* exc_type = PyErr_Occurred();
         if (exc_type) {
-          if (unlikely(!__Pyx_PyErr_GivenExceptionMatches(exc_type, PyExc_StopIteration))) __PYX_ERR(0, 224, __pyx_L1_error)
+          if (unlikely(!__Pyx_PyErr_GivenExceptionMatches(exc_type, PyExc_StopIteration))) __PYX_ERR(0, 727, __pyx_L1_error)
           PyErr_Clear();
         }
         break;
       }
     }
     __Pyx_GOTREF(__pyx_t_4);
-    if (!(likely(PyTuple_CheckExact(__pyx_t_4))||((__pyx_t_4) == Py_None) || __Pyx_RaiseUnexpectedTypeError("tuple", __pyx_t_4))) __PYX_ERR(0, 224, __pyx_L1_error)
+    if (!(likely(PyTuple_CheckExact(__pyx_t_4))||((__pyx_t_4) == Py_None) || __Pyx_RaiseUnexpectedTypeError("tuple", __pyx_t_4))) __PYX_ERR(0, 727, __pyx_L1_error)
     __Pyx_XDECREF_SET(__pyx_v_det, ((PyObject*)__pyx_t_4));
     __pyx_t_4 = 0;
 
-    /* "frigate/video/detect_cython.pyx":225
+    /* "frigate/video/detect_cython.pyx":728
  *     attr_dets = []
  *     for det in consolidated_detections:
  *         label = det[0]             # <<<<<<<<<<<<<<
@@ -7164,34 +15261,34 @@ static PyObject *__pyx_pf_7frigate_5video_13detect_cython_6cython_build_detectio
 */
     if (unlikely(__pyx_v_det == Py_None)) {
       PyErr_SetString(PyExc_TypeError, "'NoneType' object is not subscriptable");
-      __PYX_ERR(0, 225, __pyx_L1_error)
+      __PYX_ERR(0, 728, __pyx_L1_error)
     }
     __pyx_t_4 = __Pyx_PyTuple_GET_ITEM(__pyx_v_det, 0);
     __Pyx_INCREF(__pyx_t_4);
-    if (!(likely(PyUnicode_CheckExact(__pyx_t_4))||((__pyx_t_4) == Py_None) || __Pyx_RaiseUnexpectedTypeError("str", __pyx_t_4))) __PYX_ERR(0, 225, __pyx_L1_error)
+    if (!(likely(PyUnicode_CheckExact(__pyx_t_4))||((__pyx_t_4) == Py_None) || __Pyx_RaiseUnexpectedTypeError("str", __pyx_t_4))) __PYX_ERR(0, 728, __pyx_L1_error)
     __Pyx_XDECREF_SET(__pyx_v_label, ((PyObject*)__pyx_t_4));
     __pyx_t_4 = 0;
 
-    /* "frigate/video/detect_cython.pyx":226
+    /* "frigate/video/detect_cython.pyx":729
  *     for det in consolidated_detections:
  *         label = det[0]
  *         if label in all_attributes:             # <<<<<<<<<<<<<<
  *             attr_dets.append(det)
  * 
 */
-    __pyx_t_6 = (__Pyx_PySequence_ContainsTF(__pyx_v_label, __pyx_v_all_attributes, Py_EQ)); if (unlikely((__pyx_t_6 < 0))) __PYX_ERR(0, 226, __pyx_L1_error)
+    __pyx_t_6 = (__Pyx_PySequence_ContainsTF(__pyx_v_label, __pyx_v_all_attributes, Py_EQ)); if (unlikely((__pyx_t_6 < 0))) __PYX_ERR(0, 729, __pyx_L1_error)
     if (__pyx_t_6) {
 
-      /* "frigate/video/detect_cython.pyx":227
+      /* "frigate/video/detect_cython.pyx":730
  *         label = det[0]
  *         if label in all_attributes:
  *             attr_dets.append(det)             # <<<<<<<<<<<<<<
  * 
  *     # For each attribute detection, find best matching object
 */
-      __pyx_t_7 = __Pyx_PyList_Append(__pyx_v_attr_dets, __pyx_v_det); if (unlikely(__pyx_t_7 == ((int)-1))) __PYX_ERR(0, 227, __pyx_L1_error)
+      __pyx_t_7 = __Pyx_PyList_Append(__pyx_v_attr_dets, __pyx_v_det); if (unlikely(__pyx_t_7 == ((int)-1))) __PYX_ERR(0, 730, __pyx_L1_error)
 
-      /* "frigate/video/detect_cython.pyx":226
+      /* "frigate/video/detect_cython.pyx":729
  *     for det in consolidated_detections:
  *         label = det[0]
  *         if label in all_attributes:             # <<<<<<<<<<<<<<
@@ -7200,7 +15297,7 @@ static PyObject *__pyx_pf_7frigate_5video_13detect_cython_6cython_build_detectio
 */
     }
 
-    /* "frigate/video/detect_cython.pyx":224
+    /* "frigate/video/detect_cython.pyx":727
  *     # Filter to only attribute detections
  *     attr_dets = []
  *     for det in consolidated_detections:             # <<<<<<<<<<<<<<
@@ -7210,7 +15307,7 @@ static PyObject *__pyx_pf_7frigate_5video_13detect_cython_6cython_build_detectio
   }
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-  /* "frigate/video/detect_cython.pyx":230
+  /* "frigate/video/detect_cython.pyx":733
  * 
  *     # For each attribute detection, find best matching object
  *     for det in attr_dets:             # <<<<<<<<<<<<<<
@@ -7223,19 +15320,19 @@ static PyObject *__pyx_pf_7frigate_5video_13detect_cython_6cython_build_detectio
     {
       Py_ssize_t __pyx_temp = __Pyx_PyList_GET_SIZE(__pyx_t_1);
       #if !CYTHON_ASSUME_SAFE_SIZE
-      if (unlikely((__pyx_temp < 0))) __PYX_ERR(0, 230, __pyx_L1_error)
+      if (unlikely((__pyx_temp < 0))) __PYX_ERR(0, 733, __pyx_L1_error)
       #endif
       if (__pyx_t_2 >= __pyx_temp) break;
     }
     __pyx_t_4 = __Pyx_PyList_GET_ITEM_REF(__pyx_t_1, __pyx_t_2, __Pyx_ReferenceSharing_OwnStrongReference);
     ++__pyx_t_2;
-    if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 230, __pyx_L1_error)
+    if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 733, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_4);
-    if (!(likely(PyTuple_CheckExact(__pyx_t_4))||((__pyx_t_4) == Py_None) || __Pyx_RaiseUnexpectedTypeError("tuple", __pyx_t_4))) __PYX_ERR(0, 230, __pyx_L1_error)
+    if (!(likely(PyTuple_CheckExact(__pyx_t_4))||((__pyx_t_4) == Py_None) || __Pyx_RaiseUnexpectedTypeError("tuple", __pyx_t_4))) __PYX_ERR(0, 733, __pyx_L1_error)
     __Pyx_XDECREF_SET(__pyx_v_det, ((PyObject*)__pyx_t_4));
     __pyx_t_4 = 0;
 
-    /* "frigate/video/detect_cython.pyx":231
+    /* "frigate/video/detect_cython.pyx":734
  *     # For each attribute detection, find best matching object
  *     for det in attr_dets:
  *         attr_label = det[0]             # <<<<<<<<<<<<<<
@@ -7244,14 +15341,14 @@ static PyObject *__pyx_pf_7frigate_5video_13detect_cython_6cython_build_detectio
 */
     if (unlikely(__pyx_v_det == Py_None)) {
       PyErr_SetString(PyExc_TypeError, "'NoneType' object is not subscriptable");
-      __PYX_ERR(0, 231, __pyx_L1_error)
+      __PYX_ERR(0, 734, __pyx_L1_error)
     }
     __pyx_t_4 = __Pyx_PyTuple_GET_ITEM(__pyx_v_det, 0);
     __Pyx_INCREF(__pyx_t_4);
     __Pyx_XDECREF_SET(__pyx_v_attr_label, __pyx_t_4);
     __pyx_t_4 = 0;
 
-    /* "frigate/video/detect_cython.pyx":232
+    /* "frigate/video/detect_cython.pyx":735
  *     for det in attr_dets:
  *         attr_label = det[0]
  *         attr_box = det[2]             # <<<<<<<<<<<<<<
@@ -7260,50 +15357,50 @@ static PyObject *__pyx_pf_7frigate_5video_13detect_cython_6cython_build_detectio
 */
     if (unlikely(__pyx_v_det == Py_None)) {
       PyErr_SetString(PyExc_TypeError, "'NoneType' object is not subscriptable");
-      __PYX_ERR(0, 232, __pyx_L1_error)
+      __PYX_ERR(0, 735, __pyx_L1_error)
     }
     __pyx_t_4 = __Pyx_PyTuple_GET_ITEM(__pyx_v_det, 2);
     __Pyx_INCREF(__pyx_t_4);
     __Pyx_XDECREF_SET(__pyx_v_attr_box, __pyx_t_4);
     __pyx_t_4 = 0;
 
-    /* "frigate/video/detect_cython.pyx":235
+    /* "frigate/video/detect_cython.pyx":738
  * 
  *         # Find objects whose label is in the attributes_map for this attribute
  *         filtered_boxes = []             # <<<<<<<<<<<<<<
  *         filtered_ids = []
  *         filtered_labels = []
 */
-    __pyx_t_4 = PyList_New(0); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 235, __pyx_L1_error)
+    __pyx_t_4 = PyList_New(0); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 738, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_4);
     __Pyx_DECREF_SET(__pyx_v_filtered_boxes, ((PyObject*)__pyx_t_4));
     __pyx_t_4 = 0;
 
-    /* "frigate/video/detect_cython.pyx":236
+    /* "frigate/video/detect_cython.pyx":739
  *         # Find objects whose label is in the attributes_map for this attribute
  *         filtered_boxes = []
  *         filtered_ids = []             # <<<<<<<<<<<<<<
  *         filtered_labels = []
  * 
 */
-    __pyx_t_4 = PyList_New(0); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 236, __pyx_L1_error)
+    __pyx_t_4 = PyList_New(0); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 739, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_4);
     __Pyx_DECREF_SET(__pyx_v_filtered_ids, ((PyObject*)__pyx_t_4));
     __pyx_t_4 = 0;
 
-    /* "frigate/video/detect_cython.pyx":237
+    /* "frigate/video/detect_cython.pyx":740
  *         filtered_boxes = []
  *         filtered_ids = []
  *         filtered_labels = []             # <<<<<<<<<<<<<<
  * 
  *         for obj_key in tracked_objects:
 */
-    __pyx_t_4 = PyList_New(0); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 237, __pyx_L1_error)
+    __pyx_t_4 = PyList_New(0); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 740, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_4);
     __Pyx_DECREF_SET(__pyx_v_filtered_labels, ((PyObject*)__pyx_t_4));
     __pyx_t_4 = 0;
 
-    /* "frigate/video/detect_cython.pyx":239
+    /* "frigate/video/detect_cython.pyx":742
  *         filtered_labels = []
  * 
  *         for obj_key in tracked_objects:             # <<<<<<<<<<<<<<
@@ -7315,9 +15412,9 @@ static PyObject *__pyx_pf_7frigate_5video_13detect_cython_6cython_build_detectio
       __pyx_t_8 = 0;
       __pyx_t_3 = NULL;
     } else {
-      __pyx_t_8 = -1; __pyx_t_4 = PyObject_GetIter(__pyx_v_tracked_objects); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 239, __pyx_L1_error)
+      __pyx_t_8 = -1; __pyx_t_4 = PyObject_GetIter(__pyx_v_tracked_objects); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 742, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_4);
-      __pyx_t_3 = (CYTHON_COMPILING_IN_LIMITED_API) ? PyIter_Next : __Pyx_PyObject_GetIterNextFunc(__pyx_t_4); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 239, __pyx_L1_error)
+      __pyx_t_3 = (CYTHON_COMPILING_IN_LIMITED_API) ? PyIter_Next : __Pyx_PyObject_GetIterNextFunc(__pyx_t_4); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 742, __pyx_L1_error)
     }
     for (;;) {
       if (likely(!__pyx_t_3)) {
@@ -7325,7 +15422,7 @@ static PyObject *__pyx_pf_7frigate_5video_13detect_cython_6cython_build_detectio
           {
             Py_ssize_t __pyx_temp = __Pyx_PyList_GET_SIZE(__pyx_t_4);
             #if !CYTHON_ASSUME_SAFE_SIZE
-            if (unlikely((__pyx_temp < 0))) __PYX_ERR(0, 239, __pyx_L1_error)
+            if (unlikely((__pyx_temp < 0))) __PYX_ERR(0, 742, __pyx_L1_error)
             #endif
             if (__pyx_t_8 >= __pyx_temp) break;
           }
@@ -7335,7 +15432,7 @@ static PyObject *__pyx_pf_7frigate_5video_13detect_cython_6cython_build_detectio
           {
             Py_ssize_t __pyx_temp = __Pyx_PyTuple_GET_SIZE(__pyx_t_4);
             #if !CYTHON_ASSUME_SAFE_SIZE
-            if (unlikely((__pyx_temp < 0))) __PYX_ERR(0, 239, __pyx_L1_error)
+            if (unlikely((__pyx_temp < 0))) __PYX_ERR(0, 742, __pyx_L1_error)
             #endif
             if (__pyx_t_8 >= __pyx_temp) break;
           }
@@ -7346,13 +15443,13 @@ static PyObject *__pyx_pf_7frigate_5video_13detect_cython_6cython_build_detectio
           #endif
           ++__pyx_t_8;
         }
-        if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 239, __pyx_L1_error)
+        if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 742, __pyx_L1_error)
       } else {
         __pyx_t_5 = __pyx_t_3(__pyx_t_4);
         if (unlikely(!__pyx_t_5)) {
           PyObject* exc_type = PyErr_Occurred();
           if (exc_type) {
-            if (unlikely(!__Pyx_PyErr_GivenExceptionMatches(exc_type, PyExc_StopIteration))) __PYX_ERR(0, 239, __pyx_L1_error)
+            if (unlikely(!__Pyx_PyErr_GivenExceptionMatches(exc_type, PyExc_StopIteration))) __PYX_ERR(0, 742, __pyx_L1_error)
             PyErr_Clear();
           }
           break;
@@ -7362,20 +15459,20 @@ static PyObject *__pyx_pf_7frigate_5video_13detect_cython_6cython_build_detectio
       __Pyx_XDECREF_SET(__pyx_v_obj_key, __pyx_t_5);
       __pyx_t_5 = 0;
 
-      /* "frigate/video/detect_cython.pyx":240
+      /* "frigate/video/detect_cython.pyx":743
  * 
  *         for obj_key in tracked_objects:
  *             obj = tracked_objects[obj_key]             # <<<<<<<<<<<<<<
  *             if obj["label"] in attributes_map.get(attr_label, []):
  *                 filtered_boxes.append(obj["box"])
 */
-      __pyx_t_5 = __Pyx_PyObject_GetItem(__pyx_v_tracked_objects, __pyx_v_obj_key); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 240, __pyx_L1_error)
+      __pyx_t_5 = __Pyx_PyObject_GetItem(__pyx_v_tracked_objects, __pyx_v_obj_key); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 743, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_5);
-      if (!(likely(PyDict_CheckExact(__pyx_t_5))||((__pyx_t_5) == Py_None) || __Pyx_RaiseUnexpectedTypeError("dict", __pyx_t_5))) __PYX_ERR(0, 240, __pyx_L1_error)
+      if (!(likely(PyDict_CheckExact(__pyx_t_5))||((__pyx_t_5) == Py_None) || __Pyx_RaiseUnexpectedTypeError("dict", __pyx_t_5))) __PYX_ERR(0, 743, __pyx_L1_error)
       __Pyx_XDECREF_SET(__pyx_v_obj, ((PyObject*)__pyx_t_5));
       __pyx_t_5 = 0;
 
-      /* "frigate/video/detect_cython.pyx":241
+      /* "frigate/video/detect_cython.pyx":744
  *         for obj_key in tracked_objects:
  *             obj = tracked_objects[obj_key]
  *             if obj["label"] in attributes_map.get(attr_label, []):             # <<<<<<<<<<<<<<
@@ -7384,13 +15481,13 @@ static PyObject *__pyx_pf_7frigate_5video_13detect_cython_6cython_build_detectio
 */
       if (unlikely(__pyx_v_obj == Py_None)) {
         PyErr_SetString(PyExc_TypeError, "'NoneType' object is not subscriptable");
-        __PYX_ERR(0, 241, __pyx_L1_error)
+        __PYX_ERR(0, 744, __pyx_L1_error)
       }
-      __pyx_t_5 = __Pyx_PyDict_GetItem(__pyx_v_obj, __pyx_mstate_global->__pyx_n_u_label); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 241, __pyx_L1_error)
+      __pyx_t_5 = __Pyx_PyDict_GetItem(__pyx_v_obj, __pyx_mstate_global->__pyx_n_u_label); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 744, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_5);
       __pyx_t_10 = __pyx_v_attributes_map;
       __Pyx_INCREF(__pyx_t_10);
-      __pyx_t_11 = PyList_New(0); if (unlikely(!__pyx_t_11)) __PYX_ERR(0, 241, __pyx_L1_error)
+      __pyx_t_11 = PyList_New(0); if (unlikely(!__pyx_t_11)) __PYX_ERR(0, 744, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_11);
       __pyx_t_12 = 0;
       {
@@ -7398,15 +15495,15 @@ static PyObject *__pyx_pf_7frigate_5video_13detect_cython_6cython_build_detectio
         __pyx_t_9 = __Pyx_PyObject_FastCallMethod((PyObject*)__pyx_mstate_global->__pyx_n_u_get, __pyx_callargs+__pyx_t_12, (3-__pyx_t_12) | (1*__Pyx_PY_VECTORCALL_ARGUMENTS_OFFSET));
         __Pyx_XDECREF(__pyx_t_10); __pyx_t_10 = 0;
         __Pyx_DECREF(__pyx_t_11); __pyx_t_11 = 0;
-        if (unlikely(!__pyx_t_9)) __PYX_ERR(0, 241, __pyx_L1_error)
+        if (unlikely(!__pyx_t_9)) __PYX_ERR(0, 744, __pyx_L1_error)
         __Pyx_GOTREF(__pyx_t_9);
       }
-      __pyx_t_6 = (__Pyx_PySequence_ContainsTF(__pyx_t_5, __pyx_t_9, Py_EQ)); if (unlikely((__pyx_t_6 < 0))) __PYX_ERR(0, 241, __pyx_L1_error)
+      __pyx_t_6 = (__Pyx_PySequence_ContainsTF(__pyx_t_5, __pyx_t_9, Py_EQ)); if (unlikely((__pyx_t_6 < 0))) __PYX_ERR(0, 744, __pyx_L1_error)
       __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
       __Pyx_DECREF(__pyx_t_9); __pyx_t_9 = 0;
       if (__pyx_t_6) {
 
-        /* "frigate/video/detect_cython.pyx":242
+        /* "frigate/video/detect_cython.pyx":745
  *             obj = tracked_objects[obj_key]
  *             if obj["label"] in attributes_map.get(attr_label, []):
  *                 filtered_boxes.append(obj["box"])             # <<<<<<<<<<<<<<
@@ -7415,14 +15512,14 @@ static PyObject *__pyx_pf_7frigate_5video_13detect_cython_6cython_build_detectio
 */
         if (unlikely(__pyx_v_obj == Py_None)) {
           PyErr_SetString(PyExc_TypeError, "'NoneType' object is not subscriptable");
-          __PYX_ERR(0, 242, __pyx_L1_error)
+          __PYX_ERR(0, 745, __pyx_L1_error)
         }
-        __pyx_t_9 = __Pyx_PyDict_GetItem(__pyx_v_obj, __pyx_mstate_global->__pyx_n_u_box); if (unlikely(!__pyx_t_9)) __PYX_ERR(0, 242, __pyx_L1_error)
+        __pyx_t_9 = __Pyx_PyDict_GetItem(__pyx_v_obj, __pyx_mstate_global->__pyx_n_u_box); if (unlikely(!__pyx_t_9)) __PYX_ERR(0, 745, __pyx_L1_error)
         __Pyx_GOTREF(__pyx_t_9);
-        __pyx_t_7 = __Pyx_PyList_Append(__pyx_v_filtered_boxes, __pyx_t_9); if (unlikely(__pyx_t_7 == ((int)-1))) __PYX_ERR(0, 242, __pyx_L1_error)
+        __pyx_t_7 = __Pyx_PyList_Append(__pyx_v_filtered_boxes, __pyx_t_9); if (unlikely(__pyx_t_7 == ((int)-1))) __PYX_ERR(0, 745, __pyx_L1_error)
         __Pyx_DECREF(__pyx_t_9); __pyx_t_9 = 0;
 
-        /* "frigate/video/detect_cython.pyx":243
+        /* "frigate/video/detect_cython.pyx":746
  *             if obj["label"] in attributes_map.get(attr_label, []):
  *                 filtered_boxes.append(obj["box"])
  *                 filtered_ids.append(obj["id"])             # <<<<<<<<<<<<<<
@@ -7431,14 +15528,14 @@ static PyObject *__pyx_pf_7frigate_5video_13detect_cython_6cython_build_detectio
 */
         if (unlikely(__pyx_v_obj == Py_None)) {
           PyErr_SetString(PyExc_TypeError, "'NoneType' object is not subscriptable");
-          __PYX_ERR(0, 243, __pyx_L1_error)
+          __PYX_ERR(0, 746, __pyx_L1_error)
         }
-        __pyx_t_9 = __Pyx_PyDict_GetItem(__pyx_v_obj, __pyx_mstate_global->__pyx_n_u_id); if (unlikely(!__pyx_t_9)) __PYX_ERR(0, 243, __pyx_L1_error)
+        __pyx_t_9 = __Pyx_PyDict_GetItem(__pyx_v_obj, __pyx_mstate_global->__pyx_n_u_id); if (unlikely(!__pyx_t_9)) __PYX_ERR(0, 746, __pyx_L1_error)
         __Pyx_GOTREF(__pyx_t_9);
-        __pyx_t_7 = __Pyx_PyList_Append(__pyx_v_filtered_ids, __pyx_t_9); if (unlikely(__pyx_t_7 == ((int)-1))) __PYX_ERR(0, 243, __pyx_L1_error)
+        __pyx_t_7 = __Pyx_PyList_Append(__pyx_v_filtered_ids, __pyx_t_9); if (unlikely(__pyx_t_7 == ((int)-1))) __PYX_ERR(0, 746, __pyx_L1_error)
         __Pyx_DECREF(__pyx_t_9); __pyx_t_9 = 0;
 
-        /* "frigate/video/detect_cython.pyx":244
+        /* "frigate/video/detect_cython.pyx":747
  *                 filtered_boxes.append(obj["box"])
  *                 filtered_ids.append(obj["id"])
  *                 filtered_labels.append(obj["label"])             # <<<<<<<<<<<<<<
@@ -7447,14 +15544,14 @@ static PyObject *__pyx_pf_7frigate_5video_13detect_cython_6cython_build_detectio
 */
         if (unlikely(__pyx_v_obj == Py_None)) {
           PyErr_SetString(PyExc_TypeError, "'NoneType' object is not subscriptable");
-          __PYX_ERR(0, 244, __pyx_L1_error)
+          __PYX_ERR(0, 747, __pyx_L1_error)
         }
-        __pyx_t_9 = __Pyx_PyDict_GetItem(__pyx_v_obj, __pyx_mstate_global->__pyx_n_u_label); if (unlikely(!__pyx_t_9)) __PYX_ERR(0, 244, __pyx_L1_error)
+        __pyx_t_9 = __Pyx_PyDict_GetItem(__pyx_v_obj, __pyx_mstate_global->__pyx_n_u_label); if (unlikely(!__pyx_t_9)) __PYX_ERR(0, 747, __pyx_L1_error)
         __Pyx_GOTREF(__pyx_t_9);
-        __pyx_t_7 = __Pyx_PyList_Append(__pyx_v_filtered_labels, __pyx_t_9); if (unlikely(__pyx_t_7 == ((int)-1))) __PYX_ERR(0, 244, __pyx_L1_error)
+        __pyx_t_7 = __Pyx_PyList_Append(__pyx_v_filtered_labels, __pyx_t_9); if (unlikely(__pyx_t_7 == ((int)-1))) __PYX_ERR(0, 747, __pyx_L1_error)
         __Pyx_DECREF(__pyx_t_9); __pyx_t_9 = 0;
 
-        /* "frigate/video/detect_cython.pyx":241
+        /* "frigate/video/detect_cython.pyx":744
  *         for obj_key in tracked_objects:
  *             obj = tracked_objects[obj_key]
  *             if obj["label"] in attributes_map.get(attr_label, []):             # <<<<<<<<<<<<<<
@@ -7463,7 +15560,7 @@ static PyObject *__pyx_pf_7frigate_5video_13detect_cython_6cython_build_detectio
 */
       }
 
-      /* "frigate/video/detect_cython.pyx":239
+      /* "frigate/video/detect_cython.pyx":742
  *         filtered_labels = []
  * 
  *         for obj_key in tracked_objects:             # <<<<<<<<<<<<<<
@@ -7473,7 +15570,7 @@ static PyObject *__pyx_pf_7frigate_5video_13detect_cython_6cython_build_detectio
     }
     __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
 
-    /* "frigate/video/detect_cython.pyx":246
+    /* "frigate/video/detect_cython.pyx":749
  *                 filtered_labels.append(obj["label"])
  * 
  *         best_id, best_label = cython_find_best_object(             # <<<<<<<<<<<<<<
@@ -7484,31 +15581,31 @@ static PyObject *__pyx_pf_7frigate_5video_13detect_cython_6cython_build_detectio
     __Pyx_INCREF(__pyx_v_cython_find_best_object);
     __pyx_t_5 = __pyx_v_cython_find_best_object; 
 
-    /* "frigate/video/detect_cython.pyx":247
+    /* "frigate/video/detect_cython.pyx":750
  * 
  *         best_id, best_label = cython_find_best_object(
  *             filtered_boxes, filtered_ids, filtered_labels, [attr_box[0], attr_box[1], attr_box[2], attr_box[3]]             # <<<<<<<<<<<<<<
  *         )
  * 
 */
-    __pyx_t_11 = __Pyx_GetItemInt(__pyx_v_attr_box, 0, long, 1, __Pyx_PyLong_From_long, 0, 0, 0, 1, __Pyx_ReferenceSharing_OwnStrongReference); if (unlikely(!__pyx_t_11)) __PYX_ERR(0, 247, __pyx_L1_error)
+    __pyx_t_11 = __Pyx_GetItemInt(__pyx_v_attr_box, 0, long, 1, __Pyx_PyLong_From_long, 0, 0, 0, 1, __Pyx_ReferenceSharing_OwnStrongReference); if (unlikely(!__pyx_t_11)) __PYX_ERR(0, 750, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_11);
-    __pyx_t_10 = __Pyx_GetItemInt(__pyx_v_attr_box, 1, long, 1, __Pyx_PyLong_From_long, 0, 0, 0, 1, __Pyx_ReferenceSharing_OwnStrongReference); if (unlikely(!__pyx_t_10)) __PYX_ERR(0, 247, __pyx_L1_error)
+    __pyx_t_10 = __Pyx_GetItemInt(__pyx_v_attr_box, 1, long, 1, __Pyx_PyLong_From_long, 0, 0, 0, 1, __Pyx_ReferenceSharing_OwnStrongReference); if (unlikely(!__pyx_t_10)) __PYX_ERR(0, 750, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_10);
-    __pyx_t_13 = __Pyx_GetItemInt(__pyx_v_attr_box, 2, long, 1, __Pyx_PyLong_From_long, 0, 0, 0, 1, __Pyx_ReferenceSharing_OwnStrongReference); if (unlikely(!__pyx_t_13)) __PYX_ERR(0, 247, __pyx_L1_error)
+    __pyx_t_13 = __Pyx_GetItemInt(__pyx_v_attr_box, 2, long, 1, __Pyx_PyLong_From_long, 0, 0, 0, 1, __Pyx_ReferenceSharing_OwnStrongReference); if (unlikely(!__pyx_t_13)) __PYX_ERR(0, 750, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_13);
-    __pyx_t_14 = __Pyx_GetItemInt(__pyx_v_attr_box, 3, long, 1, __Pyx_PyLong_From_long, 0, 0, 0, 1, __Pyx_ReferenceSharing_OwnStrongReference); if (unlikely(!__pyx_t_14)) __PYX_ERR(0, 247, __pyx_L1_error)
+    __pyx_t_14 = __Pyx_GetItemInt(__pyx_v_attr_box, 3, long, 1, __Pyx_PyLong_From_long, 0, 0, 0, 1, __Pyx_ReferenceSharing_OwnStrongReference); if (unlikely(!__pyx_t_14)) __PYX_ERR(0, 750, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_14);
-    __pyx_t_15 = PyList_New(4); if (unlikely(!__pyx_t_15)) __PYX_ERR(0, 247, __pyx_L1_error)
+    __pyx_t_15 = PyList_New(4); if (unlikely(!__pyx_t_15)) __PYX_ERR(0, 750, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_15);
     __Pyx_GIVEREF(__pyx_t_11);
-    if (__Pyx_PyList_SET_ITEM(__pyx_t_15, 0, __pyx_t_11) != (0)) __PYX_ERR(0, 247, __pyx_L1_error);
+    if (__Pyx_PyList_SET_ITEM(__pyx_t_15, 0, __pyx_t_11) != (0)) __PYX_ERR(0, 750, __pyx_L1_error);
     __Pyx_GIVEREF(__pyx_t_10);
-    if (__Pyx_PyList_SET_ITEM(__pyx_t_15, 1, __pyx_t_10) != (0)) __PYX_ERR(0, 247, __pyx_L1_error);
+    if (__Pyx_PyList_SET_ITEM(__pyx_t_15, 1, __pyx_t_10) != (0)) __PYX_ERR(0, 750, __pyx_L1_error);
     __Pyx_GIVEREF(__pyx_t_13);
-    if (__Pyx_PyList_SET_ITEM(__pyx_t_15, 2, __pyx_t_13) != (0)) __PYX_ERR(0, 247, __pyx_L1_error);
+    if (__Pyx_PyList_SET_ITEM(__pyx_t_15, 2, __pyx_t_13) != (0)) __PYX_ERR(0, 750, __pyx_L1_error);
     __Pyx_GIVEREF(__pyx_t_14);
-    if (__Pyx_PyList_SET_ITEM(__pyx_t_15, 3, __pyx_t_14) != (0)) __PYX_ERR(0, 247, __pyx_L1_error);
+    if (__Pyx_PyList_SET_ITEM(__pyx_t_15, 3, __pyx_t_14) != (0)) __PYX_ERR(0, 750, __pyx_L1_error);
     __pyx_t_11 = 0;
     __pyx_t_10 = 0;
     __pyx_t_13 = 0;
@@ -7531,7 +15628,7 @@ static PyObject *__pyx_pf_7frigate_5video_13detect_cython_6cython_build_detectio
       __Pyx_XDECREF(__pyx_t_9); __pyx_t_9 = 0;
       __Pyx_DECREF(__pyx_t_15); __pyx_t_15 = 0;
       __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
-      if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 246, __pyx_L1_error)
+      if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 749, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_4);
     }
     if ((likely(PyTuple_CheckExact(__pyx_t_4))) || (PyList_CheckExact(__pyx_t_4))) {
@@ -7540,7 +15637,7 @@ static PyObject *__pyx_pf_7frigate_5video_13detect_cython_6cython_build_detectio
       if (unlikely(size != 2)) {
         if (size > 2) __Pyx_RaiseTooManyValuesError(2);
         else if (size >= 0) __Pyx_RaiseNeedMoreValuesError(size);
-        __PYX_ERR(0, 246, __pyx_L1_error)
+        __PYX_ERR(0, 749, __pyx_L1_error)
       }
       #if CYTHON_ASSUME_SAFE_MACROS && !CYTHON_AVOID_BORROWED_REFS
       if (likely(PyTuple_CheckExact(sequence))) {
@@ -7550,22 +15647,22 @@ static PyObject *__pyx_pf_7frigate_5video_13detect_cython_6cython_build_detectio
         __Pyx_INCREF(__pyx_t_15);
       } else {
         __pyx_t_5 = __Pyx_PyList_GET_ITEM_REF(sequence, 0, __Pyx_ReferenceSharing_SharedReference);
-        if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 246, __pyx_L1_error)
+        if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 749, __pyx_L1_error)
         __Pyx_XGOTREF(__pyx_t_5);
         __pyx_t_15 = __Pyx_PyList_GET_ITEM_REF(sequence, 1, __Pyx_ReferenceSharing_SharedReference);
-        if (unlikely(!__pyx_t_15)) __PYX_ERR(0, 246, __pyx_L1_error)
+        if (unlikely(!__pyx_t_15)) __PYX_ERR(0, 749, __pyx_L1_error)
         __Pyx_XGOTREF(__pyx_t_15);
       }
       #else
-      __pyx_t_5 = __Pyx_PySequence_ITEM(sequence, 0); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 246, __pyx_L1_error)
+      __pyx_t_5 = __Pyx_PySequence_ITEM(sequence, 0); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 749, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_5);
-      __pyx_t_15 = __Pyx_PySequence_ITEM(sequence, 1); if (unlikely(!__pyx_t_15)) __PYX_ERR(0, 246, __pyx_L1_error)
+      __pyx_t_15 = __Pyx_PySequence_ITEM(sequence, 1); if (unlikely(!__pyx_t_15)) __PYX_ERR(0, 749, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_15);
       #endif
       __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
     } else {
       Py_ssize_t index = -1;
-      __pyx_t_9 = PyObject_GetIter(__pyx_t_4); if (unlikely(!__pyx_t_9)) __PYX_ERR(0, 246, __pyx_L1_error)
+      __pyx_t_9 = PyObject_GetIter(__pyx_t_4); if (unlikely(!__pyx_t_9)) __PYX_ERR(0, 749, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_9);
       __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
       __pyx_t_16 = (CYTHON_COMPILING_IN_LIMITED_API) ? PyIter_Next : __Pyx_PyObject_GetIterNextFunc(__pyx_t_9);
@@ -7573,7 +15670,7 @@ static PyObject *__pyx_pf_7frigate_5video_13detect_cython_6cython_build_detectio
       __Pyx_GOTREF(__pyx_t_5);
       index = 1; __pyx_t_15 = __pyx_t_16(__pyx_t_9); if (unlikely(!__pyx_t_15)) goto __pyx_L16_unpacking_failed;
       __Pyx_GOTREF(__pyx_t_15);
-      if (__Pyx_IternextUnpackEndCheck(__pyx_t_16(__pyx_t_9), 2) < (0)) __PYX_ERR(0, 246, __pyx_L1_error)
+      if (__Pyx_IternextUnpackEndCheck(__pyx_t_16(__pyx_t_9), 2) < (0)) __PYX_ERR(0, 749, __pyx_L1_error)
       __pyx_t_16 = NULL;
       __Pyx_DECREF(__pyx_t_9); __pyx_t_9 = 0;
       goto __pyx_L17_unpacking_done;
@@ -7581,11 +15678,11 @@ static PyObject *__pyx_pf_7frigate_5video_13detect_cython_6cython_build_detectio
       __Pyx_DECREF(__pyx_t_9); __pyx_t_9 = 0;
       __pyx_t_16 = NULL;
       if (__Pyx_IterFinish() == 0) __Pyx_RaiseNeedMoreValuesError(index);
-      __PYX_ERR(0, 246, __pyx_L1_error)
+      __PYX_ERR(0, 749, __pyx_L1_error)
       __pyx_L17_unpacking_done:;
     }
 
-    /* "frigate/video/detect_cython.pyx":246
+    /* "frigate/video/detect_cython.pyx":749
  *                 filtered_labels.append(obj["label"])
  * 
  *         best_id, best_label = cython_find_best_object(             # <<<<<<<<<<<<<<
@@ -7597,7 +15694,7 @@ static PyObject *__pyx_pf_7frigate_5video_13detect_cython_6cython_build_detectio
     __Pyx_XDECREF_SET(__pyx_v_best_label, __pyx_t_15);
     __pyx_t_15 = 0;
 
-    /* "frigate/video/detect_cython.pyx":250
+    /* "frigate/video/detect_cython.pyx":753
  *         )
  * 
  *         if best_id is not None:             # <<<<<<<<<<<<<<
@@ -7607,27 +15704,27 @@ static PyObject *__pyx_pf_7frigate_5video_13detect_cython_6cython_build_detectio
     __pyx_t_6 = (__pyx_v_best_id != Py_None);
     if (__pyx_t_6) {
 
-      /* "frigate/video/detect_cython.pyx":252
+      /* "frigate/video/detect_cython.pyx":755
  *         if best_id is not None:
  *             attr_data = {
  *                 "label": attr_label,             # <<<<<<<<<<<<<<
  *                 "box": attr_box,
  *                 "score": det[1],
 */
-      __pyx_t_4 = __Pyx_PyDict_NewPresized(3); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 252, __pyx_L1_error)
+      __pyx_t_4 = __Pyx_PyDict_NewPresized(3); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 755, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_4);
-      if (PyDict_SetItem(__pyx_t_4, __pyx_mstate_global->__pyx_n_u_label, __pyx_v_attr_label) < (0)) __PYX_ERR(0, 252, __pyx_L1_error)
+      if (PyDict_SetItem(__pyx_t_4, __pyx_mstate_global->__pyx_n_u_label, __pyx_v_attr_label) < (0)) __PYX_ERR(0, 755, __pyx_L1_error)
 
-      /* "frigate/video/detect_cython.pyx":253
+      /* "frigate/video/detect_cython.pyx":756
  *             attr_data = {
  *                 "label": attr_label,
  *                 "box": attr_box,             # <<<<<<<<<<<<<<
  *                 "score": det[1],
  *             }
 */
-      if (PyDict_SetItem(__pyx_t_4, __pyx_mstate_global->__pyx_n_u_box, __pyx_v_attr_box) < (0)) __PYX_ERR(0, 252, __pyx_L1_error)
+      if (PyDict_SetItem(__pyx_t_4, __pyx_mstate_global->__pyx_n_u_box, __pyx_v_attr_box) < (0)) __PYX_ERR(0, 755, __pyx_L1_error)
 
-      /* "frigate/video/detect_cython.pyx":254
+      /* "frigate/video/detect_cython.pyx":757
  *                 "label": attr_label,
  *                 "box": attr_box,
  *                 "score": det[1],             # <<<<<<<<<<<<<<
@@ -7636,28 +15733,28 @@ static PyObject *__pyx_pf_7frigate_5video_13detect_cython_6cython_build_detectio
 */
       if (unlikely(__pyx_v_det == Py_None)) {
         PyErr_SetString(PyExc_TypeError, "'NoneType' object is not subscriptable");
-        __PYX_ERR(0, 254, __pyx_L1_error)
+        __PYX_ERR(0, 757, __pyx_L1_error)
       }
-      if (PyDict_SetItem(__pyx_t_4, __pyx_mstate_global->__pyx_n_u_score, __Pyx_PyTuple_GET_ITEM(__pyx_v_det, 1)) < (0)) __PYX_ERR(0, 252, __pyx_L1_error)
+      if (PyDict_SetItem(__pyx_t_4, __pyx_mstate_global->__pyx_n_u_score, __Pyx_PyTuple_GET_ITEM(__pyx_v_det, 1)) < (0)) __PYX_ERR(0, 755, __pyx_L1_error)
       __Pyx_XDECREF_SET(__pyx_v_attr_data, ((PyObject*)__pyx_t_4));
       __pyx_t_4 = 0;
 
-      /* "frigate/video/detect_cython.pyx":256
+      /* "frigate/video/detect_cython.pyx":759
  *                 "score": det[1],
  *             }
  *             detections[best_id]["attributes"].append(attr_data)             # <<<<<<<<<<<<<<
  * 
  *     return detections
 */
-      __pyx_t_4 = __Pyx_PyDict_GetItem(__pyx_v_detections, __pyx_v_best_id); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 256, __pyx_L1_error)
+      __pyx_t_4 = __Pyx_PyDict_GetItem(__pyx_v_detections, __pyx_v_best_id); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 759, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_4);
-      __pyx_t_15 = __Pyx_PyObject_Dict_GetItem(__pyx_t_4, __pyx_mstate_global->__pyx_n_u_attributes); if (unlikely(!__pyx_t_15)) __PYX_ERR(0, 256, __pyx_L1_error)
+      __pyx_t_15 = __Pyx_PyObject_Dict_GetItem(__pyx_t_4, __pyx_mstate_global->__pyx_n_u_attributes); if (unlikely(!__pyx_t_15)) __PYX_ERR(0, 759, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_15);
       __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
-      __pyx_t_7 = __Pyx_PyObject_Append(__pyx_t_15, __pyx_v_attr_data); if (unlikely(__pyx_t_7 == ((int)-1))) __PYX_ERR(0, 256, __pyx_L1_error)
+      __pyx_t_7 = __Pyx_PyObject_Append(__pyx_t_15, __pyx_v_attr_data); if (unlikely(__pyx_t_7 == ((int)-1))) __PYX_ERR(0, 759, __pyx_L1_error)
       __Pyx_DECREF(__pyx_t_15); __pyx_t_15 = 0;
 
-      /* "frigate/video/detect_cython.pyx":250
+      /* "frigate/video/detect_cython.pyx":753
  *         )
  * 
  *         if best_id is not None:             # <<<<<<<<<<<<<<
@@ -7666,7 +15763,7 @@ static PyObject *__pyx_pf_7frigate_5video_13detect_cython_6cython_build_detectio
 */
     }
 
-    /* "frigate/video/detect_cython.pyx":230
+    /* "frigate/video/detect_cython.pyx":733
  * 
  *     # For each attribute detection, find best matching object
  *     for det in attr_dets:             # <<<<<<<<<<<<<<
@@ -7676,7 +15773,7 @@ static PyObject *__pyx_pf_7frigate_5video_13detect_cython_6cython_build_detectio
   }
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-  /* "frigate/video/detect_cython.pyx":258
+  /* "frigate/video/detect_cython.pyx":761
  *             detections[best_id]["attributes"].append(attr_data)
  * 
  *     return detections             # <<<<<<<<<<<<<<
@@ -7686,7 +15783,7 @@ static PyObject *__pyx_pf_7frigate_5video_13detect_cython_6cython_build_detectio
   __pyx_r = __pyx_v_detections;
   goto __pyx_L0;
 
-  /* "frigate/video/detect_cython.pyx":174
+  /* "frigate/video/detect_cython.pyx":677
  * 
  * 
  * def cython_build_detections_with_attributes(             # <<<<<<<<<<<<<<
@@ -7728,6 +15825,173 @@ static PyObject *__pyx_pf_7frigate_5video_13detect_cython_6cython_build_detectio
   return __pyx_r;
 }
 /* #### Code section: module_exttypes ### */
+
+static PyObject *__pyx_tp_new_7frigate_5video_13detect_cython___pyx_scope_struct__genexpr(PyTypeObject *t, CYTHON_UNUSED PyObject *a, CYTHON_UNUSED PyObject *k) {
+  PyObject *o;
+  #if CYTHON_USE_FREELISTS
+  if (likely((int)(__pyx_mstate_global->__pyx_freecount_7frigate_5video_13detect_cython___pyx_scope_struct__genexpr > 0) & __PYX_CHECK_FINAL_TYPE_FOR_FREELISTS(t, __pyx_mstate_global->__pyx_ptype_7frigate_5video_13detect_cython___pyx_scope_struct__genexpr, sizeof(struct __pyx_obj_7frigate_5video_13detect_cython___pyx_scope_struct__genexpr))))
+  {
+    o = (PyObject*)__pyx_mstate_global->__pyx_freelist_7frigate_5video_13detect_cython___pyx_scope_struct__genexpr[--__pyx_mstate_global->__pyx_freecount_7frigate_5video_13detect_cython___pyx_scope_struct__genexpr];
+    #if CYTHON_USE_TYPE_SPECS
+    Py_DECREF(Py_TYPE(o));
+    #endif
+    memset(o, 0, sizeof(struct __pyx_obj_7frigate_5video_13detect_cython___pyx_scope_struct__genexpr));
+    #if CYTHON_COMPILING_IN_LIMITED_API
+    (void) PyObject_Init(o, t);
+    #else
+    (void) PyObject_INIT(o, t);
+    #endif
+    PyObject_GC_Track(o);
+  } else
+  #endif
+  {
+    o = __Pyx_AllocateExtensionType(t, 1);
+    if (unlikely(!o)) return 0;
+  }
+  return o;
+}
+
+static void __pyx_tp_dealloc_7frigate_5video_13detect_cython___pyx_scope_struct__genexpr(PyObject *o) {
+  struct __pyx_obj_7frigate_5video_13detect_cython___pyx_scope_struct__genexpr *p = (struct __pyx_obj_7frigate_5video_13detect_cython___pyx_scope_struct__genexpr *)o;
+  #if CYTHON_USE_TP_FINALIZE
+  if (unlikely(__Pyx_PyObject_GetSlot(o, tp_finalize, destructor)) && !__Pyx_PyObject_GC_IsFinalized(o)) {
+    if (__Pyx_PyObject_GetSlot(o, tp_dealloc, destructor) == __pyx_tp_dealloc_7frigate_5video_13detect_cython___pyx_scope_struct__genexpr) {
+      if (PyObject_CallFinalizerFromDealloc(o)) return;
+    }
+  }
+  #endif
+  PyObject_GC_UnTrack(o);
+  Py_CLEAR(p->__pyx_genexpr_arg_0);
+  Py_CLEAR(p->__pyx_v_v);
+  Py_CLEAR(p->__pyx_t_0);
+  #if CYTHON_USE_FREELISTS
+  if (likely((int)(__pyx_mstate_global->__pyx_freecount_7frigate_5video_13detect_cython___pyx_scope_struct__genexpr < 8) & __PYX_CHECK_FINAL_TYPE_FOR_FREELISTS(Py_TYPE(o), __pyx_mstate_global->__pyx_ptype_7frigate_5video_13detect_cython___pyx_scope_struct__genexpr, sizeof(struct __pyx_obj_7frigate_5video_13detect_cython___pyx_scope_struct__genexpr))))
+  {
+    __pyx_mstate_global->__pyx_freelist_7frigate_5video_13detect_cython___pyx_scope_struct__genexpr[__pyx_mstate_global->__pyx_freecount_7frigate_5video_13detect_cython___pyx_scope_struct__genexpr++] = ((struct __pyx_obj_7frigate_5video_13detect_cython___pyx_scope_struct__genexpr *)o);
+  } else
+  #endif
+  {
+    PyTypeObject *tp = Py_TYPE(o);
+    #if CYTHON_USE_TYPE_SLOTS
+    (*tp->tp_free)(o);
+    #else
+    {
+      freefunc tp_free = (freefunc)PyType_GetSlot(tp, Py_tp_free);
+      if (tp_free) tp_free(o);
+    }
+    #endif
+    #if CYTHON_USE_TYPE_SPECS
+    Py_DECREF(tp);
+    #endif
+  }
+}
+
+static int __pyx_tp_traverse_7frigate_5video_13detect_cython___pyx_scope_struct__genexpr(PyObject *o, visitproc v, void *a) {
+  int e;
+  struct __pyx_obj_7frigate_5video_13detect_cython___pyx_scope_struct__genexpr *p = (struct __pyx_obj_7frigate_5video_13detect_cython___pyx_scope_struct__genexpr *)o;
+  {
+    e = __Pyx_call_type_traverse(o, 1, v, a);
+    if (e) return e;
+  }
+  if (p->__pyx_genexpr_arg_0) {
+    e = (*v)(p->__pyx_genexpr_arg_0, a); if (e) return e;
+  }
+  if (p->__pyx_v_v) {
+    e = (*v)(p->__pyx_v_v, a); if (e) return e;
+  }
+  if (p->__pyx_t_0) {
+    e = (*v)(p->__pyx_t_0, a); if (e) return e;
+  }
+  return 0;
+}
+#if CYTHON_USE_TYPE_SPECS
+static PyType_Slot __pyx_type_7frigate_5video_13detect_cython___pyx_scope_struct__genexpr_slots[] = {
+  {Py_tp_dealloc, (void *)__pyx_tp_dealloc_7frigate_5video_13detect_cython___pyx_scope_struct__genexpr},
+  {Py_tp_traverse, (void *)__pyx_tp_traverse_7frigate_5video_13detect_cython___pyx_scope_struct__genexpr},
+  {Py_tp_new, (void *)__pyx_tp_new_7frigate_5video_13detect_cython___pyx_scope_struct__genexpr},
+  {0, 0},
+};
+static PyType_Spec __pyx_type_7frigate_5video_13detect_cython___pyx_scope_struct__genexpr_spec = {
+  "frigate.video.detect_cython.__pyx_scope_struct__genexpr",
+  sizeof(struct __pyx_obj_7frigate_5video_13detect_cython___pyx_scope_struct__genexpr),
+  0,
+  Py_TPFLAGS_DEFAULT|Py_TPFLAGS_HAVE_VERSION_TAG|Py_TPFLAGS_CHECKTYPES|Py_TPFLAGS_HAVE_NEWBUFFER|Py_TPFLAGS_HAVE_GC,
+  __pyx_type_7frigate_5video_13detect_cython___pyx_scope_struct__genexpr_slots,
+};
+#else
+
+static PyTypeObject __pyx_type_7frigate_5video_13detect_cython___pyx_scope_struct__genexpr = {
+  PyVarObject_HEAD_INIT(0, 0)
+  "frigate.video.detect_cython.""__pyx_scope_struct__genexpr", /*tp_name*/
+  sizeof(struct __pyx_obj_7frigate_5video_13detect_cython___pyx_scope_struct__genexpr), /*tp_basicsize*/
+  0, /*tp_itemsize*/
+  __pyx_tp_dealloc_7frigate_5video_13detect_cython___pyx_scope_struct__genexpr, /*tp_dealloc*/
+  0, /*tp_vectorcall_offset*/
+  0, /*tp_getattr*/
+  0, /*tp_setattr*/
+  0, /*tp_as_async*/
+  0, /*tp_repr*/
+  0, /*tp_as_number*/
+  0, /*tp_as_sequence*/
+  0, /*tp_as_mapping*/
+  0, /*tp_hash*/
+  0, /*tp_call*/
+  0, /*tp_str*/
+  0, /*tp_getattro*/
+  0, /*tp_setattro*/
+  0, /*tp_as_buffer*/
+  Py_TPFLAGS_DEFAULT|Py_TPFLAGS_HAVE_VERSION_TAG|Py_TPFLAGS_CHECKTYPES|Py_TPFLAGS_HAVE_NEWBUFFER|Py_TPFLAGS_HAVE_GC, /*tp_flags*/
+  0, /*tp_doc*/
+  __pyx_tp_traverse_7frigate_5video_13detect_cython___pyx_scope_struct__genexpr, /*tp_traverse*/
+  0, /*tp_clear*/
+  0, /*tp_richcompare*/
+  0, /*tp_weaklistoffset*/
+  0, /*tp_iter*/
+  0, /*tp_iternext*/
+  0, /*tp_methods*/
+  0, /*tp_members*/
+  0, /*tp_getset*/
+  0, /*tp_base*/
+  0, /*tp_dict*/
+  0, /*tp_descr_get*/
+  0, /*tp_descr_set*/
+  #if !CYTHON_USE_TYPE_SPECS
+  0, /*tp_dictoffset*/
+  #endif
+  0, /*tp_init*/
+  0, /*tp_alloc*/
+  __pyx_tp_new_7frigate_5video_13detect_cython___pyx_scope_struct__genexpr, /*tp_new*/
+  0, /*tp_free*/
+  0, /*tp_is_gc*/
+  0, /*tp_bases*/
+  0, /*tp_mro*/
+  0, /*tp_cache*/
+  0, /*tp_subclasses*/
+  0, /*tp_weaklist*/
+  0, /*tp_del*/
+  0, /*tp_version_tag*/
+  #if CYTHON_USE_TP_FINALIZE
+  0, /*tp_finalize*/
+  #else
+  NULL, /*tp_finalize*/
+  #endif
+  #if !CYTHON_COMPILING_IN_PYPY || PYPY_VERSION_NUM >= 0x07030800
+  0, /*tp_vectorcall*/
+  #endif
+  #if __PYX_NEED_TP_PRINT_SLOT == 1
+  0, /*tp_print*/
+  #endif
+  #if PY_VERSION_HEX >= 0x030C0000
+  0, /*tp_watched*/
+  #endif
+  #if PY_VERSION_HEX >= 0x030d00A4
+  0, /*tp_versions_used*/
+  #endif
+  #if CYTHON_COMPILING_IN_PYPY && PY_VERSION_HEX >= 0x03090000 && PY_VERSION_HEX < 0x030a0000
+  0, /*tp_pypy_flags*/
+  #endif
+};
+#endif
 
 static PyMethodDef __pyx_methods[] = {
   {0, 0, 0, 0}
@@ -7777,10 +16041,35 @@ static int __Pyx_modinit_function_export_code(__pyx_mstatetype *__pyx_mstate) {
 static int __Pyx_modinit_type_init_code(__pyx_mstatetype *__pyx_mstate) {
   __Pyx_RefNannyDeclarations
   CYTHON_UNUSED_VAR(__pyx_mstate);
+  int __pyx_lineno = 0;
+  const char *__pyx_filename = NULL;
+  int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("__Pyx_modinit_type_init_code", 0);
   /*--- Type init code ---*/
+  #if CYTHON_USE_TYPE_SPECS
+  __pyx_mstate->__pyx_ptype_7frigate_5video_13detect_cython___pyx_scope_struct__genexpr = (PyTypeObject *) __Pyx_PyType_FromModuleAndSpec(__pyx_m, &__pyx_type_7frigate_5video_13detect_cython___pyx_scope_struct__genexpr_spec, NULL); if (unlikely(!__pyx_mstate->__pyx_ptype_7frigate_5video_13detect_cython___pyx_scope_struct__genexpr)) __PYX_ERR(0, 524, __pyx_L1_error)
+  if (__Pyx_fix_up_extension_type_from_spec(&__pyx_type_7frigate_5video_13detect_cython___pyx_scope_struct__genexpr_spec, __pyx_mstate->__pyx_ptype_7frigate_5video_13detect_cython___pyx_scope_struct__genexpr) < (0)) __PYX_ERR(0, 524, __pyx_L1_error)
+  #else
+  __pyx_mstate->__pyx_ptype_7frigate_5video_13detect_cython___pyx_scope_struct__genexpr = &__pyx_type_7frigate_5video_13detect_cython___pyx_scope_struct__genexpr;
+  #endif
+  #if !CYTHON_COMPILING_IN_LIMITED_API
+  #endif
+  #if !CYTHON_USE_TYPE_SPECS
+  if (__Pyx_PyType_Ready(__pyx_mstate->__pyx_ptype_7frigate_5video_13detect_cython___pyx_scope_struct__genexpr) < (0)) __PYX_ERR(0, 524, __pyx_L1_error)
+  #endif
+  #if CYTHON_COMPILING_IN_CPYTHON && PY_VERSION_HEX >= 0x030E0000
+  PyUnstable_Object_EnableDeferredRefcount((PyObject*)__pyx_mstate->__pyx_ptype_7frigate_5video_13detect_cython___pyx_scope_struct__genexpr);
+  #endif
+  #if !CYTHON_COMPILING_IN_LIMITED_API
+  if ((CYTHON_USE_TYPE_SLOTS && CYTHON_USE_PYTYPE_LOOKUP) && likely(!__pyx_mstate->__pyx_ptype_7frigate_5video_13detect_cython___pyx_scope_struct__genexpr->tp_dictoffset && __pyx_mstate->__pyx_ptype_7frigate_5video_13detect_cython___pyx_scope_struct__genexpr->tp_getattro == PyObject_GenericGetAttr)) {
+    __pyx_mstate->__pyx_ptype_7frigate_5video_13detect_cython___pyx_scope_struct__genexpr->tp_getattro = PyObject_GenericGetAttr;
+  }
+  #endif
   __Pyx_RefNannyFinishContext();
   return 0;
+  __pyx_L1_error:;
+  __Pyx_RefNannyFinishContext();
+  return -1;
 }
 
 static int __Pyx_modinit_type_import_code(__pyx_mstatetype *__pyx_mstate) {
@@ -8213,7 +16502,7 @@ __Pyx_RefNannySetupContext("PyInit_detect_cython", 0);
   stringtab_initialized = 1;
   if (__Pyx_InitGlobals() < (0)) __PYX_ERR(0, 1, __pyx_L1_error)
   if (__pyx_module_is_main_frigate__video__detect_cython) {
-    if (PyObject_SetAttr(__pyx_m, __pyx_mstate_global->__pyx_n_u_name, __pyx_mstate_global->__pyx_n_u_main) < (0)) __PYX_ERR(0, 1, __pyx_L1_error)
+    if (PyObject_SetAttr(__pyx_m, __pyx_mstate_global->__pyx_n_u_name_2, __pyx_mstate_global->__pyx_n_u_main) < (0)) __PYX_ERR(0, 1, __pyx_L1_error)
   }
   {
     PyObject *modules = PyImport_GetModuleDict(); if (unlikely(!modules)) __PYX_ERR(0, 1, __pyx_L1_error)
@@ -8230,7 +16519,7 @@ __Pyx_RefNannySetupContext("PyInit_detect_cython", 0);
   (void)__Pyx_modinit_global_init_code(__pyx_mstate);
   (void)__Pyx_modinit_variable_export_code(__pyx_mstate);
   (void)__Pyx_modinit_function_export_code(__pyx_mstate);
-  (void)__Pyx_modinit_type_init_code(__pyx_mstate);
+  if (unlikely((__Pyx_modinit_type_init_code(__pyx_mstate) < 0))) __PYX_ERR(0, 1, __pyx_L1_error)
   if (unlikely((__Pyx_modinit_type_import_code(__pyx_mstate) < 0))) __PYX_ERR(0, 1, __pyx_L1_error)
   (void)__Pyx_modinit_variable_import_code(__pyx_mstate);
   (void)__Pyx_modinit_function_import_code(__pyx_mstate);
@@ -8280,7 +16569,7 @@ __Pyx_RefNannySetupContext("PyInit_detect_cython", 0);
  *     object tracked_objects,
  *     object motion_boxes,
 */
-  __pyx_t_2 = __Pyx_CyFunction_New(&__pyx_mdef_7frigate_5video_13detect_cython_1cython_process_tracked_objects, 0, __pyx_mstate_global->__pyx_n_u_cython_process_tracked_objects, NULL, __pyx_mstate_global->__pyx_n_u_frigate_video_detect_cython, __pyx_mstate_global->__pyx_d, ((PyObject *)__pyx_mstate_global->__pyx_codeobj_tab[0])); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 26, __pyx_L1_error)
+  __pyx_t_2 = __Pyx_CyFunction_New(&__pyx_mdef_7frigate_5video_13detect_cython_1cython_process_tracked_objects, 0, __pyx_mstate_global->__pyx_n_u_cython_process_tracked_objects, NULL, __pyx_mstate_global->__pyx_n_u_frigate_video_detect_cython, __pyx_mstate_global->__pyx_d, ((PyObject *)__pyx_mstate_global->__pyx_codeobj_tab[1])); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 26, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
   #if CYTHON_COMPILING_IN_CPYTHON && PY_VERSION_HEX >= 0x030E0000
   PyUnstable_Object_EnableDeferredRefcount(__pyx_t_2);
@@ -8295,7 +16584,7 @@ __Pyx_RefNannySetupContext("PyInit_detect_cython", 0);
  *     object detections,
  *     object filter_labels,
 */
-  __pyx_t_2 = __Pyx_CyFunction_New(&__pyx_mdef_7frigate_5video_13detect_cython_3cython_filter_detections_by_label, 0, __pyx_mstate_global->__pyx_n_u_cython_filter_detections_by_labe, NULL, __pyx_mstate_global->__pyx_n_u_frigate_video_detect_cython, __pyx_mstate_global->__pyx_d, ((PyObject *)__pyx_mstate_global->__pyx_codeobj_tab[1])); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 127, __pyx_L1_error)
+  __pyx_t_2 = __Pyx_CyFunction_New(&__pyx_mdef_7frigate_5video_13detect_cython_3cython_filter_detections_by_label, 0, __pyx_mstate_global->__pyx_n_u_cython_filter_detections_by_labe, NULL, __pyx_mstate_global->__pyx_n_u_frigate_video_detect_cython, __pyx_mstate_global->__pyx_d, ((PyObject *)__pyx_mstate_global->__pyx_codeobj_tab[2])); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 127, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
   #if CYTHON_COMPILING_IN_CPYTHON && PY_VERSION_HEX >= 0x030E0000
   PyUnstable_Object_EnableDeferredRefcount(__pyx_t_2);
@@ -8310,7 +16599,7 @@ __Pyx_RefNannySetupContext("PyInit_detect_cython", 0);
  *     object obj,
  *     int motionless,
 */
-  __pyx_t_2 = __Pyx_CyFunction_New(&__pyx_mdef_7frigate_5video_13detect_cython_5cython_extract_tracked_box, 0, __pyx_mstate_global->__pyx_n_u_cython_extract_tracked_box, NULL, __pyx_mstate_global->__pyx_n_u_frigate_video_detect_cython, __pyx_mstate_global->__pyx_d, ((PyObject *)__pyx_mstate_global->__pyx_codeobj_tab[2])); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 153, __pyx_L1_error)
+  __pyx_t_2 = __Pyx_CyFunction_New(&__pyx_mdef_7frigate_5video_13detect_cython_5cython_extract_tracked_box, 0, __pyx_mstate_global->__pyx_n_u_cython_extract_tracked_box, NULL, __pyx_mstate_global->__pyx_n_u_frigate_video_detect_cython, __pyx_mstate_global->__pyx_d, ((PyObject *)__pyx_mstate_global->__pyx_codeobj_tab[3])); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 153, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
   #if CYTHON_COMPILING_IN_CPYTHON && PY_VERSION_HEX >= 0x030E0000
   PyUnstable_Object_EnableDeferredRefcount(__pyx_t_2);
@@ -8318,19 +16607,49 @@ __Pyx_RefNannySetupContext("PyInit_detect_cython", 0);
   if (PyDict_SetItem(__pyx_mstate_global->__pyx_d, __pyx_mstate_global->__pyx_n_u_cython_extract_tracked_box, __pyx_t_2) < (0)) __PYX_ERR(0, 153, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
 
-  /* "frigate/video/detect_cython.pyx":174
+  /* "frigate/video/detect_cython.pyx":194
+ *     object ptz_metrics,
+ *     object region_grid,
+ *     bint exit_on_empty=False,             # <<<<<<<<<<<<<<
+ * ):
+ *     """Consolidated Cython implementation of process_frames().
+*/
+  __pyx_t_2 = __Pyx_PyBool_FromLong(((int)0)); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 194, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_2);
+
+  /* "frigate/video/detect_cython.pyx":179
+ * 
+ * 
+ * def cython_process_frames(             # <<<<<<<<<<<<<<
+ *     object requestor,
+ *     object frame_queue,
+*/
+  __pyx_t_4 = PyTuple_Pack(1, __pyx_t_2); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 179, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_4);
+  __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
+  __pyx_t_2 = __Pyx_CyFunction_New(&__pyx_mdef_7frigate_5video_13detect_cython_7cython_process_frames, 0, __pyx_mstate_global->__pyx_n_u_cython_process_frames, NULL, __pyx_mstate_global->__pyx_n_u_frigate_video_detect_cython, __pyx_mstate_global->__pyx_d, ((PyObject *)__pyx_mstate_global->__pyx_codeobj_tab[4])); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 179, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_2);
+  #if CYTHON_COMPILING_IN_CPYTHON && PY_VERSION_HEX >= 0x030E0000
+  PyUnstable_Object_EnableDeferredRefcount(__pyx_t_2);
+  #endif
+  __Pyx_CyFunction_SetDefaultsTuple(__pyx_t_2, __pyx_t_4);
+  __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
+  if (PyDict_SetItem(__pyx_mstate_global->__pyx_d, __pyx_mstate_global->__pyx_n_u_cython_process_frames, __pyx_t_2) < (0)) __PYX_ERR(0, 179, __pyx_L1_error)
+  __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
+
+  /* "frigate/video/detect_cython.pyx":677
  * 
  * 
  * def cython_build_detections_with_attributes(             # <<<<<<<<<<<<<<
  *     object tracked_objects,
  *     object consolidated_detections,
 */
-  __pyx_t_2 = __Pyx_CyFunction_New(&__pyx_mdef_7frigate_5video_13detect_cython_7cython_build_detections_with_attributes, 0, __pyx_mstate_global->__pyx_n_u_cython_build_detections_with_att, NULL, __pyx_mstate_global->__pyx_n_u_frigate_video_detect_cython, __pyx_mstate_global->__pyx_d, ((PyObject *)__pyx_mstate_global->__pyx_codeobj_tab[3])); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 174, __pyx_L1_error)
+  __pyx_t_2 = __Pyx_CyFunction_New(&__pyx_mdef_7frigate_5video_13detect_cython_9cython_build_detections_with_attributes, 0, __pyx_mstate_global->__pyx_n_u_cython_build_detections_with_att, NULL, __pyx_mstate_global->__pyx_n_u_frigate_video_detect_cython, __pyx_mstate_global->__pyx_d, ((PyObject *)__pyx_mstate_global->__pyx_codeobj_tab[5])); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 677, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
   #if CYTHON_COMPILING_IN_CPYTHON && PY_VERSION_HEX >= 0x030E0000
   PyUnstable_Object_EnableDeferredRefcount(__pyx_t_2);
   #endif
-  if (PyDict_SetItem(__pyx_mstate_global->__pyx_d, __pyx_mstate_global->__pyx_n_u_cython_build_detections_with_att, __pyx_t_2) < (0)) __PYX_ERR(0, 174, __pyx_L1_error)
+  if (PyDict_SetItem(__pyx_mstate_global->__pyx_d, __pyx_mstate_global->__pyx_n_u_cython_build_detections_with_att, __pyx_t_2) < (0)) __PYX_ERR(0, 677, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
 
   /* "frigate/video/detect_cython.pyx":1
@@ -8380,6 +16699,8 @@ __Pyx_RefNannySetupContext("PyInit_detect_cython", 0);
 
 static int __Pyx_InitCachedBuiltins(__pyx_mstatetype *__pyx_mstate) {
   CYTHON_UNUSED_VAR(__pyx_mstate);
+  __pyx_builtin___import__ = __Pyx_GetBuiltinName(__pyx_mstate->__pyx_n_u_import); if (!__pyx_builtin___import__) __PYX_ERR(0, 275, __pyx_L1_error)
+  __pyx_builtin_enumerate = __Pyx_GetBuiltinName(__pyx_mstate->__pyx_n_u_enumerate); if (!__pyx_builtin_enumerate) __PYX_ERR(0, 564, __pyx_L1_error)
 
   /* Cached unbound methods */
   __pyx_mstate->__pyx_umethod_PyDict_Type_items.type = (PyObject*)&PyDict_Type;
@@ -8389,6 +16710,8 @@ static int __Pyx_InitCachedBuiltins(__pyx_mstatetype *__pyx_mstate) {
   __pyx_mstate->__pyx_umethod_PyDict_Type_values.type = (PyObject*)&PyDict_Type;
   __pyx_mstate->__pyx_umethod_PyDict_Type_values.method_name = &__pyx_mstate->__pyx_n_u_values;
   return 0;
+  __pyx_L1_error:;
+  return -1;
 }
 /* #### Code section: cached_constants ### */
 
@@ -8396,42 +16719,112 @@ static int __Pyx_InitCachedConstants(__pyx_mstatetype *__pyx_mstate) {
   __Pyx_RefNannyDeclarations
   CYTHON_UNUSED_VAR(__pyx_mstate);
   __Pyx_RefNannySetupContext("__Pyx_InitCachedConstants", 0);
+
+  /* "frigate/video/detect_cython.pyx":314
+ * 
+ *     # Pre-allocate reusable buffers
+ *     motion_boxes_buf = np.empty((500, 4), dtype=np.float32)             # <<<<<<<<<<<<<<
+ *     regions_buf = np.empty((100, 4), dtype=np.float32)
+ * 
+*/
+  __pyx_mstate_global->__pyx_tuple[0] = PyTuple_Pack(2, __pyx_mstate_global->__pyx_int_500, __pyx_mstate_global->__pyx_int_4); if (unlikely(!__pyx_mstate_global->__pyx_tuple[0])) __PYX_ERR(0, 314, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_mstate_global->__pyx_tuple[0]);
+  __Pyx_GIVEREF(__pyx_mstate_global->__pyx_tuple[0]);
+
+  /* "frigate/video/detect_cython.pyx":315
+ *     # Pre-allocate reusable buffers
+ *     motion_boxes_buf = np.empty((500, 4), dtype=np.float32)
+ *     regions_buf = np.empty((100, 4), dtype=np.float32)             # <<<<<<<<<<<<<<
+ * 
+ *     # Check if camera is dedicated LPR cam
+*/
+  __pyx_mstate_global->__pyx_tuple[1] = PyTuple_Pack(2, __pyx_mstate_global->__pyx_int_100, __pyx_mstate_global->__pyx_int_4); if (unlikely(!__pyx_mstate_global->__pyx_tuple[1])) __PYX_ERR(0, 315, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_mstate_global->__pyx_tuple[1]);
+  __Pyx_GIVEREF(__pyx_mstate_global->__pyx_tuple[1]);
+
+  /* "frigate/video/detect_cython.pyx":384
+ *                 frame_name, frame_time = frame_queue.get(False)
+ *             else:
+ *                 frame_name, frame_time = frame_queue.get(True, 1)             # <<<<<<<<<<<<<<
+ *         except queue_module.Empty:
+ *             if exit_on_empty:
+*/
+  __pyx_mstate_global->__pyx_tuple[2] = PyTuple_Pack(2, Py_True, __pyx_mstate_global->__pyx_int_1); if (unlikely(!__pyx_mstate_global->__pyx_tuple[2])) __PYX_ERR(0, 384, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_mstate_global->__pyx_tuple[2]);
+  __Pyx_GIVEREF(__pyx_mstate_global->__pyx_tuple[2]);
+
+  /* "frigate/video/detect_cython.pyx":516
+ *                                 )
+ *                             else:
+ *                                 motion_boxes_array = np.array(motion_boxes, dtype=np.float32).reshape(-1, 4)             # <<<<<<<<<<<<<<
+ *                                 regions_array = np.array(regions, dtype=np.float32)
+ *                                 from frigate.motion.motion_cython import cython_filter_motion_boxes
+*/
+  __pyx_mstate_global->__pyx_tuple[3] = PyTuple_Pack(2, __pyx_mstate_global->__pyx_int_neg_1, __pyx_mstate_global->__pyx_int_4); if (unlikely(!__pyx_mstate_global->__pyx_tuple[3])) __PYX_ERR(0, 516, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_mstate_global->__pyx_tuple[3]);
+  __Pyx_GIVEREF(__pyx_mstate_global->__pyx_tuple[3]);
+  #if CYTHON_IMMORTAL_CONSTANTS
+  {
+    PyObject **table = __pyx_mstate->__pyx_tuple;
+    for (Py_ssize_t i=0; i<4; ++i) {
+      #if PY_VERSION_HEX >= 0x030F0000
+      PyUnstable_SetImmortal(table[i]);
+      #elif CYTHON_COMPILING_IN_CPYTHON_FREETHREADING
+      if ((PY_SSIZE_T_MAX <= _Py_IMMORTAL_REFCNT_LOCAL)) break;
+      #if PY_VERSION_HEX < 0x030E0000
+      if (_Py_IsOwnedByCurrentThread(table[i]) && Py_REFCNT(table[i]) == 1)
+      #else
+      if (PyUnstable_Object_IsUniquelyReferenced(table[i]))
+      #endif
+      {
+        Py_SET_REFCNT(table[i], ((Py_ssize_t)_Py_IMMORTAL_REFCNT_LOCAL + 1));
+      }
+      #else
+      if ((PY_SSIZE_T_MAX < _Py_IMMORTAL_INITIAL_REFCNT)) break;
+      Py_SET_REFCNT(table[i], _Py_IMMORTAL_INITIAL_REFCNT);
+      #endif
+    }
+  }
+  #endif
   __Pyx_RefNannyFinishContext();
   return 0;
+  __pyx_L1_error:;
+  __Pyx_RefNannyFinishContext();
+  return -1;
 }
 /* #### Code section: init_constants ### */
 
 static int __Pyx_InitConstants(__pyx_mstatetype *__pyx_mstate) {
   CYTHON_UNUSED_VAR(__pyx_mstate);
   {
-    const struct { const unsigned int length: 9; } index[] = {{1},{1},{31},{39},{34},{3},{20},{14},{12},{6},{4},{18},{8},{9},{9},{10},{10},{14},{7},{10},{3},{8},{17},{18},{22},{23},{39},{26},{33},{23},{30},{3},{10},{11},{4},{8},{13},{14},{12},{15},{27},{8},{3},{2},{14},{13},{13},{5},{5},{8},{10},{12},{10},{16},{8},{2},{5},{3},{6},{7},{3},{12},{5},{17},{29},{6},{6},{5},{12},{10},{14},{21},{20},{8},{13},{12},{15},{6},{6},{348},{39},{331},{50}};
-    #if (CYTHON_COMPRESS_STRINGS) == 2 /* compression: bz2 (1116 bytes) */
-const char* const cstring = "BZh91AY&SY\227\343\2201\000\000\210\377\377\357\377\377\377\376\235\273\373\254\331\177\361\277\377\377\351@@@@@@@@@@@@@\000@\000P\003\351\206\260\001L\r\206\232PS\324\3651\251\342j\236\312\236\324\203\324\007\224\310z\203 \310=C!\220\0324mA\223M\037\245<\247\352=S\332($\2114\323Bi\211\251\351\244&jz\240\000\032\000\000\000\000\000\000\006\206\203i\001\252~\202\0054\322\2152z\2154\321\243\t\240\001\241\240\000\0320\200\r2h\0322a\003j\034\000\003@\000\320\031\000\000\003@\000i\240\000\000\000\003@\016\000\001\240\000h\014\200\000\001\240\0004\320\000\000\000\001\240\032\r\270jWa\201)\273[5\255\255\234@b3\342\001\201ND}\023*\014\264\"\243A\242H,&a3\013n\326\222L\021\201r\221\nd\310a\215\3054\235\023\350\322\201\223)\tT\305\275*\014.t\345A\205\204\021AY\274N\330*/\266%<m&\301\224\312\365\306\016\342\014\263F\016\035\020E\335p\342 \266|\277\232\303PZ\002\027\325n\344\010%\n\035\302\347ub\254!\274f~kv\255\213c\347\256G=R\230`\200+\027-\255V\013\020 \310\210b\303#|\252\017a\372\255\333\333\255@\254[\027\367\230].EE\321++\200\252%\337\\\226\"\304\021\220KD\022\205\253\367#\001\230\370\0274iTte\021\026\320\324\272\277\034\367\251Q\021\345\321\312\341\235\231\247i\323\304R\333\016\272[\270\325\004:Km\213AC\201\374\367\003\231\304\354\252\322\252\t\317m\357\226h\322eG\214Hr\350\3022p `\260V\033\013\003\254S\3530\277\223&\353\364Z\255#k\316\353\177\311\005\032D\304\326\345c\205\326l\223\332\323}t\363\234\375=\343\256\342\214l\027-\366w\311k{\231\031\003e\2319A\305\311\023\257\223\214\335&\235\312L\221\002%\266\347~Y<\252)\271\323\260\236\005\212\0259_\325\252\220\213\004c\213\204\2148\265fMj\320\203C~\266\243k\320s\214\225\316Tg&\2138\303.\322\372!_0\240Y\021\321\314\312,i&\257SQ58\323\311q`\216a\216\266\333\376Ci\006\222v\374\337\r\303\221\207)\270\304\251\220k\016\256D\363\"\341\023\036s\202#y\nh\252&fZA,\330\tc\022\035\237c\215*\205.\311\352\263dQ\204b\267\351\261\215\010\021\331cH\245\022P\343\242\2621\212\364\250\264\211\025O\013\255\213$\322\203@)\3022dPWt\240\"Q\346""\331\237Vp#Y\323\333`j\342\341\333\354\030\233!\201m\030\271\323\260\3464\250H\236\211u\014\260\231kj\261\254\"\246\3537\337\333X\034\006g\355Fz33a\231)az\266)\236\363+\352\r\344\261\221T\034px\323\3051\221\025\025\212\241DJZ\034\007\272\211\1774\210\231\tB\"\010\024\200\232\205\005\316\303\036\246\256M\326\330\3433T\3172\370\004((\006@\305\305\350\227(k\214w%\ne9\025\324\014V\223\306\336\006\001Z\2335\320\n\245c\263\274\300\247N\306D\271W\220\336d\265\322H\034\000\210\3079[\267\016\204m\"\030D\014\325\224q\275!yQ\366\254;a\021\306}\020\212\226\265\235\333\361\213\300{\220y\220{\306-\204\370 \363\234\325\004L\016v\3419/(\371\017\230J\302u\374\r\322\025:\342!\300\302\204\2606\217\324\023\203\357\274\177\245\206(7\t\365\200\273\335,\n8wT\310\301\224-\371B\351EM\370\314\3454\304\335\361\311\034L\014?A\204o\215u\026z\332\370\357KE\275\211@\321\021\213\202(\201\333\205\351\341\202\016\177b\220\361\177\214\214\270t\204\2735\004\262\325\222\254x\343\257\005\337\005\234t\346U\311o\311e\371\035\350\256\3747f\311\371\356~\360M\271[\202\376\265\204\200\027\241\026\204:,\226UU\226\275\004\211\224\033\273 \225\007i\344\243\263\322N\317\204\202T\222\270\200?\004\023\204 \3110\377\305\334\221N\024$%\370\344\014@";
-    PyObject *data = __Pyx_DecompressString(cstring, 1116, 2);
+    const struct { const unsigned int length: 12; } index[] = {{1},{1},{7},{6},{27},{31},{2},{9},{39},{34},{3},{14},{5},{15},{21},{20},{19},{3},{1},{14},{12},{6},{4},{5},{5},{10},{18},{4},{8},{9},{9},{10},{10},{14},{13},{7},{10},{3},{8},{5},{13},{14},{14},{9},{3},{17},{9},{17},{5},{18},{5},{6},{17},{22},{23},{23},{9},{39},{26},{33},{26},{23},{21},{38},{30},{1},{8},{15},{3},{6},{12},{22},{13},{15},{10},{11},{4},{9},{5},{5},{7},{9},{3},{8},{13},{13},{8},{14},{12},{15},{7},{7},{3},{11},{5},{13},{10},{11},{11},{10},{28},{34},{28},{20},{19},{27},{8},{4},{8},{7},{3},{22},{18},{28},{19},{6},{5},{1},{2},{10},{14},{8},{14},{13},{6},{24},{6},{13},{5},{1},{5},{6},{17},{13},{3},{7},{8},{16},{12},{23},{10},{6},{12},{18},{16},{22},{15},{15},{14},{10},{16},{4},{8},{4},{18},{3},{2},{5},{3},{6},{7},{12},{15},{14},{7},{3},{9},{12},{11},{11},{10},{3},{12},{5},{12},{7},{5},{6},{17},{29},{6},{17},{11},{15},{7},{13},{11},{14},{9},{7},{6},{5},{6},{4},{9},{12},{10},{5},{5},{5},{23},{23},{5},{10},{12},{10},{22},{24},{14},{19},{21},{20},{4},{10},{9},{8},{9},{5},{4},{11},{8},{9},{5},{12},{13},{18},{12},{20},{15},{4},{6},{22},{6},{18},{11},{15},{1},{5},{6},{5},{348},{39},{2190},{331},{2},{50}};
+    #if (CYTHON_COMPRESS_STRINGS) == 2 /* compression: bz2 (3141 bytes) */
+const char* const cstring = "BZh91AY&SY#\005\200\335\000\0027\177\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\300@@@@@@@@@@@@\000@\000`\013\377u\352\257\0333\266\n\355\304\000t\n\000\n\002\275\355\200\037O\201\360\324\311#RzL\201\247\250h\323i\240\332)\351\260\202\215\0323 \231\204\364\204\0313\ni\260\200\t\351\032i\246\2326\223\324m\020h\223\006\211\221\243I\251\031\251=#\304\231\251\210\000\001\246\2324\032b\014\215\001\240\000\321\240\032\006F\004h\rS\3014!4\247\250\320\003C \001\240\000\310\000\032h\000\000\001\240\000\006\200\032\030\200Jh\204\320\020\000\232d\215OMSj=C\324\323'\250\003\324\000\000\000\000\000\003A\240h\3204d\001\300\2154\323LM\244\300\215\241\242b0\000\023L\004i\2010CF\201\243F\000\001\030\230\230\004\300H\250\215\240\251\371Q\352z\215\036\241\275(\000\003@\000\000\000\000\000\000\000\000\320\320\000\001\372\245\212\023;\343\211\325\201\024l\032ch\255\353q\223\321h$cm\203b\241u:x\240~q\250\307\031\030\314i\216\031\t2\001\222\263\"\343\320%\203\305\345E\350\217-\232\241\001]@\245\330X\301\241\271\350\270\001%x\"\002Io\205\226\354T\317*F*f1! I\201! \022I\230\255\233\256\214\030\004\016\333\312\335\344\0010S\t\310\"\222\232\243\236T\252b\033C\030\206\323c\314\320\246\220\27116\3141\211\224\370XGtg\037Gx2l\223$Z\3261`\201-\030\216\323\024\214\020\332m\264\332D\215D\320\234\002\006q\005*z.\333\024ELK\006\313P\346\311\305$\250\217%\323<8Q\267Jr+Z\324S-mf\222\216n\367\002\023\210$3EH\t\t\346\373\317\0233\000\010]\023}\302\233d\023!s\305\311e\310\261\264LQ\261\261\304c[\312\207\270p\201\304\342%$\017\000\220\030#2)\236\031\276\006w\337\227\000\206%\002\337\320>\202\252\217\004\002uns\314\033E\364s\267,G\032\256\227\246IL\306\306\346\302(&\tn\230\032b\351,$ V\302\"\364\265E\220\320#9sYS\326#2\211k:\262\343A\366;j\316\334\266\033P\302M\177\354\364\275\003\3162\341Cs\036.|\264h\014\355\3044\364\021\330\215r\275D\236\202\211\312\035\331t\322S]\307Tr\312d\032\024\020\263\215\240\346R\222\200DP\360\246Y\200\031\265-Y\207H\322\342\222\320\000\322Pn\027J\214+\030<""b\017X\2134\230}\250+&\241az\013\210\320\325\265}\342)u\001\001j\"\023\332*@^\316\335\265\270\352\342\233\221\014_~$.\307\313\023\331\357\027\202'\3227\376j\307p\357\363\317\201l\367{bY\315~\267\254\240\032\303\227\016\2514\235\370r!wg\022\242\205\202\315\203[Xa\207!\352X,\032g\304A\030\364\344\021\003\245m\301\263s\213<\370\210\310\014\240P\3638\241\302A\214\022\333\363\261\326\357\\\33478@y\364\220\260;X'\032\211\306\364\257\030\352\333\311|i\243Y\254\344\343\036>\362\254\266\256\227}\332\037\027v\2008\265\300\254\317\323\311\243\023p1\223\302\210-a\217\000\336\306\255N6\213\003k\365\360u\232\020%\257\264\376'\304W\226\316p\373:\\\007\317\t\351\236y\374\234\214\364@c\276v{\216e}\036\035\002P{\"[>\345e,\250,\217:\253\335d\323\332\351\264Y\250\340Q\203Ka\030I'\227\232\235\216\247\225\035,\224\354\243\312\212Q\022\236k\375\r\330\235\354\367A\001\375\267\272\223\001\227\335e{W\020\373\274\226J\250\220\372~o\224k\306\237S\200\356\000\270HX\353\005V\213UU\350\220\214\267\340\364\303\014\330\023\302\364\243\242zZ\312S^\035\177\230\340\360]\363H\360\267\277\035\024\347\302\376\365h^B\037G_\320\307\024\213p\276us\314\314\364a)'r\302\021\"\244\231j\223\354\204m\3329\312@\255En`\262,H\237\t\r\231\r+\375d\322\205*\261L\356R\210\n\340;ic\307\026\271\244\246Id,\202\233\324\3610\206\226cV\212$B$\214J\206\3422d\240\230F\210\273\251\243\025\220\2726\016\354\351[L\235\340Nn\ni6k\316\177\330\272\205\251\254}\354\326\205\252&z)\206\217(\333\323\276\377K9)\005\201V\005\034\220AZ\336Ht\240\330\330\306R\236l7<\377\315j\327\006 R\353\r\261\323{OSo\002\331\r\236v\3033\304\200B]9\2622\025_e\030\355;\335\014\335\241\333\353\274\302mDMO\233\320{\030Ru(\225\037gV\006fn\031\365\313p\004\306\325\006\244\020\230,\346\355\331\014?f\235>\307\224\360\256\\sDMh\304\313+F\350n\025|0\266\240\311g\247\215W\265\303+\025b\021<\231\304)\240|Zl\027&a\245\232z\365\271\232\3526\355\235\034\"W\232\262q\320+\335\210L@I\243x\222L\245\224D\030\254v9!G\272\322\366\365\250\235`\035\r\010}\325\300\272~}q\2565uT""\331\013\031\0271\313Sj\351\355\2606\2100W\367F~\305\224:\346\240R\320\354V\312\275)]\247\227lw\331\t\204\311\000;\205\246\253z\222\240\207\020\350\302q(\203\027\210\021\213\315/+m\013)H\260\033\206Y\353\332\027\246w7\364:\365\032^O\212\353\r\312{\321\002x\273\003\301\376\031\342`\220\212\365\020\333]\323\312f\320\024\014<\306\301\030\252s\027y'\206\254\032.A$\361;\2602V\351\202\205\244\236(\323KK3\017ZZ\363\224\211\227\330\024\265\365j\310\365h\215\027r?\305\236\370\\j5x#6\200u\213\216\274h\256d\316:'\007~\326\321ZD?/#>\031X!\215\313\266\267\345}\230[*W\020l^\311\016\376I\221\225\227\361K\006L\225\256@\007\004a\320\230H\361cd\263$\374\212:M\351\370f\211\000\214Q\205\346\335d\230\036\000\261\007\013\2258\305\230\321\271\254\237}8\255t\006\326\2312H\004\214\311\3310\204\t5\263\276\235\263(\020\334\275VF\266\264\365;}\331\021iZ\270ZY\334\343y\002\305\024\021\212\336i\022\031<\244\210\331[\r\3265}Q\316ph!5\211\316\350\271\275\205\221\316\352E\331\307\347\355\\\256zBd\262`\254;\263\223\r\332\275\227m+\253=\354\327\316\360t!0\2312\020\316\207h\022\221M\260\307ql\351\321\033\0264\246(\221{{\213\314\233k\327\240\323\300\320Z\201\231\n\214i\347\205\0210/\322\365\255Y!<2\034\255\222\002I\t\010'\242\234\344\003\244\200\222\267\307`\350M3:\353\277\246\247\344\273\243G\206\303\013\213\264\367\037V\243r7\255\310u+ m\354\335\205\204\034\360\222\001&*\340\354&C\021a\340q\244\322fg\020\310\310\330\216D\244\020!\022ec\313\216\014\315@\255\345\362\234u\214\035\207f\376\216\221;\263i\325\231I\320\356\260\225\353\006\235\032\275\351\255\006\333CY\275%enkN\267m\365\250&\351;\254w\316{$l\363a\235QJ:\240\204\352\024\022\222$\357\345\324\234\241\374R'I^h\352wN\220\230t\303\214\313S0\270\304\227K\033\t\360\231\004\002[N\215o\275\3078\271<\025n\344<\345z/~x\263q.\002TU\037\303\014H\221u\2549C\251\016(N\354\342\001\365j\226\\\271\345\244\230\353ZGp\224 w\024\221\031\247\006\014h3\303\026\213\026z\014\224\365\213\245\r\026\266\004\213\220s\032\306\234 \240\325A\223\234\034,\266\260\214/\276""\037, )r\004\230\304CY\265]\224\244a,T\355\322\031V\374\257\302D\325\222uW\r\252\275-\275\271\362\226~\346\267\303>\211\005\354\211\250I\"\026k\"s*\324\033Z\003T\004\250\222v\031\306a\017Gj\244\256\262\306w\035\207N\355t\220,\351\253;b\272\301\270Xk/\270\266V\204\235\273e2Wd\306\010\022\020\234\004\316\306\010 \264\3076o\001xX$\266\206^J\337&\266\035\027\335+\006\274{G\310t\261\306s\225F$^\3320\244\035&\356\257N\226\026\0046(\027 \223\035\\\3541\315\330\202{\233\251k1\256\355\314\363\3105fc\002G\203\\eR\330\276y\211\253\177\276Tj%\337\331\204\347=\205\332\321\262\027\263M\226\002\000\346E\007n\265s4v\361\332\034\021H'\021\242\372\373;\032e\016\3505\324\330i\260\353\272Y\363\347;\362%\033\235\335+p\253\236\205\016\322\002\325\005\0104\265\351\n\200\026\300\n\020\004\201\241\365\030\352\243<kT\004\202$&\312b\032\367\215\2635\354c_\307\307~g\210D.\355\303\211\037-\217\021\2216\257\034\017\271\003\261QC\373\323\354\375\327B\366\216\337\217\317\1779\377\242\222 \364W\037\027\347\206O\312\017\234\002S\014Sm q\341\3251Z\371T\226qb\3070\346\370\211\365T\231\"\262\334\304\230\352?=\320\220\022[\270\032+9|\241\376\354\222\211@\224\037l?\334\036\342\"2\"I\001\202C\013dpp\031W4\270P\003\023\371N\256!\2061\016\031\006\2108\205\205D?\321_\355\tuE\211\314\246!\000\365\032\214\0314F\001\006\r\033\202@\274\305\353\002\221\216\224\303p\031\030\300QH\025\221\004*0`\256\303\220Z\356I*\202U^&Ta\025A\016 DE\3533\031}Y\211R\014$?\256B\3251I\021\"Qr\213Fd\365\355R\202\322/\342cK\271\225\370\262\t\002 \215\237\367\021!\231\222A\3752\366\250\272a\236DF#\tFa\304\261\317k\247\264\247(\207\324\322Bl\330h7\350\254A\321\261%\220\027a\026\313\254 Y^\272)6\273\222\021)\315\204\316B\211d\347\265=\344\264\233N\014\222\275\346\360\225\013\2048\375/w.\202\014Q\0248fG\r\025\013\216lb\2455N1\026^\203\234\315CP\032\215\267D\271\003We\322l@\243H\210\233[\311o\262\211\3046\250I\374\210\246\363\2374\274oM\326T\352qTySl\026\214\226M\343\316\213y\3642`\t\374\267\271=\343{\"}\376\001n79m=$\362\334\th\205\214""\217\360<y\037\362\363\252B\002*\200v\204\210\000O(\r\014!=\232\2531\020oK\363\265\2014d\261x\373\307\004dH\327\027.\340\n\324\343\326D\272\356\234\016\372:H\340L\035\231\246\005\374\311\342\372\304m\375Z\265\031\245\206\037\315\315\336\007\225\361Yju\275.\337;@{\267\016\332\350X\376\212\331\001\270R\265\251\352\347f\315\030\233\371\014^\303-\017*D\300\245\205\346`\212\303\253z\025e##(\"\024T+\274<\360\212I\242RY\004HCjP\322E\360\344\036\321\342$\346hCtFR\007W\220Y\033R<\023\244Z\210:\t\246T\004t\357\004l\003\262\310:\210\2314\220>\03350zB\363\325d\177\351M\316\022\246\2224b\013X\276E\245GF\r\005j\214\243%.\n\202\242\214\017]N\30564\271(\301L\344/\215\304\210VDB,\251J\211)\263\305\2129\372\302&\364\tLN\005\rl\340E\026\020\250!\2451\016A\330\312\204gUe\240\303\274\323Q\227\021\023 \271\351G+2\031\273\271\t\243\335d4\n\210\212\205\320\355[\224N\324Cd-Z\020\327\377\305\334\221N\024$\010\301`7@";
+    PyObject *data = __Pyx_DecompressString(cstring, 3141, 2);
     if (unlikely(!data)) __PYX_ERR(0, 1, __pyx_L1_error)
     const char* const bytes = __Pyx_PyBytes_AsString(data);
     #if !CYTHON_ASSUME_SAFE_MACROS
     if (likely(bytes)); else { Py_DECREF(data); __PYX_ERR(0, 1, __pyx_L1_error) }
     #endif
-    #elif (CYTHON_COMPRESS_STRINGS) != 0 /* compression: zlib (1039 bytes) */
-const char* const cstring = "x\332\205SMo\333F\020\225P\273\241j\272\226\3428n\034\177\311I\020 -d\250F\353\264AZ\010.\220\242\005\202\312v\3424\207,V\344J\336\232\")\356\322\021\021\240\310\221\307=\356\221G\036u\3241G\037y\344Q?A?\241\263\244j3n\321\n\222vfv8\363\346\275a\343\307\256G{\230\223\335sj\022g\327$\234\030\034\031\001?u\354\206\033\014m\277\357\006\rd8\036i\364}\213S\354y8\330\356bj\021s\233;\333\264\357:\036/\246\371}\314O\377\221\321\262\003\204~\013\206\360\373\211B\213\347d\310\017I\027[\026\302\234{\264\343s\302\020\302\266\355p\300\003\226\353\022\333\304\036\301\230\005\266A\235\006Tw|Nm\302\324\023\250\343\014\263\323\304\034\347\006\341\371\215\205;\304\272\252Z\250\337\307n\2070\216\250\231\035Y\"\324\201oV\006!\303\302\214\241\036\341\224\223\276r\241\035\2426\342\0366H\007\033g\206c3\307\242\246\302\230\263E!R\210\232\305p\306#\352\370\324*\206\321[\312O\013c\317\322\200\021\350\302\263^gP\007P\315n\272\324\342\304+V\350\0049\370\313\004\033\362\325HN\347\017\310\231\205]\3171\010\314\363w\305\374\222A\235\253R&e\212j \332\004\323\205\032\024\004$\263\226Y\023\226;9$r\345Q\363\312\236%\346\333\324\310\266\251\361\3216!\324\365m\003e\334\232\324\206\247\230\302\002\212\007\2102t).\330\0146\000\240a/P*\260\2544\002\355@\007\370\364\035\323\267\210:UR\016)\267-\230\365\312\202\222\276\315\021\262q\037\262m7\333Q`\000\276\200\\\375\237\221\300u\\\204\006>\266\362,O5\206q|\243\250\356,\340\234\023\317\002\256\250\335\373\350\262\007\207G\030\274\035L\275\000\0101\302g]\231b\272\213\325\325\345L\212\266\202\227kr-\310O\241\340\251\003[\203\270R\265\270\023\340\317\034\265\360\327\244\345\201\202w\216-\237\260\367\345\351\343R\345\256\254O?+U\266$N\265u\331J\265-9\230\352\245\371J\270 \232\251\366y\350\310\266\272\253\211e\321\022\355T\273)\352\342{y\034\325\242z\356\354\313zr\367\313\2709\325J\3635QN\347\264\360F8H\265\252\370D4\005T\\\010\277U\017\247\372\2128\221-\331\236~\252\312g9+\342H\226e-\325\226\305\236\300b\000W\2255\345\257\n\270]\223\365\211\246\207\277\202\255""\337\024\273YK})d\320\364;y \377\214\217G\265\321Wc\234V7e/jGF\\\213\353iu]>\213\232\321A4\210\313iuK\276\215p\304\342z\334\234\300\020\033\311\3467\243v\252\257\313\347\311\243'\343\346\370\347\017\255\017\307\027_$\355\303\344\360e\362\362M\362\006%\310H\214\263\344\314J\254\276\002\244\207\217\325\220\251\276\230V\357\000\270\252\002\007\326\262\032f\242\337\006\340C9\210\026\343\223Qk\324\236\314-\204M\340v\2634\257\275\177'v\024\003K\241\017\344e\243N\212\016\244\275.+\362\315\250\236\334{\232<}\225\274\372=\3256d;\033>Sdz\353?\304\270\344o)|'\357K,\207\321 \207\374D\030\311\235Fl\216\036\214\330\270>\001\332\000\363ma\310\032\324\255.\213\037\200\315\007\321 \275\265\222\352k\362\241\342v\002J\355\213{\"\233\251\007\030 M\t\370\377\007H\277X\005\004;\260@\325\ry\022\265\242\027\300\370^\214\343\301\344z@\311\257%7\224d/\342\373\2611\252%_\377r\261s\001<\351\3413\230s&\361^\216!W\2635\201\225\340\262\231\254\357'\373G\311\321\361dN\017\017\302AR\255G[#}\334\002*\327K\225U\201\325\032V\376e\003WeYm\321CE@\246\321_\325\216\270\r";
-    PyObject *data = __Pyx_DecompressString(cstring, 1039, 1);
+    #elif (CYTHON_COMPRESS_STRINGS) != 0 /* compression: zlib (3198 bytes) */
+const char* const cstring = "x\332\205VK{\323\306\032\216C\000\247q\210M\022\342\200C\342\220K\271\005\022RB\271\224\272\001\002\207\322\342$\\z\325\221m9\021\221-[\222C\002\355i\227^j\251\245\226Zj\251\245\226^\316RK\377\004~\302y\277\221\214\035\350s\316\363\330\232\231of\276\371.\357\367\316,\335/\311\272XP$\251J\337\262&\357\210\206\264TT+\025}I\256\032\222&\3244\265(\351z4um_.I\352\265\222dHEC(\036\032\273ju\251vx\260S\224\365PG\251\332\250\324\016\227\204\242\252IK\225\206b\310\242\246\211\2073eQ\306\344\214\241\316\310\225\232\252\031\275\313\032\025\321\330\375lE\256z\270.V$M\334>\254I\017\261\376a\245f\034>\334\227\252\206\376\\\322\266\244\242Z-=!#\237\2076nJ\365\206\244\033\252&\010\317\017\017\360\177 \303\310\037\244\003cS*o>\314\277x\270\265-l>\334x\362\343\017\302\306\346\223\007/\266\327\005QQ\004\32104\271\3200$]\020\304jU5\340(z\265\232T-\211\232$\322_\347^\210\272!W\244wj\025\202\303jQV\021*Mm\030rU\322I\013\375\205\202z\300\333\222h\210aG2\370\254\240\210\005I\351\236\326snE\254\025D\243\270+h\222\216\230\351\005\370!\310%\336\360]P\212\037\327\211V\322\213<2\010_\265,\357D\203(\001\321\250\"A{\021\013\253%\031\333\244\242\250\025w\245\342\236PF\200\0325\022\301\337\242\"\352h:\235\035\311\220\r\251BC\t\353\0258&\310U\001\236\025\245\202X\334+*\252.E\207\362\257\2407\nz\021nH\032\004\272\252\360\263\204\020 2$=\322\322Q\361\276\244\031]\211\020\272\025\212\341\004\207\226Ph\310J\3576\341\255l\354\366$,Z\206\024\303B\203\333\271\207s\240+\232)\313\n\241\270GC\3410\214\350\321\005\025\265\307\210\316L\025\232(\003j\341\rvG\342\250 \204\262\2068\353\377(\\\272\253\250EQ\321\277Y\332\221\252\322AM\373dU\307\314P\257^\242\340\020\260:-\254)5\220I\311\010\355\216\312\215#$\354w7\013\300|C\352\206\261\\\323{\006dN\327w*v\240\032x.\241[+\251Q\\J\006*L\242\352\212 $\241\332\200!C\222j\272D\230\247\356\201\214H \326\264.\212\032\017\244\036\016\244R\247\r\243\370q$\227\272\375\336\rzYQE\343\306\n,\306/\n\212\306M\346\037\024EU\334\211$B\365\243\230;\034v\365]\261\026u)n]\376\"h.\205""\205\0205\235\271\320cU\323\227\272a\n\323\323Y\021B!j>\231C\251+K\004J\224\374\021Y\230\215\216\210\263\344\322\021\226,kjE\221u\243\334\000\343\010\345F\265(\010\021:Pt\370\241\344\032:\005\365c\305\352\275RM\332\2019\237K\004R,\354hr\211\346tC\324\214F-\232\323w%yg\027\24774]\226K\202\020\022+ZbM\235\303G\254\036\362\321\276\010\353p\266\"\027\220x\271\272#\320\260\303n\350+5\r\337\320O\241\233j\302$\344:\200\253\323\361\0244Q;$\026\321\337\360t\2079WD\370\211Z*!OU\035\213\024\271\210\216$\324\300\210\022\224WpZ\243\n\343*\"\030\007_\242C\204\"\342*\224\204\244D|\207\276\\\226q\372Q\006\025\242\272\021\242j\356\255\351\336\276\300\271\374\210\244\320(\037\031\023Gr\266\354\240 \214yGM\007D\3210\212v8RP\341\335^\350\024\201W\020\242/\310\212\376\235\374\205\356U\325\267\325\032\277\023\021a\374P5\364\335\223\016\243\210s\273\242~\347\370h\030UND\0105\265VSu\231\027|M\223\366;\327\302G\212\252\3515\343]\347z\340]u\037\371\2565\020\373zCTB3y\225\361O\024U-t\205\300\241\362\217\216\3747\212\275\\\037\tTP\270\002\242!\020\365N\222\273\221\323\237\2129\200\243n\005\351\327\345wR\024\325\250\t\223\326\031 _Zx\333w\254\353\334\375\270@\211\024\242{\224\236\027\341\007\317\223\022\375\371\025*\020^\243|\350\304\262e\221V\323F]!\322\253)\262\0010\343\376Wp\331wn\007n\302\347b\236\032^y\374\303\251\250S\210t\377v\253\242\333\243M\002\n\007\026\367JC.\343\201\006\332\272rph\357(*\330\036Q\004\205\243\353\214]\212\206\252\224pL\215\376\202\304_O\324\343\367\214`P\004\273\353\320Q\337\322L\317-\304\2738\214_P\222\002\355\0047\376\301qTw=\267.\324E\203n\206{$\372\321\233\357\350\216\010\277t\027\341\017\360p\264}\266<\254\227\360+t\271?\222\303\036}/\354\226\"\266\320\367a}C\342\037\375\255\014'\377\216}\270\3257x\316\312~\370\242op\332\022\203x\306\312\005\361i\253\376!\321w|\2609d.\007\361SM\325\312\323\\\312\0345sf>\210\2376\263\346mk\333N\331\331p\260fe\331\271\313\316\362\207x\337\361\224\031\013\006\342\315\223\315z\020O\232\307\314e\023\032\207\2327is\220\0307_Y9+\377""\341\004\251\347k\306\315-+f\245\202\370\250y\303\024\315:\246\006\317\322x\302\304\354Y+\333\216'\232O\321O\2346\257\361#\023#M\035\207~m\255[\377q\266\335\224{\305\023\203\344yk\307\316\333E'\345d\203d\306\332\260\227\355u\273\356\304\202\344\264\365\326\026m\335\311:\313m81\305\316\177\345\346\203D\306\372\201]\272\343-{\217\375\234\277\335J\263\374&\333|\311^\376\316~\027\230Pd\305=\266\2470\245B\006%\232\267\310\311 1\034$'a\\\222\214Co\224\234i'\316\300\360\003\253n\017;\257\334\234\233o\017\0145\227\021\333\363}\307\343\177\2777g)\002#\315\006\202\307]m\367\016\302e'>\374\334\33778g#\334\027\235\024Eg\324\274D\272\203\2013\346\033;f\247\202\201q\363g\253\316f\356{\207\255X\013\343Q\344\000y\241\305g\255ig\320\035s7\335\367~6\214\334\211xs\304|\207x-8\261\366@\332:e\277q\207\274\233~\312\237\363E\277\336\036@\336\332\003\307\203\3700\033\306\221A\374\214\251\332y\312\302M\3707\224 \265cH\377\000\300@g\363\224\235\340\330\260\023\316\023\367W\037{\206\330\320\224\265\211\005\211\0216\222\265O\333+\366\026E|\326\316\266\361\271`o\262\305\257\275\323\336\r\257\340\037\363W|\204\352<\2204\224\340\211%\215iS\263\316X\232=n\227\234\005\267\337\315\0060l\326|d\315Z\017\3551\373\245\263\342tN\206\241\313n\212`8e\225\221\333\377 \211\244)e\246\332\003'\377\006X\006\203\304\002\364d\235\273l\355i\353.{E\351#\270\354\233[,}\335\035`\253\017\374u\266\021f\370\337Ar\021\000\031\204\316\261Ik\314z\315\346\357z9\357\225\277\3567Z\353\255z;1\205\370\363Or\334\334\266\322v\206]\275\347m\371\307\375\255V\254=\222\244\271_\021\272\260i\307'\255\014E\2207d\363Ps\256\371\306:i\325\333d\331yv\376\032\273\226\363\317\370o[\"\373\261\300\n\177\260?\376$\353\336\021\214\010\246\200T\326\236rD\022\036Z\307\254e\022\276s\246\\\221:\1778\313\301H2D\343j\223b\336\374\023%\200Mp`\226\315\256\270\013^\014=\373\212Svs\\\364\265w\306\253\223\350\222\363\010\241E\347\252\263\217\260M\244\241f8m\356\363\302N\014\223\322/\202\304\204\371\227-;\206\273\342\376\342\307\374i\366<\037Z\322\017\344""\243\276d\373\235\233b+OZS\354\345\253 9o\013\356\023o\333?\355\337i\211\255\277\330\357%V*\263r\2035\376\372\320\327\367m\177\256\037M\256\177\203\232\215\376\307\375d|\234\2373\002\353Q\242\317\234s\356\003/\346\245\332=\0032x\344\034\\\017W\245\272\326\235eg/9\027\335e\262\363\275}1\214F\250p\314|\006\260\344\355\212{\307\023=\335\237\365\277\363\213\255\321\326S\366\3525{\375S@\271\0323s\355.\017u\224\236\263\356;\213\240\220,_\203s\333DhA|\226\250\r[\242eik\330~\345\344\370\242\264\025#E<\005\240\003\312\253Sw\023\336\367\255X0:\006\213\206\277\264\303\251E\373Ow\303\273\343#}\013\260m\315\273\354\347\261\204\343\216Db\233\352\346K\347\030|I\202>\333\311+\016\2358|\212\2000\355\216 \026\311\213\316\031vm\335_\346\033Cr\240\371q6~\013\351N.\262\305{\336\257\340\203\261\0258\221\206\322 =\331\371\035\031\235\313\340\213\335\251\0316\275\352~\347V\375\034\327\311q\307QN\014\376Q\373uv\3751<J\242P\2031\256h\236\315\337t\367\374T{\014\341`\363\240\316HF\03446\316\227~j\375\250\271\n2\302$\255\274\347\345\203\314T\220Y\264\337\303V4\300S\233\314\232\267\363\355\261\t\323@\332\323D\033y:\356c\007\216\265\323\347\254[`\227M\333pn\001\237\\\317\014\"\307.\337\341\244\226\rf\346\354\307\316\272\363\336[\000vS\355\231\353`\223\3138p\34628\344\027\204j\006\026<A\240fn\263\333\333l\373E0GQx\343\017\265VZT\257\331\233\340\317}/\357U[\217\330&V\374\306~\223\230\264\303v\336\2607{\001W\210\n\363&\375\205V\177+\373\017\372\220\020\350\231ZC\275\316\314\333\333\354\342\035o\325{\353Sx&3\360-\223e\331\273\354._\234YbK\017\220\201\231\253\354\3527\236\330\316\\u`+\010(\230\233\357\375\265\341\3273\204)C\230\t\341\225\014\013cl\222M\256R\241\247\255/\330,\2564\267\302\326\271\356tx\343!\356\027p\243L\244yK\231\351\354\234\263\177t\357\371\261 \235\265'\234S\310_\274o|\022\204s\333\376\311\021\235z\220\276\342<\363R\036\017\373*\340\221\231\"\027\316\263\251\r\037\223sl\216r\237\271\350L\270\261\217\r*\006\207\36567\354\202s\202\353\243\244O\365F\341i\013\355<\245\027\014|\314Yu""\032p\344s\301\234\235\343\"\335\231s$T\376\347\202O\266 Ll\361>\200\007l\304\335\223\356[\274\014f\256:\257\001\230\260\241\374d\355c\366W\304\373\000\341\314\005{\325>@\375\306\202\271%g\007A\024y\300\2626Xi\212\356\366\005\266\260\346\326\275a?\037F0|z|\007\336L\002\000\217P\334cH];\"\341\0330*=g\177\357\306\332\234dS\247\271\230\262\243\000\244\220\205\214\205\334}\213\004$\351:\304\326\316\257\335\345H62o\277\240\267\314\224\365\022o\231\034\315&\317Yk6\347b\005Lx\307+Ae\222_ym\252\241\236\312\237\214j}\332\252\342\262\026\374\007\255\201V\256\253\213\037C\227\352\204\331\240\027_\312\0347\351^\306k\344\347\030=\005Kv\226]\270\307\356q\372\214\023;\320\215\315\337\207\037\306\376\307\323\360\343kn\244\371\336\232\263D\353\300\256\207W\326\035\263\310&\227\234\222;\357\352@VH\357g\314\242\225\242\333e\324\374\006o\225y\233sE\342\254\265H/=\242\3315\363\202\311_X;\304P\243\3749\371\377\233\260L\336\343\025\301\235~\005\330 \226\316\rBc\373S\001\335\325qv\222\036\220/\200\253\"]r\377j\315\"^xyn\230\313\235\007\347\215\320\206\360m\211\313\204\023\026\313\254\261\265-\266\265\335\036H4\327\233u\306\271/\341\345\034z\332e\372\006'L*\257\316k\367\310\213x\302\212\321\253v\221B\300\337\214\377\005\326\275\377>";
+    PyObject *data = __Pyx_DecompressString(cstring, 3198, 1);
     if (unlikely(!data)) __PYX_ERR(0, 1, __pyx_L1_error)
     const char* const bytes = __Pyx_PyBytes_AsString(data);
     #if !CYTHON_ASSUME_SAFE_MACROS
     if (likely(bytes)); else { Py_DECREF(data); __PYX_ERR(0, 1, __pyx_L1_error) }
     #endif
-    #else /* compression: none (1757 bytes) */
-const char* const bytes = ".?frigate/video/detect_cython.pyxnumpy._core.multiarray failed to importnumpy._core.umath failed to importAny__Pyx_PyDict_NextRefall_attributes__annotate__appendareaasyncio.coroutinesattr_boxattr_dataattr_detsattr_labelattributesattributes_mapbest_idbest_labelboxbox_data__class_getitem__cline_in_tracebackconsolidate_detectionsconsolidated_detectionscython_build_detections_with_attributescython_extract_tracked_boxcython_filter_detections_by_labelcython_find_best_objectcython_process_tracked_objectsdetdetectionsdisappeareddispestimatefilter_labelsfiltered_boxesfiltered_idsfiltered_labelsfrigate.video.detect_cython__func__getidintersects_any_is_coroutineis_stationaryitemslabel__main____module__motion_boxesmotionlessmotionless_count__name__npnumpyobjobj_idobj_keypop__qualname__ratioreduce_detectionsreduce_overlapping_detectionsregionresultscore__set_name__setdefaultstationary_idsstationary_object_idsstationary_threshold__test__tracked_boxestracked_detstracked_objectstypingvalues\200\001\3608\000\t\033\230!\360\n\000\t\037\230a\330\010\034\230A\330\010\037\230q\360\014\000\005\t\210\013\2201\330\010\016\210o\230Q\230a\330\010\021\220\023\220A\220Q\330\010\022\220!\220:\230T\240\021\240!\330\010\022\220!\2207\230!\320\033+\2501\360\010\000\005\021\220\001\330\004\010\210\007\210q\330\010\020\220\003\2201\220A\330\010\013\2106\220\023\220A\330\014\025\220W\230A\230Q\360\006\000\005\t\210\007\210q\330\010\025\220S\230\001\230\021\330\010\023\2203\220a\220q\360\006\000\t\032\230\021\330\010\027\220q\330\010\032\230!\340\010\014\210K\220q\330\014\022\220/\240\021\240!\330\014\017\210s\220!\2209\230C\230~\250T\260\021\260,\270a\330\020\036\230g\240Q\240c\250\021\250!\330\020\034\230G\2401\240C\240q\250\001\330\020\037\230w\240a\240s\250!\2501\340\010\021\220\035\320\0365\260Q\330\014\034\230N\320*;\2701\270H\300A\300T\310\030\320QR\320RV\320V^\320^_\320_c\320ck\320kl\320lm\360\006\000\t\014\2108\2207\230!\330\014\r\330\020\031\230\021\330\020\027\220q\330\020\031\230\023\230A""\230Q\340\014\026\220a\220x\230q\240\r\250W\260A\260Q\340\004\013\2101\200\001\360\036\000\005\010\200{\220\"\220A\330\010\017\210u\220A\220S\230\001\230\021\340\010\017\210u\220A\220S\230\001\230\021\200\001\360Z\001\000\t\037\230d\240!\320#=\320=X\320XY\330\010\035\230Q\330\010\032\230!\330\010\034\230A\360\024\000\005\t\210\013\2201\330\010\016\210o\230Q\230a\330\010\021\220\023\220A\220Q\330\010\025\220S\230\001\230\021\330\010\017\210{\230$\230a\230x\240q\360\006\000\t\014\210;\220c\320\031.\250d\260%\260s\270!\340\014\017\210q\330\020\026\220c\230\021\230!\330\020\023\220>\240\021\240%\240q\330\024\025\330\014\032\230'\240\021\240!\340\010\013\2107\220#\220Q\340\014\026\220g\230Q\330\020\023\2201\220A\330\020\023\2201\220A\330\020\023\2201\220A\330\020\023\2201\220A\330\020\023\2201\220A\330\020\023\2201\220A\360\010\000\r\020\210{\230\"\230A\330\020\035\230W\240A\240U\250!\2503\250a\250q\340\020\035\230W\240A\240U\250!\2503\250a\250q\360\006\000\005\010\320\007\036\230g\240U\250$\250c\260\021\3202J\310\"\310A\330\010\014\210G\2201\330\014\017\210s\220!\2203\220g\230Q\330\020\034\230G\2401\240A\340\010\027\220t\2301\320\0347\3207S\320ST\340\004\014\210C\210q\320\020!\240\037\260\014\270A\200\001\360\034\000\t\027\220a\360\010\000\005\t\210\007\210q\330\010\020\220\003\2201\220A\330\010\013\2106\220\027\230\001\330\014\022\220'\230\021\230!\340\004\013\2101";
+    #else /* compression: none (5767 bytes) */
+const char* const bytes = ".?disableenablefrigate.comms.inter_processfrigate/video/detect_cython.pyxgcisenablednumpy._core.multiarray failed to importnumpy._core.umath failed to importAnyCameraTypeEnumEmptyEventsPerSecondInterProcessRequestor__Pyx_PyDict_NextRefREQUEST_REGION_GRIDUTC_all_attributes__annotate__appendareaareasarrayastimezoneasyncio.coroutinesattrattr_boxattr_dataattr_detsattr_labelattributesattributes_mapbatch_resultsbest_idbest_labelboxbox_databoxescamera_configcamera_enabledcamera_metricscandidatecarcheck_for_updates__class____class_getitem__clearcline_in_tracebackcloseconfigconfig_subscriberconsolidate_detectionsconsolidated_detectionsconvert_detection_boxesconvertedcython_build_detections_with_attributescython_extract_tracked_boxcython_filter_detections_by_labelcython_filter_motion_boxescython_find_best_objectcython_process_framescython_process_frames.<locals>.genexprcython_process_tracked_objectsddatetimedatetime_moduledetdetectdetect_batchdetected_objects_queuedetection_fpsdetection_framedetectionsdisappeareddispdo_detectdtypeemptyenabledenumerateepsestimateexit_on_emptyfilter_labelsfilteredfiltered_boxesfiltered_idsfiltered_labelsfiltersfloat32fpsfps_trackerframeframe_managerframe_nameframe_queueframe_shapeframe_timefrigate.config.camera.camerafrigate.detectors.detection_cythonfrigate.motion.motion_cythonfrigate.util.builtinfrigate.util.objectfrigate.video.detect_cythonfromlistfull__func__genexprgetget_cluster_candidatesget_cluster_regionget_cluster_region_from_gridget_startup_regionsheighthoursiid__import__intersects_anyintervalis_calibrating_is_coroutineis_lpris_object_filtered_batchis_setis_stationaryitemsjlabellabelslargest_dimensionlicense_platelprm_count__main__match_and_updatemodel_configmodified_attributes_map__module__motionmotion_boxesmotion_boxes_arraymotion_boxes_bufmotion_boxes_for_checkmotion_clustersmotion_detectormotion_regionsmotionlessmotionless_countname__name__nextnext_region_updatenownpnumpyobjobj_idobj_keyobject_boxesobject_detectorobject_trackerobj""ectspoppositionsprev_enabledprocess_fpsptz_metricsptz_movingput__qualname__queuequeue_moduler_countratioratiosreduce_detectionsreduce_overlapping_detectionsregionregion_detectionsregion_gridregion_min_sizeregionsregions_arrayregions_bufrequest_modulerequestorreshaperesultscorescoressendsend_data__set_name__setdefaultshapesleepsplitstandalone_motion_arraystandalone_motion_boxesstartstart_timestartup_scanstationarystationary_box_historystationary_frame_counterstationary_idsstationary_intervalstationary_object_idsstationary_thresholdstopstop_eventstop_time__test__thresholdthrowtimetime_moduletime_valtimedeltatracktrack_id_maptracked_boxestracked_detectionstracked_detstracked_object_boxestracked_objectstypetypinguntracked_object_boxesupdateupdate_frame_timesupdate_maskupdated_configsvvaluevalueswidth\200\001\3608\000\t\033\230!\360\n\000\t\037\230a\330\010\034\230A\330\010\037\230q\360\014\000\005\t\210\013\2201\330\010\016\210o\230Q\230a\330\010\021\220\023\220A\220Q\330\010\022\220!\220:\230T\240\021\240!\330\010\022\220!\2207\230!\320\033+\2501\360\010\000\005\021\220\001\330\004\010\210\007\210q\330\010\020\220\003\2201\220A\330\010\013\2106\220\023\220A\330\014\025\220W\230A\230Q\360\006\000\005\t\210\007\210q\330\010\025\220S\230\001\230\021\330\010\023\2203\220a\220q\360\006\000\t\032\230\021\330\010\027\220q\330\010\032\230!\340\010\014\210K\220q\330\014\022\220/\240\021\240!\330\014\017\210s\220!\2209\230C\230~\250T\260\021\260,\270a\330\020\036\230g\240Q\240c\250\021\250!\330\020\034\230G\2401\240C\240q\250\001\330\020\037\230w\240a\240s\250!\2501\340\010\021\220\035\320\0365\260Q\330\014\034\230N\320*;\2701\270H\300A\300T\310\030\320QR\320RV\320V^\320^_\320_c\320ck\320kl\320lm\360\006\000\t\014\2108\2207\230!\330\014\r\330\020\031\230\021\330\020\027\220q\330\020\031\230\023\230A\230Q\340\014\026\220a\220x\230q\240\r\250W\260A\260Q\340\004\013\2101\200\001\360\036\000\005\010\200{\220\"\220A\330\010\017\210u\220A\220S\230\001\230\021\340\010\017\210u\220A""\220S\230\001\230\021\200\001\360\036\000\005\006\360Z\002\000\t$\2401\330\010)\250\021\360\006\000\005\023\220*\230A\230Q\330\004\026\220j\240\001\240\021\330\004\025\220Z\230q\320 ?\270y\310\001\310\021\330\004\023\220:\230Q\230a\360\006\000\005\032\230\037\250\t\260\024\260R\260{\300!\330\010\027\220q\330\006\010\210\017\220z\240\021\240&\250\001\340\004\030\230\016\240j\260\013\2706\300\021\300$\300a\300q\340\004\022\220!\340\004\005\330\010\r\320\r)\250\021\330\010\026\220o\240Q\330\010\023\2206\230\021\330\013\014\360\006\000\005\024\2201\330\004\037\230q\330\004\025\220Q\360\006\000\005\006\330\010\037\230q\240\014\250I\260\\\300\021\330\010\013\320\013\035\230R\230q\330\014\017\320\017!\240\022\2402\240S\250\001\330\020\"\240!\340\020\"\240#\240R\320'9\270\022\2703\270b\300\003\3002\300Q\340\014\036\230a\330\013\014\330\010\032\230!\360\006\000\005\030\220r\230\026\230r\240\025\240d\250&\260\002\260!\330\004\022\220\"\220F\230\"\230E\240\024\240V\2502\250Q\360\006\000\005\006\330\010\r\320\r1\260\021\330\010\021\220\035\230f\240C\240~\260Q\330\013\014\330\010\021\220\021\340\004\007\200q\330\010\t\330\014&\240d\250!\250<\3207K\310<\320Wl\320lm\330\014\017\210v\220S\320\0300\260\004\3204D\300C\320G^\320^_\320_`\330\020'\240q\250\t\260\021\330\024\031\230\024\230X\320%<\270A\270W\300C\300u\310C\310q\340\014\035\230Q\330\014\035\230Q\330\020\025\220T\230\030\240\034\320-=\270S\300\005\300S\310\001\340\017\020\330\014\035\230\\\250\021\330\014\035\230\\\250\021\340\010\031\230\034\240Q\330\010\031\230\034\240Q\360\006\000\005\013\210$\210j\230\007\230q\340\010\t\330\014\036\320\036/\320/A\300\026\300w\310a\320Ob\320b|\320|}\330\014\017\210z\230\023\230A\330\020\037\230q\330\020!\240\035\250a\330\014\017\210y\230\003\2301\330\020\037\230z\250\035\260a\330\020\037\230|\2501\330\017\020\360\006\000\t\014\2104\210q\330\014\017\210}\230C\230q\330\020\021\330\024\"\320\"2\260&\270\001\330\024\"\240,\250f\260A\330\024\"\320\"9\270\026\270q\330\024\"\240*\250F\260!\330""\024\"\240-\250v\260Q\330\027\030\360\006\000\r\030\220v\230Q\230a\330\014\r\360\006\000\t\n\330\014\027\220\177\240i\250t\2602\260[\300\001\300\037\320PQ\330\014\017\210y\230\002\230!\330\020\036\230i\240z\260\021\3202I\310\035\320VW\330\020%\240_\260I\270T\300\022\300;\310a\310\177\320^d\320df\320fu\320u\177\360\000\000@\002A\002\360\000\000A\002G\002\360\000\000G\002H\002\330\017\020\360\010\000\t\n\330\014\017\210q\330\020\034\230M\250\033\260D\270\001\270\021\340\020\034\230M\250\033\260D\270\001\270\026\270q\330\017\033\2301\330\014\017\210q\330\020\021\330\014\r\360\006\000\t\n\330\014\032\320\032*\250)\2601\330\014\027\220{\240)\2501\330\017\020\360\010\000\t\n\330\014\024\220M\240\024\240Q\240m\260;\270a\270s\300\"\300B\300c\310\023\310K\320WX\320XY\330\017\020\330\014\024\220A\340\010\013\2106\220\023\220A\330\014\r\360\006\000\t\n\330\014\033\230?\250'\260\021\260!\330\017\020\330\014\033\2301\340\010\022\220!\330\010\"\240!\330\010\024\220A\360\006\000\t\n\330\014\030\230\r\240W\250A\330\017\020\330\014\030\230\001\340\010\013\2104\210q\330\014\r\330\020\036\320\036/\250q\260\014\270L\310\001\330\023\024\360\010\000\r(\240q\330\014\r\330\020'\240}\260G\270;\300a\330\020&\240m\2607\270+\300Q\330\023\024\330\020'\240q\330\020&\240a\340\014\017\320\017(\250\003\2501\330\020+\2501\340\020,\250A\360\006\000\r\016\330\020!\240\037\260\017\270q\330\020)\250\026\320/C\3001\330\023\024\330\020)\250\021\360\006\000\r\016\330\020\025\320\0258\270\001\330\020'\320'=\270\\\310\021\330\0242\260!\330\030&\240a\330\030\031\330\030\031\330\030\031\330\030&\240a\330\030\031\330\030\031\330\030\031\330\033\034\330\030\031\360\006\000\021 \320\0374\260B\260n\300A\330\023\024\330\020\037\230q\330\020\035\230Q\330\020+\2501\360\006\000\r\016\330\020\025\320\0250\3200H\310\001\330\020\032\230!\330\024&\240a\330\030%\320%6\260k\300\021\340\024\030\230\r\320%;\2701\330\030%\320%6\260a\360\006\000\024\025\330\020\032\230!\360\006\000\r\016\330\020!\240\037\260\017\270q\330\020""\023\2204\220q\330\024\025\330\030%\320%=\270Q\330\034\035\330\034'\240{\260!\330\034'\240z\260\021\340\033\034\330\030%\240Q\340\024\027\220t\2301\330\030\"\240#\240Q\240a\330\030\"\240#\240Q\240a\330\0302\260!\340\030\033\2308\2402\240R\240t\2508\2602\260Q\330\034\035\330 (\250\003\320+;\2706\300\021\300!\330 $\240H\250C\250{\270&\300\001\300\021\340 0\260\002\260+\270Q\330 +\2502\250[\270\001\330 %\320%I\310\021\330 :\320:T\320TU\330$4\260B\260j\300\013\3102\310Q\360\006\000!6\260R\260v\270Q\270n\310F\320RT\320T]\320]e\320eg\320gj\320jk\330 0\260\002\260&\270\001\270\031\300&\310\002\310!\330 %\320%I\310\021\330 :\320:T\320TU\330$8\270\001\360\006\000\0357\260a\330 %\240T\320);\2704\270w\300a\360\006\000\031\034\2301\330\034!\320!<\320<T\320TU\330\034.\320.D\300A\330 -\320->\270a\340\034-\250Q\330 <\270A\330$%\330$%\330$%\330$%\330$%\340 $\240M\260\021\340\034'\240q\330\023\024\360\010\000\r\020\210q\330\020\021\330\024\031\320\0314\260A\330\024\030\230\n\320\"5\260Q\260m\320CT\320TU\330\030\037\230w\240a\240q\330\024#\2401\330\027\030\330\024#\2401\360\006\000\r\020\210q\330\020\021\330\024$\240O\260=\300\001\330\030!\240\027\250\016\260a\360\010\000\025\031\230\003\230:\240Y\250a\250q\330\030,\250M\270\021\270!\340\030\033\2304\230q\330\034\035\360\006\000\031\036\320\035G\300q\330\030$\320$;\2701\330\034)\250\027\260\001\330\034)\250\027\260\001\330\034\"\240!\2401\330\034\"\240!\2401\330\034\"\240!\2403\240b\250\006\250a\250q\330\034\035\330\034\035\360\006\000\031\034\2301\330\034!\320!K\3101\330\034%\240Q\240a\240q\250\003\2504\250u\260A\330\034%\240Q\240a\240q\250\003\2504\250u\260A\330\034$\240A\240Q\240a\240s\250$\250e\2601\330\034$\240A\240Q\240a\240s\250$\250e\2601\330\034%\240Q\240a\240q\250\003\2504\250u\260A\340\034'\320'?\270q\330 (\250\010\260\007\260w\270a\330 -\250X\260Q\330 -\250X\260Q\360\006\000\035!\240\003\2405\250\t\260\021\260!\330 #\2404\240x\250q\260\001\330$.\250g\260Q\260a\330\027\030\330\024!\240\021\340\020\035\230Q\340\014&\320&7""\260q\270\r\300Q\360\006\000\r\020\210s\220!\2209\230B\230a\330\020%\320%F\300a\330\024-\250Q\340\020\021\330\024\"\320\"3\2601\330\030$\240L\260\001\340\027\030\360\006\000\021\022\330\024\"\320\"5\260Q\260l\300!\330\027\030\360\010\000\t\n\330\014\031\320\031@\300\001\330\020\036\230a\330\020\021\330\020\021\330\020\021\330\020\021\340\017\020\360\010\000\t\n\330\014\017\320\017%\240U\250!\330\020\035\230V\2401\240A\330\020\021\340\020\033\2307\240!\330\020\036\230l\250)\260;\270d\300!\330\020&\240d\250!\340\030%\240Q\330\030\031\330\030\031\330\030\031\330\030\031\330\030\031\360\006\000\021\037\230n\250I\260_\300D\310\004\310A\330\020\035\230V\2401\240A\330\017\020\360\010\000\005\006\330\010\027\220u\230A\330\010\021\220\025\220a\330\013\014\200\001\360Z\001\000\t\037\230d\240!\320#=\320=X\320XY\330\010\035\230Q\330\010\032\230!\330\010\034\230A\360\024\000\005\t\210\013\2201\330\010\016\210o\230Q\230a\330\010\021\220\023\220A\220Q\330\010\025\220S\230\001\230\021\330\010\017\210{\230$\230a\230x\240q\360\006\000\t\014\210;\220c\320\031.\250d\260%\260s\270!\340\014\017\210q\330\020\026\220c\230\021\230!\330\020\023\220>\240\021\240%\240q\330\024\025\330\014\032\230'\240\021\240!\340\010\013\2107\220#\220Q\340\014\026\220g\230Q\330\020\023\2201\220A\330\020\023\2201\220A\330\020\023\2201\220A\330\020\023\2201\220A\330\020\023\2201\220A\330\020\023\2201\220A\360\010\000\r\020\210{\230\"\230A\330\020\035\230W\240A\240U\250!\2503\250a\250q\340\020\035\230W\240A\240U\250!\2503\250a\250q\360\006\000\005\010\320\007\036\230g\240U\250$\250c\260\021\3202J\310\"\310A\330\010\014\210G\2201\330\014\017\210s\220!\2203\220g\230Q\330\020\034\230G\2401\240A\340\010\027\220t\2301\320\0347\3207S\320ST\340\004\014\210C\210q\320\020!\240\037\260\014\270A\250\021\200\001\360\034\000\t\027\220a\360\010\000\005\t\210\007\210q\330\010\020\220\003\2201\220A\330\010\013\2106\220\027\230\001\330\014\022\220'\230\021\230!\340\004\013\2101";
     PyObject *data = NULL;
     CYTHON_UNUSED_VAR(__Pyx_DecompressString);
     #endif
     PyObject **stringtab = __pyx_mstate->__pyx_string_tab;
     Py_ssize_t pos = 0;
-    for (int i = 0; i < 79; i++) {
+    for (int i = 0; i < 240; i++) {
       Py_ssize_t bytes_length = index[i].length;
       PyObject *string = PyUnicode_DecodeUTF8(bytes + pos, bytes_length, NULL);
-      if (likely(string) && i >= 5) PyUnicode_InternInPlace(&string);
+      if (likely(string) && i >= 10) PyUnicode_InternInPlace(&string);
       if (unlikely(!string)) {
         Py_XDECREF(data);
         __PYX_ERR(0, 1, __pyx_L1_error)
@@ -8439,7 +16832,7 @@ const char* const bytes = ".?frigate/video/detect_cython.pyxnumpy._core.multiarr
       stringtab[i] = string;
       pos += bytes_length;
     }
-    for (int i = 79; i < 83; i++) {
+    for (int i = 240; i < 246; i++) {
       Py_ssize_t bytes_length = index[i].length;
       PyObject *string = PyBytes_FromStringAndSize(bytes + pos, bytes_length);
       stringtab[i] = string;
@@ -8450,15 +16843,15 @@ const char* const bytes = ".?frigate/video/detect_cython.pyxnumpy._core.multiarr
       }
     }
     Py_XDECREF(data);
-    for (Py_ssize_t i = 0; i < 83; i++) {
+    for (Py_ssize_t i = 0; i < 246; i++) {
       if (unlikely(PyObject_Hash(stringtab[i]) == -1)) {
         __PYX_ERR(0, 1, __pyx_L1_error)
       }
     }
     #if CYTHON_IMMORTAL_CONSTANTS
     {
-      PyObject **table = stringtab + 79;
-      for (Py_ssize_t i=0; i<4; ++i) {
+      PyObject **table = stringtab + 240;
+      for (Py_ssize_t i=0; i<6; ++i) {
         #if PY_VERSION_HEX >= 0x030F0000
         PyUnstable_SetImmortal(table[i]);
         #elif CYTHON_COMPILING_IN_CPYTHON_FREETHREADING
@@ -8480,17 +16873,26 @@ const char* const bytes = ".?frigate/video/detect_cython.pyxnumpy._core.multiarr
     #endif
   }
   {
-    PyObject **numbertab = __pyx_mstate->__pyx_number_tab + 0;
-    int8_t const cint_constants_1[] = {0};
+    PyObject **numbertab = __pyx_mstate->__pyx_number_tab;
+    double const c_constants[] = {0.1};
     for (int i = 0; i < 1; i++) {
-      numbertab[i] = PyLong_FromLong(cint_constants_1[i - 0]);
+      numbertab[i] = PyFloat_FromDouble(c_constants[i]);
+      if (unlikely(!numbertab[i])) __PYX_ERR(0, 1, __pyx_L1_error)
+    }
+  }
+  {
+    PyObject **numbertab = __pyx_mstate->__pyx_number_tab + 1;
+    int8_t const cint_constants_1[] = {0,-1,1,2,3,4,10,22,30,100};
+    int16_t const cint_constants_2[] = {320,500};
+    for (int i = 0; i < 12; i++) {
+      numbertab[i] = PyLong_FromLong((i < 10 ? cint_constants_1[i - 0] : cint_constants_2[i - 10]));
       if (unlikely(!numbertab[i])) __PYX_ERR(0, 1, __pyx_L1_error)
     }
   }
   #if CYTHON_IMMORTAL_CONSTANTS
   {
     PyObject **table = __pyx_mstate->__pyx_number_tab;
-    for (Py_ssize_t i=0; i<1; ++i) {
+    for (Py_ssize_t i=0; i<13; ++i) {
       #if PY_VERSION_HEX >= 0x030F0000
       PyUnstable_SetImmortal(table[i]);
       #elif CYTHON_COMPILING_IN_CPYTHON_FREETHREADING
@@ -8519,9 +16921,9 @@ typedef struct {
     unsigned int argcount : 4;
     unsigned int num_posonly_args : 1;
     unsigned int num_kwonly_args : 1;
-    unsigned int nlocals : 5;
+    unsigned int nlocals : 7;
     unsigned int flags : 10;
-    unsigned int first_line : 8;
+    unsigned int first_line : 10;
 } __Pyx_PyCode_New_function_description;
 /* NewCodeObj.proto */
 static PyObject* __Pyx_PyCode_New(
@@ -8538,24 +16940,34 @@ static int __Pyx_CreateCodeObjects(__pyx_mstatetype *__pyx_mstate) {
   PyObject* tuple_dedup_map = PyDict_New();
   if (unlikely(!tuple_dedup_map)) return -1;
   {
+    const __Pyx_PyCode_New_function_description descr = {0, 0, 0, 1, (unsigned int)(CO_OPTIMIZED|CO_NEWLOCALS|CO_GENERATOR), 524};
+    PyObject* const varnames[] = {__pyx_mstate->__pyx_n_u_v};
+    __pyx_mstate_global->__pyx_codeobj_tab[0] = __Pyx_PyCode_New(descr, varnames, __pyx_mstate->__pyx_kp_u_frigate_video_detect_cython_pyx, __pyx_mstate->__pyx_n_u_genexpr, __pyx_mstate->__pyx_kp_b_iso88591__3, tuple_dedup_map); if (unlikely(!__pyx_mstate_global->__pyx_codeobj_tab[0])) goto bad;
+  }
+  {
     const __Pyx_PyCode_New_function_description descr = {10, 0, 0, 23, (unsigned int)(CO_OPTIMIZED|CO_NEWLOCALS), 26};
     PyObject* const varnames[] = {__pyx_mstate->__pyx_n_u_tracked_objects, __pyx_mstate->__pyx_n_u_motion_boxes, __pyx_mstate->__pyx_n_u_stationary_object_ids, __pyx_mstate->__pyx_n_u_stationary_threshold, __pyx_mstate->__pyx_n_u_disappeared, __pyx_mstate->__pyx_n_u_intersects_any, __pyx_mstate->__pyx_n_u_reduce_overlapping_detections, __pyx_mstate->__pyx_n_u_reduce_detections, __pyx_mstate->__pyx_n_u_all_attributes, __pyx_mstate->__pyx_n_u_consolidate_detections, __pyx_mstate->__pyx_n_u_stationary_ids, __pyx_mstate->__pyx_n_u_tracked_boxes, __pyx_mstate->__pyx_n_u_detections, __pyx_mstate->__pyx_n_u_tracked_dets, __pyx_mstate->__pyx_n_u_obj, __pyx_mstate->__pyx_n_u_obj_id, __pyx_mstate->__pyx_n_u_motionless, __pyx_mstate->__pyx_n_u_disp, __pyx_mstate->__pyx_n_u_is_stationary, __pyx_mstate->__pyx_n_u_box_data, __pyx_mstate->__pyx_n_u_box, __pyx_mstate->__pyx_n_u_obj_key, __pyx_mstate->__pyx_n_u_det};
-    __pyx_mstate_global->__pyx_codeobj_tab[0] = __Pyx_PyCode_New(descr, varnames, __pyx_mstate->__pyx_kp_u_frigate_video_detect_cython_pyx, __pyx_mstate->__pyx_n_u_cython_process_tracked_objects, __pyx_mstate->__pyx_kp_b_iso88591_Z_d_XXY_Q_A_1_oQa_AQ_S_axq_c_d, tuple_dedup_map); if (unlikely(!__pyx_mstate_global->__pyx_codeobj_tab[0])) goto bad;
+    __pyx_mstate_global->__pyx_codeobj_tab[1] = __Pyx_PyCode_New(descr, varnames, __pyx_mstate->__pyx_kp_u_frigate_video_detect_cython_pyx, __pyx_mstate->__pyx_n_u_cython_process_tracked_objects, __pyx_mstate->__pyx_kp_b_iso88591_Z_d_XXY_Q_A_1_oQa_AQ_S_axq_c_d, tuple_dedup_map); if (unlikely(!__pyx_mstate_global->__pyx_codeobj_tab[1])) goto bad;
   }
   {
     const __Pyx_PyCode_New_function_description descr = {2, 0, 0, 5, (unsigned int)(CO_OPTIMIZED|CO_NEWLOCALS), 127};
     PyObject* const varnames[] = {__pyx_mstate->__pyx_n_u_detections, __pyx_mstate->__pyx_n_u_filter_labels, __pyx_mstate->__pyx_n_u_result, __pyx_mstate->__pyx_n_u_det, __pyx_mstate->__pyx_n_u_label};
-    __pyx_mstate_global->__pyx_codeobj_tab[1] = __Pyx_PyCode_New(descr, varnames, __pyx_mstate->__pyx_kp_u_frigate_video_detect_cython_pyx, __pyx_mstate->__pyx_n_u_cython_filter_detections_by_labe, __pyx_mstate->__pyx_kp_b_iso88591_a_q_1A_6_1, tuple_dedup_map); if (unlikely(!__pyx_mstate_global->__pyx_codeobj_tab[1])) goto bad;
+    __pyx_mstate_global->__pyx_codeobj_tab[2] = __Pyx_PyCode_New(descr, varnames, __pyx_mstate->__pyx_kp_u_frigate_video_detect_cython_pyx, __pyx_mstate->__pyx_n_u_cython_filter_detections_by_labe, __pyx_mstate->__pyx_kp_b_iso88591_a_q_1A_6_1, tuple_dedup_map); if (unlikely(!__pyx_mstate_global->__pyx_codeobj_tab[2])) goto bad;
   }
   {
     const __Pyx_PyCode_New_function_description descr = {3, 0, 0, 3, (unsigned int)(CO_OPTIMIZED|CO_NEWLOCALS), 153};
     PyObject* const varnames[] = {__pyx_mstate->__pyx_n_u_obj, __pyx_mstate->__pyx_n_u_motionless, __pyx_mstate->__pyx_n_u_stationary_threshold};
-    __pyx_mstate_global->__pyx_codeobj_tab[2] = __Pyx_PyCode_New(descr, varnames, __pyx_mstate->__pyx_kp_u_frigate_video_detect_cython_pyx, __pyx_mstate->__pyx_n_u_cython_extract_tracked_box, __pyx_mstate->__pyx_kp_b_iso88591_A_uAS_uAS, tuple_dedup_map); if (unlikely(!__pyx_mstate_global->__pyx_codeobj_tab[2])) goto bad;
+    __pyx_mstate_global->__pyx_codeobj_tab[3] = __Pyx_PyCode_New(descr, varnames, __pyx_mstate->__pyx_kp_u_frigate_video_detect_cython_pyx, __pyx_mstate->__pyx_n_u_cython_extract_tracked_box, __pyx_mstate->__pyx_kp_b_iso88591_A_uAS_uAS, tuple_dedup_map); if (unlikely(!__pyx_mstate_global->__pyx_codeobj_tab[3])) goto bad;
   }
   {
-    const __Pyx_PyCode_New_function_description descr = {5, 0, 0, 20, (unsigned int)(CO_OPTIMIZED|CO_NEWLOCALS), 174};
+    const __Pyx_PyCode_New_function_description descr = {15, 0, 0, 100, (unsigned int)(CO_OPTIMIZED|CO_NEWLOCALS), 179};
+    PyObject* const varnames[] = {__pyx_mstate->__pyx_n_u_requestor, __pyx_mstate->__pyx_n_u_frame_queue, __pyx_mstate->__pyx_n_u_frame_shape, __pyx_mstate->__pyx_n_u_model_config, __pyx_mstate->__pyx_n_u_camera_config, __pyx_mstate->__pyx_n_u_frame_manager, __pyx_mstate->__pyx_n_u_motion_detector, __pyx_mstate->__pyx_n_u_object_detector, __pyx_mstate->__pyx_n_u_object_tracker, __pyx_mstate->__pyx_n_u_detected_objects_queue, __pyx_mstate->__pyx_n_u_camera_metrics, __pyx_mstate->__pyx_n_u_stop_event, __pyx_mstate->__pyx_n_u_ptz_metrics, __pyx_mstate->__pyx_n_u_region_grid, __pyx_mstate->__pyx_n_u_exit_on_empty, __pyx_mstate->__pyx_n_u_next_region_update, __pyx_mstate->__pyx_n_u_config_subscriber, __pyx_mstate->__pyx_n_u_fps_tracker, __pyx_mstate->__pyx_n_u_startup_scan, __pyx_mstate->__pyx_n_u_stationary_frame_counter, __pyx_mstate->__pyx_n_u_camera_enabled, __pyx_mstate->__pyx_n_u_region_min_size, __pyx_mstate->__pyx_n_u_attributes_map, __pyx_mstate->__pyx_n_u_all_attributes, __pyx_mstate->__pyx_n_u_motion_boxes_buf, __pyx_mstate->__pyx_n_u_regions_buf, __pyx_mstate->__pyx_n_u_updated_configs, __pyx_mstate->__pyx_n_u_frame_name, __pyx_mstate->__pyx_n_u_frame_time, __pyx_mstate->__pyx_n_u_frame, __pyx_mstate->__pyx_n_u_motion_boxes, __pyx_mstate->__pyx_n_u_regions, __pyx_mstate->__pyx_n_u_consolidated_detections, __pyx_mstate->__pyx_n_u_detections, __pyx_mstate->__pyx_n_u_tracked_detections, __pyx_mstate->__pyx_n_u_batch_results, __pyx_mstate->__pyx_n_u_region, __pyx_mstate->__pyx_n_u_region_detections, __pyx_mstate->__pyx_n_u_converted, __pyx_mstate->__pyx_n_u_filtered, __pyx_mstate->__pyx_n_u_standalone_motion_array, __pyx_mstate->__pyx_n_u_standalone_motion_boxes, __pyx_mstate->__pyx_n_u_motion_clusters, __pyx_mstate->__pyx_n_u_motion_regions, __pyx_mstate->__pyx_n_u_candidate, __pyx_mstate->__pyx_n_u_do_detect, __pyx_mstate->__pyx_n_u_m_count, __pyx_mstate->__pyx_n_u_r_count, __pyx_mstate->__pyx_n_u_i, __pyx_mstate->__pyx_n_u_j, __pyx_mstate->__pyx_n_u_prev_enabled, __pyx_mstate->__pyx_n_u_time_module, __pyx_mstate->__pyx_n_u_datetime_module, __pyx_mstate->__pyx_n_u_request_module, __pyx_mstate->__pyx_n_u_queue_module, __pyx_mstate->__pyx_n_u_time_val, __pyx_mstate->__pyx_n_u_is_lpr, __pyx_mstate->__pyx_n_u_reduce_detections, __pyx_mstate->__pyx_n_u_cython_find_best_object, __pyx_mstate->__pyx_n_u_EventsPerSecond, __pyx_mstate->__pyx_n_u_largest_dimension, __pyx_mstate->__pyx_n_u_CameraTypeEnum, __pyx_mstate->__pyx_n_u_modified_attributes_map, __pyx_mstate->__pyx_n_u_stationary_object_ids, __pyx_mstate->__pyx_n_u_stationary_threshold, __pyx_mstate->__pyx_n_u_stationary_interval, __pyx_mstate->__pyx_n_u_is_calibrating, __pyx_mstate->__pyx_n_u_motion_boxes_for_check, __pyx_mstate->__pyx_n_u_cython_process_tracked_objects, __pyx_mstate->__pyx_n_u_tracked_object_boxes, __pyx_mstate->__pyx_n_u__4, __pyx_mstate->__pyx_n_u_object_boxes, __pyx_mstate->__pyx_n_u_get_cluster_candidates, __pyx_mstate->__pyx_n_u_get_cluster_region, __pyx_mstate->__pyx_n_u_ptz_moving, __pyx_mstate->__pyx_n_u_cython_filter_motion_boxes, __pyx_mstate->__pyx_n_u_motion_boxes_array, __pyx_mstate->__pyx_n_u_regions_array, __pyx_mstate->__pyx_n_u_get_cluster_region_from_grid, __pyx_mstate->__pyx_n_u_get_startup_regions, __pyx_mstate->__pyx_n_u_convert_detection_boxes, __pyx_mstate->__pyx_n_u_is_object_filtered_batch, __pyx_mstate->__pyx_n_u_labels, __pyx_mstate->__pyx_n_u_scores, __pyx_mstate->__pyx_n_u_boxes, __pyx_mstate->__pyx_n_u_areas, __pyx_mstate->__pyx_n_u_ratios, __pyx_mstate->__pyx_n_u_d, __pyx_mstate->__pyx_n_u_attr, __pyx_mstate->__pyx_n_u_attr, __pyx_mstate->__pyx_n_u_candidate, __pyx_mstate->__pyx_n_u_box, __pyx_mstate->__pyx_n_u_genexpr, __pyx_mstate->__pyx_n_u_genexpr, __pyx_mstate->__pyx_n_u_candidate, __pyx_mstate->__pyx_n_u_d, __pyx_mstate->__pyx_n_u_d, __pyx_mstate->__pyx_n_u_d, __pyx_mstate->__pyx_n_u_d, __pyx_mstate->__pyx_n_u_d};
+    __pyx_mstate_global->__pyx_codeobj_tab[4] = __Pyx_PyCode_New(descr, varnames, __pyx_mstate->__pyx_kp_u_frigate_video_detect_cython_pyx, __pyx_mstate->__pyx_n_u_cython_process_frames, __pyx_mstate->__pyx_kp_b_iso88591_Z_1_AQ_j_Zq_y_Qa_R_q_z_j_6_aq_o, tuple_dedup_map); if (unlikely(!__pyx_mstate_global->__pyx_codeobj_tab[4])) goto bad;
+  }
+  {
+    const __Pyx_PyCode_New_function_description descr = {5, 0, 0, 20, (unsigned int)(CO_OPTIMIZED|CO_NEWLOCALS), 677};
     PyObject* const varnames[] = {__pyx_mstate->__pyx_n_u_tracked_objects, __pyx_mstate->__pyx_n_u_consolidated_detections, __pyx_mstate->__pyx_n_u_all_attributes, __pyx_mstate->__pyx_n_u_attributes_map, __pyx_mstate->__pyx_n_u_cython_find_best_object, __pyx_mstate->__pyx_n_u_detections, __pyx_mstate->__pyx_n_u_obj, __pyx_mstate->__pyx_n_u_obj_id, __pyx_mstate->__pyx_n_u_det, __pyx_mstate->__pyx_n_u_label, __pyx_mstate->__pyx_n_u_filtered_boxes, __pyx_mstate->__pyx_n_u_filtered_ids, __pyx_mstate->__pyx_n_u_filtered_labels, __pyx_mstate->__pyx_n_u_best_id, __pyx_mstate->__pyx_n_u_best_label, __pyx_mstate->__pyx_n_u_attr_data, __pyx_mstate->__pyx_n_u_obj_key, __pyx_mstate->__pyx_n_u_attr_dets, __pyx_mstate->__pyx_n_u_attr_label, __pyx_mstate->__pyx_n_u_attr_box};
-    __pyx_mstate_global->__pyx_codeobj_tab[3] = __Pyx_PyCode_New(descr, varnames, __pyx_mstate->__pyx_kp_u_frigate_video_detect_cython_pyx, __pyx_mstate->__pyx_n_u_cython_build_detections_with_att, __pyx_mstate->__pyx_kp_b_iso88591_8_a_A_q_1_oQa_AQ_T_7_1_q_1A_6_A, tuple_dedup_map); if (unlikely(!__pyx_mstate_global->__pyx_codeobj_tab[3])) goto bad;
+    __pyx_mstate_global->__pyx_codeobj_tab[5] = __Pyx_PyCode_New(descr, varnames, __pyx_mstate->__pyx_kp_u_frigate_video_detect_cython_pyx, __pyx_mstate->__pyx_n_u_cython_build_detections_with_att, __pyx_mstate->__pyx_kp_b_iso88591_8_a_A_q_1_oQa_AQ_T_7_1_q_1A_6_A, tuple_dedup_map); if (unlikely(!__pyx_mstate_global->__pyx_codeobj_tab[5])) goto bad;
   }
   Py_DECREF(tuple_dedup_map);
   return 0;
@@ -8614,6 +17026,11 @@ static int __Pyx_InitGlobals(void) {
   
   if (unlikely(PyErr_Occurred())) __PYX_ERR(0, 1, __pyx_L1_error)
 
+  /* Generator.init */
+  if (likely(__pyx_Generator_init(__pyx_m) == 0)); else
+  
+  if (unlikely(PyErr_Occurred())) __PYX_ERR(0, 1, __pyx_L1_error)
+
   return 0;
   __pyx_L1_error:;
   return -1;
@@ -8652,6 +17069,155 @@ end:
     return (__Pyx_RefNannyAPIStruct *)r;
 }
 #endif
+
+/* PyErrExceptionMatches (used by PyObjectGetAttrStrNoError) */
+#if CYTHON_FAST_THREAD_STATE
+static int __Pyx_PyErr_ExceptionMatchesTuple(PyObject *exc_type, PyObject *tuple) {
+    Py_ssize_t i, n;
+    n = PyTuple_GET_SIZE(tuple);
+    for (i=0; i<n; i++) {
+        if (exc_type == PyTuple_GET_ITEM(tuple, i)) return 1;
+    }
+    for (i=0; i<n; i++) {
+        if (__Pyx_PyErr_GivenExceptionMatches(exc_type, PyTuple_GET_ITEM(tuple, i))) return 1;
+    }
+    return 0;
+}
+static CYTHON_INLINE int __Pyx_PyErr_ExceptionMatchesInState(PyThreadState* tstate, PyObject* err) {
+    int result;
+    PyObject *exc_type;
+#if PY_VERSION_HEX >= 0x030C00A6
+    PyObject *current_exception = tstate->current_exception;
+    if (unlikely(!current_exception)) return 0;
+    exc_type = (PyObject*) Py_TYPE(current_exception);
+    if (exc_type == err) return 1;
+#else
+    exc_type = tstate->curexc_type;
+    if (exc_type == err) return 1;
+    if (unlikely(!exc_type)) return 0;
+#endif
+    #if CYTHON_AVOID_BORROWED_REFS
+    Py_INCREF(exc_type);
+    #endif
+    if (unlikely(PyTuple_Check(err))) {
+        result = __Pyx_PyErr_ExceptionMatchesTuple(exc_type, err);
+    } else {
+        result = __Pyx_PyErr_GivenExceptionMatches(exc_type, err);
+    }
+    #if CYTHON_AVOID_BORROWED_REFS
+    Py_DECREF(exc_type);
+    #endif
+    return result;
+}
+#endif
+
+/* PyErrFetchRestore (used by PyObjectGetAttrStrNoError) */
+#if CYTHON_FAST_THREAD_STATE
+static CYTHON_INLINE void __Pyx_ErrRestoreInState(PyThreadState *tstate, PyObject *type, PyObject *value, PyObject *tb) {
+#if PY_VERSION_HEX >= 0x030C00A6
+    PyObject *tmp_value;
+    assert(type == NULL || (value != NULL && type == (PyObject*) Py_TYPE(value)));
+    if (value) {
+        #if CYTHON_COMPILING_IN_CPYTHON
+        if (unlikely(((PyBaseExceptionObject*) value)->traceback != tb))
+        #endif
+            PyException_SetTraceback(value, tb);
+    }
+    tmp_value = tstate->current_exception;
+    tstate->current_exception = value;
+    Py_XDECREF(tmp_value);
+    Py_XDECREF(type);
+    Py_XDECREF(tb);
+#else
+    PyObject *tmp_type, *tmp_value, *tmp_tb;
+    tmp_type = tstate->curexc_type;
+    tmp_value = tstate->curexc_value;
+    tmp_tb = tstate->curexc_traceback;
+    tstate->curexc_type = type;
+    tstate->curexc_value = value;
+    tstate->curexc_traceback = tb;
+    Py_XDECREF(tmp_type);
+    Py_XDECREF(tmp_value);
+    Py_XDECREF(tmp_tb);
+#endif
+}
+static CYTHON_INLINE void __Pyx_ErrFetchInState(PyThreadState *tstate, PyObject **type, PyObject **value, PyObject **tb) {
+#if PY_VERSION_HEX >= 0x030C00A6
+    PyObject* exc_value;
+    exc_value = tstate->current_exception;
+    tstate->current_exception = 0;
+    *value = exc_value;
+    *type = NULL;
+    *tb = NULL;
+    if (exc_value) {
+        *type = (PyObject*) Py_TYPE(exc_value);
+        Py_INCREF(*type);
+        #if CYTHON_COMPILING_IN_CPYTHON
+        *tb = ((PyBaseExceptionObject*) exc_value)->traceback;
+        Py_XINCREF(*tb);
+        #else
+        *tb = PyException_GetTraceback(exc_value);
+        #endif
+    }
+#else
+    *type = tstate->curexc_type;
+    *value = tstate->curexc_value;
+    *tb = tstate->curexc_traceback;
+    tstate->curexc_type = 0;
+    tstate->curexc_value = 0;
+    tstate->curexc_traceback = 0;
+#endif
+}
+#endif
+
+/* PyObjectGetAttrStr (used by PyObjectGetAttrStrNoError) */
+#if CYTHON_USE_TYPE_SLOTS
+static CYTHON_INLINE PyObject* __Pyx_PyObject_GetAttrStr(PyObject* obj, PyObject* attr_name) {
+    PyTypeObject* tp = Py_TYPE(obj);
+    if (likely(tp->tp_getattro))
+        return tp->tp_getattro(obj, attr_name);
+    return PyObject_GetAttr(obj, attr_name);
+}
+#endif
+
+/* PyObjectGetAttrStrNoError (used by GetBuiltinName) */
+#if __PYX_LIMITED_VERSION_HEX < 0x030d0000
+static void __Pyx_PyObject_GetAttrStr_ClearAttributeError(void) {
+    __Pyx_PyThreadState_declare
+    __Pyx_PyThreadState_assign
+    if (likely(__Pyx_PyErr_ExceptionMatches(PyExc_AttributeError)))
+        __Pyx_PyErr_Clear();
+}
+#endif
+static CYTHON_INLINE PyObject* __Pyx_PyObject_GetAttrStrNoError(PyObject* obj, PyObject* attr_name) {
+    PyObject *result;
+#if __PYX_LIMITED_VERSION_HEX >= 0x030d0000
+    (void) PyObject_GetOptionalAttr(obj, attr_name, &result);
+    return result;
+#else
+#if CYTHON_COMPILING_IN_CPYTHON && CYTHON_USE_TYPE_SLOTS
+    PyTypeObject* tp = Py_TYPE(obj);
+    if (likely(tp->tp_getattro == PyObject_GenericGetAttr)) {
+        return _PyObject_GenericGetAttrWithDict(obj, attr_name, NULL, 1);
+    }
+#endif
+    result = __Pyx_PyObject_GetAttrStr(obj, attr_name);
+    if (unlikely(!result)) {
+        __Pyx_PyObject_GetAttrStr_ClearAttributeError();
+    }
+    return result;
+#endif
+}
+
+/* GetBuiltinName */
+static PyObject *__Pyx_GetBuiltinName(PyObject *name) {
+    PyObject* result = __Pyx_PyObject_GetAttrStrNoError(__pyx_mstate_global->__pyx_b, name);
+    if (unlikely(!result) && !PyErr_Occurred()) {
+        PyErr_Format(PyExc_NameError,
+            "name '%U' is not defined", name);
+    }
+    return result;
+}
 
 /* GetTopmostException (used by SaveResetException) */
 #if CYTHON_USE_EXC_INFO_STACK && CYTHON_FAST_THREAD_STATE
@@ -8732,47 +17298,6 @@ static CYTHON_INLINE void __Pyx__ExceptionReset(PyThreadState *tstate, PyObject 
     Py_XDECREF(tmp_value);
     Py_XDECREF(tmp_tb);
   #endif
-}
-#endif
-
-/* PyErrExceptionMatches */
-#if CYTHON_FAST_THREAD_STATE
-static int __Pyx_PyErr_ExceptionMatchesTuple(PyObject *exc_type, PyObject *tuple) {
-    Py_ssize_t i, n;
-    n = PyTuple_GET_SIZE(tuple);
-    for (i=0; i<n; i++) {
-        if (exc_type == PyTuple_GET_ITEM(tuple, i)) return 1;
-    }
-    for (i=0; i<n; i++) {
-        if (__Pyx_PyErr_GivenExceptionMatches(exc_type, PyTuple_GET_ITEM(tuple, i))) return 1;
-    }
-    return 0;
-}
-static CYTHON_INLINE int __Pyx_PyErr_ExceptionMatchesInState(PyThreadState* tstate, PyObject* err) {
-    int result;
-    PyObject *exc_type;
-#if PY_VERSION_HEX >= 0x030C00A6
-    PyObject *current_exception = tstate->current_exception;
-    if (unlikely(!current_exception)) return 0;
-    exc_type = (PyObject*) Py_TYPE(current_exception);
-    if (exc_type == err) return 1;
-#else
-    exc_type = tstate->curexc_type;
-    if (exc_type == err) return 1;
-    if (unlikely(!exc_type)) return 0;
-#endif
-    #if CYTHON_AVOID_BORROWED_REFS
-    Py_INCREF(exc_type);
-    #endif
-    if (unlikely(PyTuple_Check(err))) {
-        result = __Pyx_PyErr_ExceptionMatchesTuple(exc_type, err);
-    } else {
-        result = __Pyx_PyErr_GivenExceptionMatches(exc_type, err);
-    }
-    #if CYTHON_AVOID_BORROWED_REFS
-    Py_DECREF(exc_type);
-    #endif
-    return result;
 }
 #endif
 
@@ -8995,65 +17520,6 @@ static CYTHON_INLINE PyObject* __Pyx_PyObject_FastCallDict(PyObject *func, PyObj
     return __Pyx_PyObject_FastCall_fallback(func, args, (size_t)nargs, kwargs);
     #endif
 }
-
-/* PyErrFetchRestore (used by RaiseException) */
-#if CYTHON_FAST_THREAD_STATE
-static CYTHON_INLINE void __Pyx_ErrRestoreInState(PyThreadState *tstate, PyObject *type, PyObject *value, PyObject *tb) {
-#if PY_VERSION_HEX >= 0x030C00A6
-    PyObject *tmp_value;
-    assert(type == NULL || (value != NULL && type == (PyObject*) Py_TYPE(value)));
-    if (value) {
-        #if CYTHON_COMPILING_IN_CPYTHON
-        if (unlikely(((PyBaseExceptionObject*) value)->traceback != tb))
-        #endif
-            PyException_SetTraceback(value, tb);
-    }
-    tmp_value = tstate->current_exception;
-    tstate->current_exception = value;
-    Py_XDECREF(tmp_value);
-    Py_XDECREF(type);
-    Py_XDECREF(tb);
-#else
-    PyObject *tmp_type, *tmp_value, *tmp_tb;
-    tmp_type = tstate->curexc_type;
-    tmp_value = tstate->curexc_value;
-    tmp_tb = tstate->curexc_traceback;
-    tstate->curexc_type = type;
-    tstate->curexc_value = value;
-    tstate->curexc_traceback = tb;
-    Py_XDECREF(tmp_type);
-    Py_XDECREF(tmp_value);
-    Py_XDECREF(tmp_tb);
-#endif
-}
-static CYTHON_INLINE void __Pyx_ErrFetchInState(PyThreadState *tstate, PyObject **type, PyObject **value, PyObject **tb) {
-#if PY_VERSION_HEX >= 0x030C00A6
-    PyObject* exc_value;
-    exc_value = tstate->current_exception;
-    tstate->current_exception = 0;
-    *value = exc_value;
-    *type = NULL;
-    *tb = NULL;
-    if (exc_value) {
-        *type = (PyObject*) Py_TYPE(exc_value);
-        Py_INCREF(*type);
-        #if CYTHON_COMPILING_IN_CPYTHON
-        *tb = ((PyBaseExceptionObject*) exc_value)->traceback;
-        Py_XINCREF(*tb);
-        #else
-        *tb = PyException_GetTraceback(exc_value);
-        #endif
-    }
-#else
-    *type = tstate->curexc_type;
-    *value = tstate->curexc_value;
-    *tb = tstate->curexc_traceback;
-    tstate->curexc_type = 0;
-    tstate->curexc_value = 0;
-    tstate->curexc_traceback = 0;
-#endif
-}
-#endif
 
 /* RaiseException */
 static void __Pyx_Raise(PyObject *type, PyObject *value, PyObject *tb, PyObject *cause) {
@@ -9407,16 +17873,6 @@ static CYTHON_INLINE PyObject* __Pyx_PyObject_CallOneArg(PyObject *func, PyObjec
     PyObject *args[2] = {NULL, arg};
     return __Pyx_PyObject_FastCall(func, args+1, 1 | __Pyx_PY_VECTORCALL_ARGUMENTS_OFFSET);
 }
-
-/* PyObjectGetAttrStr (used by UnpackUnboundCMethod) */
-#if CYTHON_USE_TYPE_SLOTS
-static CYTHON_INLINE PyObject* __Pyx_PyObject_GetAttrStr(PyObject* obj, PyObject* attr_name) {
-    PyTypeObject* tp = Py_TYPE(obj);
-    if (likely(tp->tp_getattro))
-        return tp->tp_getattro(obj, attr_name);
-    return PyObject_GetAttr(obj, attr_name);
-}
-#endif
 
 /* UnpackUnboundCMethod (used by CallUnboundCMethod0) */
 #if CYTHON_COMPILING_IN_LIMITED_API && __PYX_LIMITED_VERSION_HEX < 0x030C0000
@@ -10220,35 +18676,6 @@ static CYTHON_INLINE PyObject *__Pyx_GetItemInt_Fast(PyObject *o, Py_ssize_t i, 
     return __Pyx_GetItemInt_Generic_size(o, i);
 }
 
-/* PyObjectGetAttrStrNoError (used by ObjectGetItem) */
-#if __PYX_LIMITED_VERSION_HEX < 0x030d0000
-static void __Pyx_PyObject_GetAttrStr_ClearAttributeError(void) {
-    __Pyx_PyThreadState_declare
-    __Pyx_PyThreadState_assign
-    if (likely(__Pyx_PyErr_ExceptionMatches(PyExc_AttributeError)))
-        __Pyx_PyErr_Clear();
-}
-#endif
-static CYTHON_INLINE PyObject* __Pyx_PyObject_GetAttrStrNoError(PyObject* obj, PyObject* attr_name) {
-    PyObject *result;
-#if __PYX_LIMITED_VERSION_HEX >= 0x030d0000
-    (void) PyObject_GetOptionalAttr(obj, attr_name, &result);
-    return result;
-#else
-#if CYTHON_COMPILING_IN_CPYTHON && CYTHON_USE_TYPE_SLOTS
-    PyTypeObject* tp = Py_TYPE(obj);
-    if (likely(tp->tp_getattro == PyObject_GenericGetAttr)) {
-        return _PyObject_GenericGetAttrWithDict(obj, attr_name, NULL, 1);
-    }
-#endif
-    result = __Pyx_PyObject_GetAttrStr(obj, attr_name);
-    if (unlikely(!result)) {
-        __Pyx_PyObject_GetAttrStr_ClearAttributeError();
-    }
-    return result;
-#endif
-}
-
 /* ObjectGetItem */
 #if CYTHON_USE_TYPE_SLOTS
 static PyObject *__Pyx_PyObject_GetIndex(PyObject *obj, PyObject *index) {
@@ -10347,262 +18774,84 @@ static PyObject *__Pyx_PyObject_FastCallMethod(PyObject *name, PyObject *const *
 }
 #endif
 
-/* RaiseTooManyValuesToUnpack */
-static CYTHON_INLINE void __Pyx_RaiseTooManyValuesError(Py_ssize_t expected) {
-    PyErr_Format(PyExc_ValueError,
-                 "too many values to unpack (expected %" CYTHON_FORMAT_SSIZE_T "d)", expected);
+/* RaiseUnboundLocalError */
+static void __Pyx_RaiseUnboundLocalError(const char *varname) {
+    PyErr_Format(PyExc_UnboundLocalError, "local variable '%s' referenced before assignment", varname);
 }
 
-/* RaiseNeedMoreValuesToUnpack */
-static CYTHON_INLINE void __Pyx_RaiseNeedMoreValuesError(Py_ssize_t index) {
-    PyErr_Format(PyExc_ValueError,
-                 "need more than %" CYTHON_FORMAT_SSIZE_T "d value%.1s to unpack",
-                 index, (index == 1) ? "" : "s");
-}
-
-/* IterFinish */
-static CYTHON_INLINE int __Pyx_IterFinish(void) {
-    PyObject* exc_type;
+/* pep479 */
+static void __Pyx_Generator_Replace_StopIteration(int in_async_gen) {
+    PyObject *exc, *val, *tb, *cur_exc, *new_exc;
     __Pyx_PyThreadState_declare
+    int is_async_stopiteration = 0;
+    CYTHON_MAYBE_UNUSED_VAR(in_async_gen);
     __Pyx_PyThreadState_assign
-    exc_type = __Pyx_PyErr_CurrentExceptionType();
-    if (unlikely(exc_type)) {
-        if (unlikely(!__Pyx_PyErr_GivenExceptionMatches(exc_type, PyExc_StopIteration)))
-            return -1;
-        __Pyx_PyErr_Clear();
-        return 0;
+    cur_exc = __Pyx_PyErr_CurrentExceptionType();
+    if (likely(!__Pyx_PyErr_GivenExceptionMatches(cur_exc, PyExc_StopIteration))) {
+        if (in_async_gen && unlikely(__Pyx_PyErr_GivenExceptionMatches(cur_exc, PyExc_StopAsyncIteration))) {
+            is_async_stopiteration = 1;
+        } else {
+            return;
+        }
     }
+    __Pyx_GetException(&exc, &val, &tb);
+    Py_XDECREF(exc);
+    Py_XDECREF(tb);
+    new_exc = PyObject_CallFunction(PyExc_RuntimeError, "s",
+        is_async_stopiteration ? "async generator raised StopAsyncIteration" :
+        in_async_gen ? "async generator raised StopIteration" :
+        "generator raised StopIteration");
+    if (!new_exc) {
+        Py_XDECREF(val);
+        return;
+    }
+    PyException_SetCause(new_exc, val); // steals ref to val
+    PyErr_SetObject(PyExc_RuntimeError, new_exc);
+    Py_DECREF(new_exc);
+}
+
+/* PyObjectVectorCallKwBuilder */
+#if CYTHON_VECTORCALL
+static int __Pyx_VectorcallBuilder_AddArg(PyObject *key, PyObject *value, PyObject *builder, PyObject **args, int n) {
+    (void)__Pyx_PyObject_FastCallDict;
+    Py_INCREF(key);
+    if (__Pyx_PyTuple_SET_ITEM(builder, n, key) != (0)) return -1;
+    args[n] = value;
     return 0;
 }
-
-/* UnpackItemEndCheck */
-static int __Pyx_IternextUnpackEndCheck(PyObject *retval, Py_ssize_t expected) {
-    if (unlikely(retval)) {
-        Py_DECREF(retval);
-        __Pyx_RaiseTooManyValuesError(expected);
+CYTHON_UNUSED static int __Pyx_VectorcallBuilder_AddArg_Check(PyObject *key, PyObject *value, PyObject *builder, PyObject **args, int n) {
+    (void)__Pyx_VectorcallBuilder_AddArgStr;
+    if (unlikely(!PyUnicode_Check(key))) {
+        PyErr_SetString(PyExc_TypeError, "keywords must be strings");
         return -1;
     }
-    return __Pyx_IterFinish();
+    return __Pyx_VectorcallBuilder_AddArg(key, value, builder, args, n);
 }
-
-/* PyObjectCall2Args (used by PyObjectCallMethod1) */
-static CYTHON_INLINE PyObject* __Pyx_PyObject_Call2Args(PyObject* function, PyObject* arg1, PyObject* arg2) {
-    PyObject *args[3] = {NULL, arg1, arg2};
-    return __Pyx_PyObject_FastCall(function, args+1, 2 | __Pyx_PY_VECTORCALL_ARGUMENTS_OFFSET);
+static int __Pyx_VectorcallBuilder_AddArgStr(const char *key, PyObject *value, PyObject *builder, PyObject **args, int n) {
+    PyObject *pyKey = PyUnicode_FromString(key);
+    if (!pyKey) return -1;
+    return __Pyx_VectorcallBuilder_AddArg(pyKey, value, builder, args, n);
 }
-
-/* PyObjectGetMethod (used by PyObjectCallMethod1) */
-#if !(CYTHON_VECTORCALL && (__PYX_LIMITED_VERSION_HEX >= 0x030C0000 || (!CYTHON_COMPILING_IN_LIMITED_API && PY_VERSION_HEX >= 0x03090000)))
-static int __Pyx_PyObject_GetMethod(PyObject *obj, PyObject *name, PyObject **method) {
-    PyObject *attr;
-#if CYTHON_UNPACK_METHODS && CYTHON_COMPILING_IN_CPYTHON && CYTHON_USE_PYTYPE_LOOKUP
-    __Pyx_TypeName type_name;
-    PyTypeObject *tp = Py_TYPE(obj);
-    PyObject *descr;
-    descrgetfunc f = NULL;
-    PyObject **dictptr, *dict;
-    int meth_found = 0;
-    assert (*method == NULL);
-    if (unlikely(tp->tp_getattro != PyObject_GenericGetAttr)) {
-        attr = __Pyx_PyObject_GetAttrStr(obj, name);
-        goto try_unpack;
+#else // CYTHON_VECTORCALL
+CYTHON_UNUSED static int __Pyx_VectorcallBuilder_AddArg_Check(PyObject *key, PyObject *value, PyObject *builder, CYTHON_UNUSED PyObject **args, CYTHON_UNUSED int n) {
+    if (unlikely(!PyUnicode_Check(key))) {
+        PyErr_SetString(PyExc_TypeError, "keywords must be strings");
+        return -1;
     }
-    if (unlikely(tp->tp_dict == NULL) && unlikely(PyType_Ready(tp) < 0)) {
-        return 0;
-    }
-    descr = _PyType_Lookup(tp, name);
-    if (likely(descr != NULL)) {
-        Py_INCREF(descr);
-#if defined(Py_TPFLAGS_METHOD_DESCRIPTOR) && Py_TPFLAGS_METHOD_DESCRIPTOR
-        if (__Pyx_PyType_HasFeature(Py_TYPE(descr), Py_TPFLAGS_METHOD_DESCRIPTOR))
-#else
-        #ifdef __Pyx_CyFunction_USED
-        if (likely(PyFunction_Check(descr) || __Pyx_IS_TYPE(descr, &PyMethodDescr_Type) || __Pyx_CyFunction_Check(descr)))
-        #else
-        if (likely(PyFunction_Check(descr) || __Pyx_IS_TYPE(descr, &PyMethodDescr_Type)))
-        #endif
-#endif
-        {
-            meth_found = 1;
-        } else {
-            f = Py_TYPE(descr)->tp_descr_get;
-            if (f != NULL && PyDescr_IsData(descr)) {
-                attr = f(descr, obj, (PyObject *)Py_TYPE(obj));
-                Py_DECREF(descr);
-                goto try_unpack;
-            }
-        }
-    }
-    dictptr = _PyObject_GetDictPtr(obj);
-    if (dictptr != NULL && (dict = *dictptr) != NULL) {
-        Py_INCREF(dict);
-        attr = __Pyx_PyDict_GetItemStr(dict, name);
-        if (attr != NULL) {
-            Py_INCREF(attr);
-            Py_DECREF(dict);
-            Py_XDECREF(descr);
-            goto try_unpack;
-        }
-        Py_DECREF(dict);
-    }
-    if (meth_found) {
-        *method = descr;
-        return 1;
-    }
-    if (f != NULL) {
-        attr = f(descr, obj, (PyObject *)Py_TYPE(obj));
-        Py_DECREF(descr);
-        goto try_unpack;
-    }
-    if (likely(descr != NULL)) {
-        *method = descr;
-        return 0;
-    }
-    type_name = __Pyx_PyType_GetFullyQualifiedName(tp);
-    PyErr_Format(PyExc_AttributeError,
-                 "'" __Pyx_FMT_TYPENAME "' object has no attribute '%U'",
-                 type_name, name);
-    __Pyx_DECREF_TypeName(type_name);
-    return 0;
-#else
-    attr = __Pyx_PyObject_GetAttrStr(obj, name);
-    goto try_unpack;
-#endif
-try_unpack:
-#if CYTHON_UNPACK_METHODS
-    if (likely(attr) && PyMethod_Check(attr) && likely(PyMethod_GET_SELF(attr) == obj)) {
-        PyObject *function = PyMethod_GET_FUNCTION(attr);
-        Py_INCREF(function);
-        Py_DECREF(attr);
-        *method = function;
-        return 1;
-    }
-#endif
-    *method = attr;
-    return 0;
+    return PyDict_SetItem(builder, key, value);
 }
 #endif
 
-/* PyObjectCallMethod1 (used by append) */
-#if !(CYTHON_VECTORCALL && (__PYX_LIMITED_VERSION_HEX >= 0x030C0000 || (!CYTHON_COMPILING_IN_LIMITED_API && PY_VERSION_HEX >= 0x03090000)))
-static PyObject* __Pyx__PyObject_CallMethod1(PyObject* method, PyObject* arg) {
-    PyObject *result = __Pyx_PyObject_CallOneArg(method, arg);
-    Py_DECREF(method);
+/* PyObjectVectorCallMethodKwBuilder */
+#if !CYTHON_VECTORCALL || PY_VERSION_HEX < 0x03090000
+static PyObject *__Pyx_Object_VectorcallMethod_CallFromBuilder(PyObject *name, PyObject *const *args, size_t nargsf, PyObject *kwnames) {
+    PyObject *result;
+    PyObject *obj = PyObject_GetAttr(args[0], name);
+    if (unlikely(!obj))
+        return NULL;
+    result = __Pyx_Object_Vectorcall_CallFromBuilder(obj, args+1, nargsf-1, kwnames);
+    Py_DECREF(obj);
     return result;
-}
-#endif
-static PyObject* __Pyx_PyObject_CallMethod1(PyObject* obj, PyObject* method_name, PyObject* arg) {
-#if CYTHON_VECTORCALL && (__PYX_LIMITED_VERSION_HEX >= 0x030C0000 || (!CYTHON_COMPILING_IN_LIMITED_API && PY_VERSION_HEX >= 0x03090000))
-    PyObject *args[2] = {obj, arg};
-    (void) __Pyx_PyObject_CallOneArg;
-    (void) __Pyx_PyObject_Call2Args;
-    return PyObject_VectorcallMethod(method_name, args, 2 | PY_VECTORCALL_ARGUMENTS_OFFSET, NULL);
-#else
-    PyObject *method = NULL, *result;
-    int is_method = __Pyx_PyObject_GetMethod(obj, method_name, &method);
-    if (likely(is_method)) {
-        result = __Pyx_PyObject_Call2Args(method, obj, arg);
-        Py_DECREF(method);
-        return result;
-    }
-    if (unlikely(!method)) return NULL;
-    return __Pyx__PyObject_CallMethod1(method, arg);
-#endif
-}
-
-/* append */
-static CYTHON_INLINE int __Pyx_PyObject_Append(PyObject* L, PyObject* x) {
-    if (likely(PyList_CheckExact(L))) {
-        if (unlikely(__Pyx_PyList_Append(L, x) < 0)) return -1;
-    } else {
-        PyObject* retval = __Pyx_PyObject_CallMethod1(L, __pyx_mstate_global->__pyx_n_u_append, x);
-        if (unlikely(!retval))
-            return -1;
-        Py_DECREF(retval);
-    }
-    return 0;
-}
-
-/* TypeImport */
-#ifndef __PYX_HAVE_RT_ImportType_3_2_9
-#define __PYX_HAVE_RT_ImportType_3_2_9
-static PyTypeObject *__Pyx_ImportType_3_2_9(PyObject *module, const char *module_name, const char *class_name,
-    size_t size, size_t alignment, enum __Pyx_ImportType_CheckSize_3_2_9 check_size)
-{
-    PyObject *result = 0;
-    Py_ssize_t basicsize;
-    Py_ssize_t itemsize;
-#if defined(Py_LIMITED_API) || (defined(CYTHON_COMPILING_IN_LIMITED_API) && CYTHON_COMPILING_IN_LIMITED_API)
-    PyObject *py_basicsize;
-    PyObject *py_itemsize;
-#endif
-    result = PyObject_GetAttrString(module, class_name);
-    if (!result)
-        goto bad;
-    if (!PyType_Check(result)) {
-        PyErr_Format(PyExc_TypeError,
-            "%.200s.%.200s is not a type object",
-            module_name, class_name);
-        goto bad;
-    }
-#if !( defined(Py_LIMITED_API) || (defined(CYTHON_COMPILING_IN_LIMITED_API) && CYTHON_COMPILING_IN_LIMITED_API) )
-    basicsize = ((PyTypeObject *)result)->tp_basicsize;
-    itemsize = ((PyTypeObject *)result)->tp_itemsize;
-#else
-    if (size == 0) {
-        return (PyTypeObject *)result;
-    }
-    py_basicsize = PyObject_GetAttrString(result, "__basicsize__");
-    if (!py_basicsize)
-        goto bad;
-    basicsize = PyLong_AsSsize_t(py_basicsize);
-    Py_DECREF(py_basicsize);
-    py_basicsize = 0;
-    if (basicsize == (Py_ssize_t)-1 && PyErr_Occurred())
-        goto bad;
-    py_itemsize = PyObject_GetAttrString(result, "__itemsize__");
-    if (!py_itemsize)
-        goto bad;
-    itemsize = PyLong_AsSsize_t(py_itemsize);
-    Py_DECREF(py_itemsize);
-    py_itemsize = 0;
-    if (itemsize == (Py_ssize_t)-1 && PyErr_Occurred())
-        goto bad;
-#endif
-    if (itemsize) {
-        if (size % alignment) {
-            alignment = size % alignment;
-        }
-        if (itemsize < (Py_ssize_t)alignment)
-            itemsize = (Py_ssize_t)alignment;
-    }
-    if ((size_t)(basicsize + itemsize) < size) {
-        PyErr_Format(PyExc_ValueError,
-            "%.200s.%.200s size changed, may indicate binary incompatibility. "
-            "Expected %zd from C header, got %zd from PyObject",
-            module_name, class_name, size, basicsize+itemsize);
-        goto bad;
-    }
-    if (check_size == __Pyx_ImportType_CheckSize_Error_3_2_9 &&
-            ((size_t)basicsize > size || (size_t)(basicsize + itemsize) < size)) {
-        PyErr_Format(PyExc_ValueError,
-            "%.200s.%.200s size changed, may indicate binary incompatibility. "
-            "Expected %zd from C header, got %zd-%zd from PyObject",
-            module_name, class_name, size, basicsize, basicsize+itemsize);
-        goto bad;
-    }
-    else if (check_size == __Pyx_ImportType_CheckSize_Warn_3_2_9 && (size_t)basicsize > size) {
-        if (PyErr_WarnFormat(NULL, 0,
-                "%.200s.%.200s size changed, may indicate binary incompatibility. "
-                "Expected %zd from C header, got %zd from PyObject",
-                module_name, class_name, size, basicsize) < 0) {
-            goto bad;
-        }
-    }
-    return (PyTypeObject *)result;
-bad:
-    Py_XDECREF(result);
-    return NULL;
 }
 #endif
 
@@ -10783,23 +19032,1019 @@ static PyObject* __Pyx_ImportFrom(PyObject* module, PyObject* name) {
     return value;
 }
 
-/* dict_setdefault (used by FetchCommonType) */
-static CYTHON_INLINE PyObject *__Pyx_PyDict_SetDefault(PyObject *d, PyObject *key, PyObject *default_value) {
-    PyObject* value;
-#if __PYX_LIMITED_VERSION_HEX >= 0x030F0000 || (!CYTHON_COMPILING_IN_LIMITED_API && PY_VERSION_HEX >= 0x030d00A4)
-    PyDict_SetDefaultRef(d, key, default_value, &value);
-#elif CYTHON_COMPILING_IN_LIMITED_API && __PYX_LIMITED_VERSION_HEX >= 0x030C0000
-    PyObject *args[] = {d, key, default_value};
-    value = PyObject_VectorcallMethod(__pyx_mstate_global->__pyx_n_u_setdefault, args, 3 | PY_VECTORCALL_ARGUMENTS_OFFSET, NULL);
-#elif CYTHON_COMPILING_IN_LIMITED_API
-    value = PyObject_CallMethodObjArgs(d, __pyx_mstate_global->__pyx_n_u_setdefault, key, default_value, NULL);
-#else
-    value = PyDict_SetDefault(d, key, default_value);
-    if (unlikely(!value)) return NULL;
-    Py_INCREF(value);
-#endif
-    return value;
+/* PyLongBinop */
+#if !CYTHON_COMPILING_IN_PYPY
+static PyObject* __Pyx_Fallback___Pyx_PyLong_RemainderObjC(PyObject *op1, PyObject *op2, int inplace) {
+    return (inplace ? PyNumber_InPlaceRemainder : PyNumber_Remainder)(op1, op2);
 }
+#if CYTHON_USE_PYLONG_INTERNALS
+static PyObject* __Pyx_Unpacked___Pyx_PyLong_RemainderObjC(PyObject *op1, PyObject *op2, long intval, int inplace, int zerodivision_check) {
+    CYTHON_MAYBE_UNUSED_VAR(inplace);
+    CYTHON_UNUSED_VAR(zerodivision_check);
+    const long b = intval;
+    long a;
+    const PY_LONG_LONG llb = intval;
+    PY_LONG_LONG lla;
+    if (unlikely(__Pyx_PyLong_IsZero(op1))) {
+        return __Pyx_NewRef(op1);
+    }
+    const int is_positive = __Pyx_PyLong_IsPos(op1);
+    const digit* digits = __Pyx_PyLong_Digits(op1);
+    const Py_ssize_t size = __Pyx_PyLong_DigitCount(op1);
+    if (likely(size == 1)) {
+        a = (long) digits[0];
+        if (!is_positive) a *= -1;
+    } else {
+        switch (size) {
+            case 2:
+                if (8 * sizeof(long) - 1 > 2 * PyLong_SHIFT) {
+                    a = (long) (((((unsigned long)digits[1]) << PyLong_SHIFT) | (unsigned long)digits[0]));
+                    if (!is_positive) a *= -1;
+                    goto calculate_long;
+                } else if (8 * sizeof(PY_LONG_LONG) - 1 > 2 * PyLong_SHIFT) {
+                    lla = (PY_LONG_LONG) (((((unsigned PY_LONG_LONG)digits[1]) << PyLong_SHIFT) | (unsigned PY_LONG_LONG)digits[0]));
+                    if (!is_positive) lla *= -1;
+                    goto calculate_long_long;
+                }
+                break;
+            case 3:
+                if (8 * sizeof(long) - 1 > 3 * PyLong_SHIFT) {
+                    a = (long) (((((((unsigned long)digits[2]) << PyLong_SHIFT) | (unsigned long)digits[1]) << PyLong_SHIFT) | (unsigned long)digits[0]));
+                    if (!is_positive) a *= -1;
+                    goto calculate_long;
+                } else if (8 * sizeof(PY_LONG_LONG) - 1 > 3 * PyLong_SHIFT) {
+                    lla = (PY_LONG_LONG) (((((((unsigned PY_LONG_LONG)digits[2]) << PyLong_SHIFT) | (unsigned PY_LONG_LONG)digits[1]) << PyLong_SHIFT) | (unsigned PY_LONG_LONG)digits[0]));
+                    if (!is_positive) lla *= -1;
+                    goto calculate_long_long;
+                }
+                break;
+            case 4:
+                if (8 * sizeof(long) - 1 > 4 * PyLong_SHIFT) {
+                    a = (long) (((((((((unsigned long)digits[3]) << PyLong_SHIFT) | (unsigned long)digits[2]) << PyLong_SHIFT) | (unsigned long)digits[1]) << PyLong_SHIFT) | (unsigned long)digits[0]));
+                    if (!is_positive) a *= -1;
+                    goto calculate_long;
+                } else if (8 * sizeof(PY_LONG_LONG) - 1 > 4 * PyLong_SHIFT) {
+                    lla = (PY_LONG_LONG) (((((((((unsigned PY_LONG_LONG)digits[3]) << PyLong_SHIFT) | (unsigned PY_LONG_LONG)digits[2]) << PyLong_SHIFT) | (unsigned PY_LONG_LONG)digits[1]) << PyLong_SHIFT) | (unsigned PY_LONG_LONG)digits[0]));
+                    if (!is_positive) lla *= -1;
+                    goto calculate_long_long;
+                }
+                break;
+        }
+        return PyLong_Type.tp_as_number->nb_remainder(op1, op2);
+    }
+    calculate_long:
+        {
+            long x = a % b;
+            x += ((x != 0) & ((x ^ b) < 0)) * b;
+            return PyLong_FromLong(x);
+        }
+    calculate_long_long:
+        {
+            PY_LONG_LONG llx = lla % llb;
+            llx += ((llx != 0) & ((llx ^ llb) < 0)) * llb;
+            return PyLong_FromLongLong(llx);
+        }
+    
+}
+#endif
+static CYTHON_INLINE PyObject* __Pyx_PyLong_RemainderObjC(PyObject *op1, PyObject *op2, long intval, int inplace, int zerodivision_check) {
+    CYTHON_MAYBE_UNUSED_VAR(intval);
+    CYTHON_UNUSED_VAR(zerodivision_check);
+    #if CYTHON_USE_PYLONG_INTERNALS
+    if (likely(PyLong_CheckExact(op1))) {
+        return __Pyx_Unpacked___Pyx_PyLong_RemainderObjC(op1, op2, intval, inplace, zerodivision_check);
+    }
+    #endif
+    return __Pyx_Fallback___Pyx_PyLong_RemainderObjC(op1, op2, inplace);
+}
+#endif
+
+/* PyLongCompare */
+static CYTHON_INLINE int __Pyx_PyLong_BoolEqObjC(PyObject *op1, PyObject *op2, long intval, long inplace) {
+    CYTHON_MAYBE_UNUSED_VAR(intval);
+    CYTHON_UNUSED_VAR(inplace);
+    if (op1 == op2) {
+        return 1;
+    }
+    #if CYTHON_USE_PYLONG_INTERNALS
+    if (likely(PyLong_CheckExact(op1))) {
+        int unequal;
+        unsigned long uintval;
+        Py_ssize_t size = __Pyx_PyLong_DigitCount(op1);
+        const digit* digits = __Pyx_PyLong_Digits(op1);
+        if (intval == 0) {
+            return (__Pyx_PyLong_IsZero(op1) == 1);
+        } else if (intval < 0) {
+            if (__Pyx_PyLong_IsNonNeg(op1))
+                return 0;
+            intval = -intval;
+        } else {
+            if (__Pyx_PyLong_IsNeg(op1))
+                return 0;
+        }
+        uintval = (unsigned long) intval;
+#if PyLong_SHIFT * 4 < SIZEOF_LONG*8
+        if (uintval >> (PyLong_SHIFT * 4)) {
+            unequal = (size != 5) || (digits[0] != (uintval & (unsigned long) PyLong_MASK))
+                 | (digits[1] != ((uintval >> (1 * PyLong_SHIFT)) & (unsigned long) PyLong_MASK)) | (digits[2] != ((uintval >> (2 * PyLong_SHIFT)) & (unsigned long) PyLong_MASK)) | (digits[3] != ((uintval >> (3 * PyLong_SHIFT)) & (unsigned long) PyLong_MASK)) | (digits[4] != ((uintval >> (4 * PyLong_SHIFT)) & (unsigned long) PyLong_MASK));
+        } else
+#endif
+#if PyLong_SHIFT * 3 < SIZEOF_LONG*8
+        if (uintval >> (PyLong_SHIFT * 3)) {
+            unequal = (size != 4) || (digits[0] != (uintval & (unsigned long) PyLong_MASK))
+                 | (digits[1] != ((uintval >> (1 * PyLong_SHIFT)) & (unsigned long) PyLong_MASK)) | (digits[2] != ((uintval >> (2 * PyLong_SHIFT)) & (unsigned long) PyLong_MASK)) | (digits[3] != ((uintval >> (3 * PyLong_SHIFT)) & (unsigned long) PyLong_MASK));
+        } else
+#endif
+#if PyLong_SHIFT * 2 < SIZEOF_LONG*8
+        if (uintval >> (PyLong_SHIFT * 2)) {
+            unequal = (size != 3) || (digits[0] != (uintval & (unsigned long) PyLong_MASK))
+                 | (digits[1] != ((uintval >> (1 * PyLong_SHIFT)) & (unsigned long) PyLong_MASK)) | (digits[2] != ((uintval >> (2 * PyLong_SHIFT)) & (unsigned long) PyLong_MASK));
+        } else
+#endif
+#if PyLong_SHIFT * 1 < SIZEOF_LONG*8
+        if (uintval >> (PyLong_SHIFT * 1)) {
+            unequal = (size != 2) || (digits[0] != (uintval & (unsigned long) PyLong_MASK))
+                 | (digits[1] != ((uintval >> (1 * PyLong_SHIFT)) & (unsigned long) PyLong_MASK));
+        } else
+#endif
+            unequal = (size != 1) || (((unsigned long) digits[0]) != (uintval & (unsigned long) PyLong_MASK));
+        return (unequal == 0);
+    }
+    #endif
+    if (PyFloat_CheckExact(op1)) {
+        const long b = intval;
+        double a = __Pyx_PyFloat_AS_DOUBLE(op1);
+        return ((double)a == (double)b);
+    }
+    return __Pyx_PyObject_IsTrueAndDecref(
+        PyObject_RichCompare(op1, op2, Py_EQ));
+}
+
+/* PyLongBinop */
+#if !CYTHON_COMPILING_IN_PYPY
+static PyObject* __Pyx_Fallback___Pyx_PyLong_MultiplyObjC(PyObject *op1, PyObject *op2, int inplace) {
+    return (inplace ? PyNumber_InPlaceMultiply : PyNumber_Multiply)(op1, op2);
+}
+#if CYTHON_USE_PYLONG_INTERNALS
+static PyObject* __Pyx_Unpacked___Pyx_PyLong_MultiplyObjC(PyObject *op1, PyObject *op2, long intval, int inplace, int zerodivision_check) {
+    CYTHON_MAYBE_UNUSED_VAR(inplace);
+    CYTHON_UNUSED_VAR(zerodivision_check);
+    const long b = intval;
+    long a;
+    const PY_LONG_LONG llb = intval;
+    PY_LONG_LONG lla;
+    if (unlikely(__Pyx_PyLong_IsZero(op1))) {
+        return __Pyx_NewRef(op1);
+    }
+    const int is_positive = __Pyx_PyLong_IsPos(op1);
+    const digit* digits = __Pyx_PyLong_Digits(op1);
+    const Py_ssize_t size = __Pyx_PyLong_DigitCount(op1);
+    if (likely(size == 1)) {
+        a = (long) digits[0];
+        if (!is_positive) a *= -1;
+    } else {
+        switch (size) {
+            case 2:
+                if (8 * sizeof(long) - 1 > 2 * PyLong_SHIFT+30) {
+                    a = (long) (((((unsigned long)digits[1]) << PyLong_SHIFT) | (unsigned long)digits[0]));
+                    if (!is_positive) a *= -1;
+                    goto calculate_long;
+                } else if (8 * sizeof(PY_LONG_LONG) - 1 > 2 * PyLong_SHIFT+30) {
+                    lla = (PY_LONG_LONG) (((((unsigned PY_LONG_LONG)digits[1]) << PyLong_SHIFT) | (unsigned PY_LONG_LONG)digits[0]));
+                    if (!is_positive) lla *= -1;
+                    goto calculate_long_long;
+                }
+                break;
+            case 3:
+                if (8 * sizeof(long) - 1 > 3 * PyLong_SHIFT+30) {
+                    a = (long) (((((((unsigned long)digits[2]) << PyLong_SHIFT) | (unsigned long)digits[1]) << PyLong_SHIFT) | (unsigned long)digits[0]));
+                    if (!is_positive) a *= -1;
+                    goto calculate_long;
+                } else if (8 * sizeof(PY_LONG_LONG) - 1 > 3 * PyLong_SHIFT+30) {
+                    lla = (PY_LONG_LONG) (((((((unsigned PY_LONG_LONG)digits[2]) << PyLong_SHIFT) | (unsigned PY_LONG_LONG)digits[1]) << PyLong_SHIFT) | (unsigned PY_LONG_LONG)digits[0]));
+                    if (!is_positive) lla *= -1;
+                    goto calculate_long_long;
+                }
+                break;
+            case 4:
+                if (8 * sizeof(long) - 1 > 4 * PyLong_SHIFT+30) {
+                    a = (long) (((((((((unsigned long)digits[3]) << PyLong_SHIFT) | (unsigned long)digits[2]) << PyLong_SHIFT) | (unsigned long)digits[1]) << PyLong_SHIFT) | (unsigned long)digits[0]));
+                    if (!is_positive) a *= -1;
+                    goto calculate_long;
+                } else if (8 * sizeof(PY_LONG_LONG) - 1 > 4 * PyLong_SHIFT+30) {
+                    lla = (PY_LONG_LONG) (((((((((unsigned PY_LONG_LONG)digits[3]) << PyLong_SHIFT) | (unsigned PY_LONG_LONG)digits[2]) << PyLong_SHIFT) | (unsigned PY_LONG_LONG)digits[1]) << PyLong_SHIFT) | (unsigned PY_LONG_LONG)digits[0]));
+                    if (!is_positive) lla *= -1;
+                    goto calculate_long_long;
+                }
+                break;
+        }
+        return PyLong_Type.tp_as_number->nb_multiply(op1, op2);
+    }
+    calculate_long:
+        CYTHON_UNUSED_VAR(a);
+        CYTHON_UNUSED_VAR(b);
+        lla = a;
+        goto calculate_long_long;
+    calculate_long_long:
+        {
+            PY_LONG_LONG llx;
+            llx = lla * llb;
+            return PyLong_FromLongLong(llx);
+        }
+    
+}
+#endif
+static PyObject* __Pyx_Float___Pyx_PyLong_MultiplyObjC(PyObject *float_val, long intval, int zerodivision_check) {
+    CYTHON_UNUSED_VAR(zerodivision_check);
+    const long b = intval;
+    double a = __Pyx_PyFloat_AS_DOUBLE(float_val);
+        double result;
+        
+        result = ((double)a) * (double)b;
+        return PyFloat_FromDouble(result);
+}
+static CYTHON_INLINE PyObject* __Pyx_PyLong_MultiplyObjC(PyObject *op1, PyObject *op2, long intval, int inplace, int zerodivision_check) {
+    CYTHON_MAYBE_UNUSED_VAR(intval);
+    CYTHON_UNUSED_VAR(zerodivision_check);
+    #if CYTHON_USE_PYLONG_INTERNALS
+    if (likely(PyLong_CheckExact(op1))) {
+        return __Pyx_Unpacked___Pyx_PyLong_MultiplyObjC(op1, op2, intval, inplace, zerodivision_check);
+    }
+    #endif
+    if (PyFloat_CheckExact(op1)) {
+        return __Pyx_Float___Pyx_PyLong_MultiplyObjC(op1, intval, zerodivision_check);
+    }
+    return __Pyx_Fallback___Pyx_PyLong_MultiplyObjC(op1, op2, inplace);
+}
+#endif
+
+/* PyLongBinop */
+#if !CYTHON_COMPILING_IN_PYPY
+static PyObject* __Pyx_Fallback___Pyx_PyLong_TrueDivideObjC(PyObject *op1, PyObject *op2, int inplace) {
+    return (inplace ? PyNumber_InPlaceTrueDivide : PyNumber_TrueDivide)(op1, op2);
+}
+#if CYTHON_USE_PYLONG_INTERNALS
+static PyObject* __Pyx_Unpacked___Pyx_PyLong_TrueDivideObjC(PyObject *op1, PyObject *op2, long intval, int inplace, int zerodivision_check) {
+    CYTHON_MAYBE_UNUSED_VAR(inplace);
+    CYTHON_UNUSED_VAR(zerodivision_check);
+    const long b = intval;
+    long a;
+    if (unlikely(__Pyx_PyLong_IsZero(op1))) {
+    }
+    const int is_positive = __Pyx_PyLong_IsPos(op1);
+    const digit* digits = __Pyx_PyLong_Digits(op1);
+    const Py_ssize_t size = __Pyx_PyLong_DigitCount(op1);
+    if (likely(size == 1)) {
+        a = (long) digits[0];
+        if (!is_positive) a *= -1;
+    } else {
+        switch (size) {
+            case 2:
+                if (8 * sizeof(long) - 1 > 2 * PyLong_SHIFT && 1 * PyLong_SHIFT < 53) {
+                    a = (long) (((((unsigned long)digits[1]) << PyLong_SHIFT) | (unsigned long)digits[0]));
+                    if (!is_positive) a *= -1;
+                    goto calculate_long;
+                }
+                break;
+            case 3:
+                if (8 * sizeof(long) - 1 > 3 * PyLong_SHIFT && 2 * PyLong_SHIFT < 53) {
+                    a = (long) (((((((unsigned long)digits[2]) << PyLong_SHIFT) | (unsigned long)digits[1]) << PyLong_SHIFT) | (unsigned long)digits[0]));
+                    if (!is_positive) a *= -1;
+                    goto calculate_long;
+                }
+                break;
+            case 4:
+                if (8 * sizeof(long) - 1 > 4 * PyLong_SHIFT && 3 * PyLong_SHIFT < 53) {
+                    a = (long) (((((((((unsigned long)digits[3]) << PyLong_SHIFT) | (unsigned long)digits[2]) << PyLong_SHIFT) | (unsigned long)digits[1]) << PyLong_SHIFT) | (unsigned long)digits[0]));
+                    if (!is_positive) a *= -1;
+                    goto calculate_long;
+                }
+                break;
+        }
+        return PyLong_Type.tp_as_number->nb_true_divide(op1, op2);
+    }
+    calculate_long:
+        if ((8 * sizeof(long) <= 53 || likely(labs(a) <= ((PY_LONG_LONG)1 << 53)))
+                || __Pyx_PyLong_DigitCount(op1) <= 52 / PyLong_SHIFT) {
+            return PyFloat_FromDouble((double)a / (double)b);
+        }
+        return PyLong_Type.tp_as_number->nb_true_divide(op1, op2);
+}
+#endif
+static PyObject* __Pyx_Float___Pyx_PyLong_TrueDivideObjC(PyObject *float_val, long intval, int zerodivision_check) {
+    CYTHON_UNUSED_VAR(zerodivision_check);
+    const long b = intval;
+    double a = __Pyx_PyFloat_AS_DOUBLE(float_val);
+        double result;
+        
+        result = ((double)a) / (double)b;
+        return PyFloat_FromDouble(result);
+}
+static CYTHON_INLINE PyObject* __Pyx_PyLong_TrueDivideObjC(PyObject *op1, PyObject *op2, long intval, int inplace, int zerodivision_check) {
+    CYTHON_MAYBE_UNUSED_VAR(intval);
+    CYTHON_UNUSED_VAR(zerodivision_check);
+    #if CYTHON_USE_PYLONG_INTERNALS
+    if (likely(PyLong_CheckExact(op1))) {
+        return __Pyx_Unpacked___Pyx_PyLong_TrueDivideObjC(op1, op2, intval, inplace, zerodivision_check);
+    }
+    #endif
+    if (PyFloat_CheckExact(op1)) {
+        return __Pyx_Float___Pyx_PyLong_TrueDivideObjC(op1, intval, zerodivision_check);
+    }
+    return __Pyx_Fallback___Pyx_PyLong_TrueDivideObjC(op1, op2, inplace);
+}
+#endif
+
+/* PyLongBinop */
+#if !CYTHON_COMPILING_IN_PYPY
+static PyObject* __Pyx_Fallback___Pyx_PyLong_AddObjC(PyObject *op1, PyObject *op2, int inplace) {
+    return (inplace ? PyNumber_InPlaceAdd : PyNumber_Add)(op1, op2);
+}
+#if CYTHON_USE_PYLONG_INTERNALS
+static PyObject* __Pyx_Unpacked___Pyx_PyLong_AddObjC(PyObject *op1, PyObject *op2, long intval, int inplace, int zerodivision_check) {
+    CYTHON_MAYBE_UNUSED_VAR(inplace);
+    CYTHON_UNUSED_VAR(zerodivision_check);
+    const long b = intval;
+    long a;
+    const PY_LONG_LONG llb = intval;
+    PY_LONG_LONG lla;
+    if (unlikely(__Pyx_PyLong_IsZero(op1))) {
+        return __Pyx_NewRef(op2);
+    }
+    const int is_positive = __Pyx_PyLong_IsPos(op1);
+    const digit* digits = __Pyx_PyLong_Digits(op1);
+    const Py_ssize_t size = __Pyx_PyLong_DigitCount(op1);
+    if (likely(size == 1)) {
+        a = (long) digits[0];
+        if (!is_positive) a *= -1;
+    } else {
+        switch (size) {
+            case 2:
+                if (8 * sizeof(long) - 1 > 2 * PyLong_SHIFT) {
+                    a = (long) (((((unsigned long)digits[1]) << PyLong_SHIFT) | (unsigned long)digits[0]));
+                    if (!is_positive) a *= -1;
+                    goto calculate_long;
+                } else if (8 * sizeof(PY_LONG_LONG) - 1 > 2 * PyLong_SHIFT) {
+                    lla = (PY_LONG_LONG) (((((unsigned PY_LONG_LONG)digits[1]) << PyLong_SHIFT) | (unsigned PY_LONG_LONG)digits[0]));
+                    if (!is_positive) lla *= -1;
+                    goto calculate_long_long;
+                }
+                break;
+            case 3:
+                if (8 * sizeof(long) - 1 > 3 * PyLong_SHIFT) {
+                    a = (long) (((((((unsigned long)digits[2]) << PyLong_SHIFT) | (unsigned long)digits[1]) << PyLong_SHIFT) | (unsigned long)digits[0]));
+                    if (!is_positive) a *= -1;
+                    goto calculate_long;
+                } else if (8 * sizeof(PY_LONG_LONG) - 1 > 3 * PyLong_SHIFT) {
+                    lla = (PY_LONG_LONG) (((((((unsigned PY_LONG_LONG)digits[2]) << PyLong_SHIFT) | (unsigned PY_LONG_LONG)digits[1]) << PyLong_SHIFT) | (unsigned PY_LONG_LONG)digits[0]));
+                    if (!is_positive) lla *= -1;
+                    goto calculate_long_long;
+                }
+                break;
+            case 4:
+                if (8 * sizeof(long) - 1 > 4 * PyLong_SHIFT) {
+                    a = (long) (((((((((unsigned long)digits[3]) << PyLong_SHIFT) | (unsigned long)digits[2]) << PyLong_SHIFT) | (unsigned long)digits[1]) << PyLong_SHIFT) | (unsigned long)digits[0]));
+                    if (!is_positive) a *= -1;
+                    goto calculate_long;
+                } else if (8 * sizeof(PY_LONG_LONG) - 1 > 4 * PyLong_SHIFT) {
+                    lla = (PY_LONG_LONG) (((((((((unsigned PY_LONG_LONG)digits[3]) << PyLong_SHIFT) | (unsigned PY_LONG_LONG)digits[2]) << PyLong_SHIFT) | (unsigned PY_LONG_LONG)digits[1]) << PyLong_SHIFT) | (unsigned PY_LONG_LONG)digits[0]));
+                    if (!is_positive) lla *= -1;
+                    goto calculate_long_long;
+                }
+                break;
+        }
+        return PyLong_Type.tp_as_number->nb_add(op1, op2);
+    }
+    calculate_long:
+        {
+            long x;
+            x = a + b;
+            return PyLong_FromLong(x);
+        }
+    calculate_long_long:
+        {
+            PY_LONG_LONG llx;
+            llx = lla + llb;
+            return PyLong_FromLongLong(llx);
+        }
+    
+}
+#endif
+static PyObject* __Pyx_Float___Pyx_PyLong_AddObjC(PyObject *float_val, long intval, int zerodivision_check) {
+    CYTHON_UNUSED_VAR(zerodivision_check);
+    const long b = intval;
+    double a = __Pyx_PyFloat_AS_DOUBLE(float_val);
+        double result;
+        
+        result = ((double)a) + (double)b;
+        return PyFloat_FromDouble(result);
+}
+static CYTHON_INLINE PyObject* __Pyx_PyLong_AddObjC(PyObject *op1, PyObject *op2, long intval, int inplace, int zerodivision_check) {
+    CYTHON_MAYBE_UNUSED_VAR(intval);
+    CYTHON_UNUSED_VAR(zerodivision_check);
+    #if CYTHON_USE_PYLONG_INTERNALS
+    if (likely(PyLong_CheckExact(op1))) {
+        return __Pyx_Unpacked___Pyx_PyLong_AddObjC(op1, op2, intval, inplace, zerodivision_check);
+    }
+    #endif
+    if (PyFloat_CheckExact(op1)) {
+        return __Pyx_Float___Pyx_PyLong_AddObjC(op1, intval, zerodivision_check);
+    }
+    return __Pyx_Fallback___Pyx_PyLong_AddObjC(op1, op2, inplace);
+}
+#endif
+
+/* PyDictVersioning (used by GetModuleGlobalName) */
+#if CYTHON_USE_DICT_VERSIONS && CYTHON_USE_TYPE_SLOTS
+static CYTHON_INLINE PY_UINT64_T __Pyx_get_tp_dict_version(PyObject *obj) {
+    PyObject *dict = Py_TYPE(obj)->tp_dict;
+    return likely(dict) ? __PYX_GET_DICT_VERSION(dict) : 0;
+}
+static CYTHON_INLINE PY_UINT64_T __Pyx_get_object_dict_version(PyObject *obj) {
+    PyObject **dictptr = NULL;
+    Py_ssize_t offset = Py_TYPE(obj)->tp_dictoffset;
+    if (offset) {
+#if CYTHON_COMPILING_IN_CPYTHON
+        dictptr = (likely(offset > 0)) ? (PyObject **) ((char *)obj + offset) : _PyObject_GetDictPtr(obj);
+#else
+        dictptr = _PyObject_GetDictPtr(obj);
+#endif
+    }
+    return (dictptr && *dictptr) ? __PYX_GET_DICT_VERSION(*dictptr) : 0;
+}
+static CYTHON_INLINE int __Pyx_object_dict_version_matches(PyObject* obj, PY_UINT64_T tp_dict_version, PY_UINT64_T obj_dict_version) {
+    PyObject *dict = Py_TYPE(obj)->tp_dict;
+    if (unlikely(!dict) || unlikely(tp_dict_version != __PYX_GET_DICT_VERSION(dict)))
+        return 0;
+    return obj_dict_version == __Pyx_get_object_dict_version(obj);
+}
+#endif
+
+/* GetModuleGlobalName */
+#if CYTHON_USE_DICT_VERSIONS
+static PyObject *__Pyx__GetModuleGlobalName(PyObject *name, PY_UINT64_T *dict_version, PyObject **dict_cached_value)
+#else
+static CYTHON_INLINE PyObject *__Pyx__GetModuleGlobalName(PyObject *name)
+#endif
+{
+    PyObject *result;
+#if CYTHON_COMPILING_IN_LIMITED_API
+    if (unlikely(!__pyx_m)) {
+        if (!PyErr_Occurred())
+            PyErr_SetNone(PyExc_NameError);
+        return NULL;
+    }
+    result = PyObject_GetAttr(__pyx_m, name);
+    if (likely(result)) {
+        return result;
+    }
+    PyErr_Clear();
+#elif CYTHON_AVOID_BORROWED_REFS || CYTHON_AVOID_THREAD_UNSAFE_BORROWED_REFS
+    if (unlikely(__Pyx_PyDict_GetItemRef(__pyx_mstate_global->__pyx_d, name, &result) == -1)) PyErr_Clear();
+    __PYX_UPDATE_DICT_CACHE(__pyx_mstate_global->__pyx_d, result, *dict_cached_value, *dict_version)
+    if (likely(result)) {
+        return result;
+    }
+#else
+    result = _PyDict_GetItem_KnownHash(__pyx_mstate_global->__pyx_d, name, ((PyASCIIObject *) name)->hash);
+    __PYX_UPDATE_DICT_CACHE(__pyx_mstate_global->__pyx_d, result, *dict_cached_value, *dict_version)
+    if (likely(result)) {
+        return __Pyx_NewRef(result);
+    }
+    PyErr_Clear();
+#endif
+    return __Pyx_GetBuiltinName(name);
+}
+
+/* PyObjectSetAttrStr */
+#if CYTHON_USE_TYPE_SLOTS
+static CYTHON_INLINE int __Pyx_PyObject_SetAttrStr(PyObject* obj, PyObject* attr_name, PyObject* value) {
+    PyTypeObject* tp = Py_TYPE(obj);
+    if (likely(tp->tp_setattro))
+        return tp->tp_setattro(obj, attr_name, value);
+    return PyObject_SetAttr(obj, attr_name, value);
+}
+#endif
+
+/* RaiseTooManyValuesToUnpack */
+static CYTHON_INLINE void __Pyx_RaiseTooManyValuesError(Py_ssize_t expected) {
+    PyErr_Format(PyExc_ValueError,
+                 "too many values to unpack (expected %" CYTHON_FORMAT_SSIZE_T "d)", expected);
+}
+
+/* RaiseNeedMoreValuesToUnpack */
+static CYTHON_INLINE void __Pyx_RaiseNeedMoreValuesError(Py_ssize_t index) {
+    PyErr_Format(PyExc_ValueError,
+                 "need more than %" CYTHON_FORMAT_SSIZE_T "d value%.1s to unpack",
+                 index, (index == 1) ? "" : "s");
+}
+
+/* IterFinish */
+static CYTHON_INLINE int __Pyx_IterFinish(void) {
+    PyObject* exc_type;
+    __Pyx_PyThreadState_declare
+    __Pyx_PyThreadState_assign
+    exc_type = __Pyx_PyErr_CurrentExceptionType();
+    if (unlikely(exc_type)) {
+        if (unlikely(!__Pyx_PyErr_GivenExceptionMatches(exc_type, PyExc_StopIteration)))
+            return -1;
+        __Pyx_PyErr_Clear();
+        return 0;
+    }
+    return 0;
+}
+
+/* UnpackItemEndCheck */
+static int __Pyx_IternextUnpackEndCheck(PyObject *retval, Py_ssize_t expected) {
+    if (unlikely(retval)) {
+        Py_DECREF(retval);
+        __Pyx_RaiseTooManyValuesError(expected);
+        return -1;
+    }
+    return __Pyx_IterFinish();
+}
+
+/* FastTypeChecks */
+#if CYTHON_COMPILING_IN_CPYTHON
+static int __Pyx_InBases(PyTypeObject *a, PyTypeObject *b) {
+    while (a) {
+        a = __Pyx_PyType_GetSlot(a, tp_base, PyTypeObject*);
+        if (a == b)
+            return 1;
+    }
+    return b == &PyBaseObject_Type;
+}
+static CYTHON_INLINE int __Pyx_IsSubtype(PyTypeObject *a, PyTypeObject *b) {
+    PyObject *mro;
+    if (a == b) return 1;
+    mro = a->tp_mro;
+    if (likely(mro)) {
+        Py_ssize_t i, n;
+        n = PyTuple_GET_SIZE(mro);
+        for (i = 0; i < n; i++) {
+            if (PyTuple_GET_ITEM(mro, i) == (PyObject *)b)
+                return 1;
+        }
+        return 0;
+    }
+    return __Pyx_InBases(a, b);
+}
+static CYTHON_INLINE int __Pyx_IsAnySubtype2(PyTypeObject *cls, PyTypeObject *a, PyTypeObject *b) {
+    PyObject *mro;
+    if (cls == a || cls == b) return 1;
+    mro = cls->tp_mro;
+    if (likely(mro)) {
+        Py_ssize_t i, n;
+        n = PyTuple_GET_SIZE(mro);
+        for (i = 0; i < n; i++) {
+            PyObject *base = PyTuple_GET_ITEM(mro, i);
+            if (base == (PyObject *)a || base == (PyObject *)b)
+                return 1;
+        }
+        return 0;
+    }
+    return __Pyx_InBases(cls, a) || __Pyx_InBases(cls, b);
+}
+static CYTHON_INLINE int __Pyx_inner_PyErr_GivenExceptionMatches2(PyObject *err, PyObject* exc_type1, PyObject *exc_type2) {
+    if (exc_type1) {
+        return __Pyx_IsAnySubtype2((PyTypeObject*)err, (PyTypeObject*)exc_type1, (PyTypeObject*)exc_type2);
+    } else {
+        return __Pyx_IsSubtype((PyTypeObject*)err, (PyTypeObject*)exc_type2);
+    }
+}
+static int __Pyx_PyErr_GivenExceptionMatchesTuple(PyObject *exc_type, PyObject *tuple) {
+    Py_ssize_t i, n;
+    assert(PyExceptionClass_Check(exc_type));
+    n = PyTuple_GET_SIZE(tuple);
+    for (i=0; i<n; i++) {
+        if (exc_type == PyTuple_GET_ITEM(tuple, i)) return 1;
+    }
+    for (i=0; i<n; i++) {
+        PyObject *t = PyTuple_GET_ITEM(tuple, i);
+        if (likely(PyExceptionClass_Check(t))) {
+            if (__Pyx_inner_PyErr_GivenExceptionMatches2(exc_type, NULL, t)) return 1;
+        } else {
+        }
+    }
+    return 0;
+}
+static CYTHON_INLINE int __Pyx_PyErr_GivenExceptionMatches(PyObject *err, PyObject* exc_type) {
+    if (likely(err == exc_type)) return 1;
+    if (likely(PyExceptionClass_Check(err))) {
+        if (likely(PyExceptionClass_Check(exc_type))) {
+            return __Pyx_inner_PyErr_GivenExceptionMatches2(err, NULL, exc_type);
+        } else if (likely(PyTuple_Check(exc_type))) {
+            return __Pyx_PyErr_GivenExceptionMatchesTuple(err, exc_type);
+        } else {
+        }
+    }
+    return PyErr_GivenExceptionMatches(err, exc_type);
+}
+static CYTHON_INLINE int __Pyx_PyErr_GivenExceptionMatches2(PyObject *err, PyObject *exc_type1, PyObject *exc_type2) {
+    assert(PyExceptionClass_Check(exc_type1));
+    assert(PyExceptionClass_Check(exc_type2));
+    if (likely(err == exc_type1 || err == exc_type2)) return 1;
+    if (likely(PyExceptionClass_Check(err))) {
+        return __Pyx_inner_PyErr_GivenExceptionMatches2(err, exc_type1, exc_type2);
+    }
+    return (PyErr_GivenExceptionMatches(err, exc_type1) || PyErr_GivenExceptionMatches(err, exc_type2));
+}
+#endif
+
+/* PyLongBinop */
+#if !CYTHON_COMPILING_IN_PYPY
+static PyObject* __Pyx_Fallback___Pyx_PyLong_FloorDivideObjC(PyObject *op1, PyObject *op2, int inplace) {
+    return (inplace ? PyNumber_InPlaceFloorDivide : PyNumber_FloorDivide)(op1, op2);
+}
+#if CYTHON_USE_PYLONG_INTERNALS
+static PyObject* __Pyx_Unpacked___Pyx_PyLong_FloorDivideObjC(PyObject *op1, PyObject *op2, long intval, int inplace, int zerodivision_check) {
+    CYTHON_MAYBE_UNUSED_VAR(inplace);
+    CYTHON_UNUSED_VAR(zerodivision_check);
+    const long b = intval;
+    long a;
+    const PY_LONG_LONG llb = intval;
+    PY_LONG_LONG lla;
+    if (unlikely(__Pyx_PyLong_IsZero(op1))) {
+        return __Pyx_NewRef(op1);
+    }
+    const int is_positive = __Pyx_PyLong_IsPos(op1);
+    const digit* digits = __Pyx_PyLong_Digits(op1);
+    const Py_ssize_t size = __Pyx_PyLong_DigitCount(op1);
+    if (likely(size == 1)) {
+        a = (long) digits[0];
+        if (!is_positive) a *= -1;
+    } else {
+        switch (size) {
+            case 2:
+                if (8 * sizeof(long) - 1 > 2 * PyLong_SHIFT) {
+                    a = (long) (((((unsigned long)digits[1]) << PyLong_SHIFT) | (unsigned long)digits[0]));
+                    if (!is_positive) a *= -1;
+                    goto calculate_long;
+                } else if (8 * sizeof(PY_LONG_LONG) - 1 > 2 * PyLong_SHIFT) {
+                    lla = (PY_LONG_LONG) (((((unsigned PY_LONG_LONG)digits[1]) << PyLong_SHIFT) | (unsigned PY_LONG_LONG)digits[0]));
+                    if (!is_positive) lla *= -1;
+                    goto calculate_long_long;
+                }
+                break;
+            case 3:
+                if (8 * sizeof(long) - 1 > 3 * PyLong_SHIFT) {
+                    a = (long) (((((((unsigned long)digits[2]) << PyLong_SHIFT) | (unsigned long)digits[1]) << PyLong_SHIFT) | (unsigned long)digits[0]));
+                    if (!is_positive) a *= -1;
+                    goto calculate_long;
+                } else if (8 * sizeof(PY_LONG_LONG) - 1 > 3 * PyLong_SHIFT) {
+                    lla = (PY_LONG_LONG) (((((((unsigned PY_LONG_LONG)digits[2]) << PyLong_SHIFT) | (unsigned PY_LONG_LONG)digits[1]) << PyLong_SHIFT) | (unsigned PY_LONG_LONG)digits[0]));
+                    if (!is_positive) lla *= -1;
+                    goto calculate_long_long;
+                }
+                break;
+            case 4:
+                if (8 * sizeof(long) - 1 > 4 * PyLong_SHIFT) {
+                    a = (long) (((((((((unsigned long)digits[3]) << PyLong_SHIFT) | (unsigned long)digits[2]) << PyLong_SHIFT) | (unsigned long)digits[1]) << PyLong_SHIFT) | (unsigned long)digits[0]));
+                    if (!is_positive) a *= -1;
+                    goto calculate_long;
+                } else if (8 * sizeof(PY_LONG_LONG) - 1 > 4 * PyLong_SHIFT) {
+                    lla = (PY_LONG_LONG) (((((((((unsigned PY_LONG_LONG)digits[3]) << PyLong_SHIFT) | (unsigned PY_LONG_LONG)digits[2]) << PyLong_SHIFT) | (unsigned PY_LONG_LONG)digits[1]) << PyLong_SHIFT) | (unsigned PY_LONG_LONG)digits[0]));
+                    if (!is_positive) lla *= -1;
+                    goto calculate_long_long;
+                }
+                break;
+        }
+        return PyLong_Type.tp_as_number->nb_floor_divide(op1, op2);
+    }
+    calculate_long:
+        {
+            long q, r;
+            q = a / b;
+            r = a - q*b;
+            q -= ((r != 0) & ((r ^ b) < 0));
+            return PyLong_FromLong(q);
+        }
+    calculate_long_long:
+        {
+            PY_LONG_LONG q, r;
+            q = lla / llb;
+            r = lla - q*llb;
+            q -= ((r != 0) & ((r ^ llb) < 0));
+            return PyLong_FromLongLong(q);
+        }
+    
+}
+#endif
+static CYTHON_INLINE PyObject* __Pyx_PyLong_FloorDivideObjC(PyObject *op1, PyObject *op2, long intval, int inplace, int zerodivision_check) {
+    CYTHON_MAYBE_UNUSED_VAR(intval);
+    CYTHON_UNUSED_VAR(zerodivision_check);
+    #if CYTHON_USE_PYLONG_INTERNALS
+    if (likely(PyLong_CheckExact(op1))) {
+        return __Pyx_Unpacked___Pyx_PyLong_FloorDivideObjC(op1, op2, intval, inplace, zerodivision_check);
+    }
+    #endif
+    return __Pyx_Fallback___Pyx_PyLong_FloorDivideObjC(op1, op2, inplace);
+}
+#endif
+
+/* SliceObject */
+static CYTHON_INLINE int __Pyx_PyObject_SetSlice(PyObject* obj, PyObject* value,
+        Py_ssize_t cstart, Py_ssize_t cstop,
+        PyObject** _py_start, PyObject** _py_stop, PyObject** _py_slice,
+        int has_cstart, int has_cstop, CYTHON_UNUSED int wraparound) {
+    __Pyx_TypeName obj_type_name;
+#if CYTHON_USE_TYPE_SLOTS
+    PyMappingMethods* mp = Py_TYPE(obj)->tp_as_mapping;
+    if (likely(mp && mp->mp_ass_subscript))
+#endif
+    {
+        int result;
+        PyObject *py_slice, *py_start, *py_stop;
+        if (_py_slice) {
+            py_slice = *_py_slice;
+        } else {
+            PyObject* owned_start = NULL;
+            PyObject* owned_stop = NULL;
+            if (_py_start) {
+                py_start = *_py_start;
+            } else {
+                if (has_cstart) {
+                    owned_start = py_start = PyLong_FromSsize_t(cstart);
+                    if (unlikely(!py_start)) goto bad;
+                } else
+                    py_start = Py_None;
+            }
+            if (_py_stop) {
+                py_stop = *_py_stop;
+            } else {
+                if (has_cstop) {
+                    owned_stop = py_stop = PyLong_FromSsize_t(cstop);
+                    if (unlikely(!py_stop)) {
+                        Py_XDECREF(owned_start);
+                        goto bad;
+                    }
+                } else
+                    py_stop = Py_None;
+            }
+            py_slice = PySlice_New(py_start, py_stop, Py_None);
+            Py_XDECREF(owned_start);
+            Py_XDECREF(owned_stop);
+            if (unlikely(!py_slice)) goto bad;
+        }
+#if CYTHON_USE_TYPE_SLOTS
+        result = mp->mp_ass_subscript(obj, py_slice, value);
+#else
+        result = value ? PyObject_SetItem(obj, py_slice, value) : PyObject_DelItem(obj, py_slice);
+#endif
+        if (!_py_slice) {
+            Py_DECREF(py_slice);
+        }
+        return result;
+    }
+    obj_type_name = __Pyx_PyType_GetFullyQualifiedName(Py_TYPE(obj));
+    PyErr_Format(PyExc_TypeError,
+        "'" __Pyx_FMT_TYPENAME "' object does not support slice %.10s",
+        obj_type_name, value ? "assignment" : "deletion");
+    __Pyx_DECREF_TypeName(obj_type_name);
+bad:
+    return -1;
+}
+
+/* SliceObject */
+static CYTHON_INLINE PyObject* __Pyx_PyObject_GetSlice(PyObject* obj,
+        Py_ssize_t cstart, Py_ssize_t cstop,
+        PyObject** _py_start, PyObject** _py_stop, PyObject** _py_slice,
+        int has_cstart, int has_cstop, CYTHON_UNUSED int wraparound) {
+    __Pyx_TypeName obj_type_name;
+#if CYTHON_USE_TYPE_SLOTS
+    PyMappingMethods* mp = Py_TYPE(obj)->tp_as_mapping;
+    if (likely(mp && mp->mp_subscript))
+#endif
+    {
+        PyObject* result;
+        PyObject *py_slice, *py_start, *py_stop;
+        if (_py_slice) {
+            py_slice = *_py_slice;
+        } else {
+            PyObject* owned_start = NULL;
+            PyObject* owned_stop = NULL;
+            if (_py_start) {
+                py_start = *_py_start;
+            } else {
+                if (has_cstart) {
+                    owned_start = py_start = PyLong_FromSsize_t(cstart);
+                    if (unlikely(!py_start)) goto bad;
+                } else
+                    py_start = Py_None;
+            }
+            if (_py_stop) {
+                py_stop = *_py_stop;
+            } else {
+                if (has_cstop) {
+                    owned_stop = py_stop = PyLong_FromSsize_t(cstop);
+                    if (unlikely(!py_stop)) {
+                        Py_XDECREF(owned_start);
+                        goto bad;
+                    }
+                } else
+                    py_stop = Py_None;
+            }
+            py_slice = PySlice_New(py_start, py_stop, Py_None);
+            Py_XDECREF(owned_start);
+            Py_XDECREF(owned_stop);
+            if (unlikely(!py_slice)) goto bad;
+        }
+#if CYTHON_USE_TYPE_SLOTS
+        result = mp->mp_subscript(obj, py_slice);
+#else
+        result = PyObject_GetItem(obj, py_slice);
+#endif
+        if (!_py_slice) {
+            Py_DECREF(py_slice);
+        }
+        return result;
+    }
+    obj_type_name = __Pyx_PyType_GetFullyQualifiedName(Py_TYPE(obj));
+    PyErr_Format(PyExc_TypeError,
+        "'" __Pyx_FMT_TYPENAME "' object is unsliceable", obj_type_name);
+    __Pyx_DECREF_TypeName(obj_type_name);
+bad:
+    return NULL;
+}
+
+/* PyObjectCall2Args (used by PyObjectCallMethod1) */
+static CYTHON_INLINE PyObject* __Pyx_PyObject_Call2Args(PyObject* function, PyObject* arg1, PyObject* arg2) {
+    PyObject *args[3] = {NULL, arg1, arg2};
+    return __Pyx_PyObject_FastCall(function, args+1, 2 | __Pyx_PY_VECTORCALL_ARGUMENTS_OFFSET);
+}
+
+/* PyObjectGetMethod (used by PyObjectCallMethod1) */
+#if !(CYTHON_VECTORCALL && (__PYX_LIMITED_VERSION_HEX >= 0x030C0000 || (!CYTHON_COMPILING_IN_LIMITED_API && PY_VERSION_HEX >= 0x03090000)))
+static int __Pyx_PyObject_GetMethod(PyObject *obj, PyObject *name, PyObject **method) {
+    PyObject *attr;
+#if CYTHON_UNPACK_METHODS && CYTHON_COMPILING_IN_CPYTHON && CYTHON_USE_PYTYPE_LOOKUP
+    __Pyx_TypeName type_name;
+    PyTypeObject *tp = Py_TYPE(obj);
+    PyObject *descr;
+    descrgetfunc f = NULL;
+    PyObject **dictptr, *dict;
+    int meth_found = 0;
+    assert (*method == NULL);
+    if (unlikely(tp->tp_getattro != PyObject_GenericGetAttr)) {
+        attr = __Pyx_PyObject_GetAttrStr(obj, name);
+        goto try_unpack;
+    }
+    if (unlikely(tp->tp_dict == NULL) && unlikely(PyType_Ready(tp) < 0)) {
+        return 0;
+    }
+    descr = _PyType_Lookup(tp, name);
+    if (likely(descr != NULL)) {
+        Py_INCREF(descr);
+#if defined(Py_TPFLAGS_METHOD_DESCRIPTOR) && Py_TPFLAGS_METHOD_DESCRIPTOR
+        if (__Pyx_PyType_HasFeature(Py_TYPE(descr), Py_TPFLAGS_METHOD_DESCRIPTOR))
+#else
+        #ifdef __Pyx_CyFunction_USED
+        if (likely(PyFunction_Check(descr) || __Pyx_IS_TYPE(descr, &PyMethodDescr_Type) || __Pyx_CyFunction_Check(descr)))
+        #else
+        if (likely(PyFunction_Check(descr) || __Pyx_IS_TYPE(descr, &PyMethodDescr_Type)))
+        #endif
+#endif
+        {
+            meth_found = 1;
+        } else {
+            f = Py_TYPE(descr)->tp_descr_get;
+            if (f != NULL && PyDescr_IsData(descr)) {
+                attr = f(descr, obj, (PyObject *)Py_TYPE(obj));
+                Py_DECREF(descr);
+                goto try_unpack;
+            }
+        }
+    }
+    dictptr = _PyObject_GetDictPtr(obj);
+    if (dictptr != NULL && (dict = *dictptr) != NULL) {
+        Py_INCREF(dict);
+        attr = __Pyx_PyDict_GetItemStr(dict, name);
+        if (attr != NULL) {
+            Py_INCREF(attr);
+            Py_DECREF(dict);
+            Py_XDECREF(descr);
+            goto try_unpack;
+        }
+        Py_DECREF(dict);
+    }
+    if (meth_found) {
+        *method = descr;
+        return 1;
+    }
+    if (f != NULL) {
+        attr = f(descr, obj, (PyObject *)Py_TYPE(obj));
+        Py_DECREF(descr);
+        goto try_unpack;
+    }
+    if (likely(descr != NULL)) {
+        *method = descr;
+        return 0;
+    }
+    type_name = __Pyx_PyType_GetFullyQualifiedName(tp);
+    PyErr_Format(PyExc_AttributeError,
+                 "'" __Pyx_FMT_TYPENAME "' object has no attribute '%U'",
+                 type_name, name);
+    __Pyx_DECREF_TypeName(type_name);
+    return 0;
+#else
+    attr = __Pyx_PyObject_GetAttrStr(obj, name);
+    goto try_unpack;
+#endif
+try_unpack:
+#if CYTHON_UNPACK_METHODS
+    if (likely(attr) && PyMethod_Check(attr) && likely(PyMethod_GET_SELF(attr) == obj)) {
+        PyObject *function = PyMethod_GET_FUNCTION(attr);
+        Py_INCREF(function);
+        Py_DECREF(attr);
+        *method = function;
+        return 1;
+    }
+#endif
+    *method = attr;
+    return 0;
+}
+#endif
+
+/* PyObjectCallMethod1 (used by append) */
+#if !(CYTHON_VECTORCALL && (__PYX_LIMITED_VERSION_HEX >= 0x030C0000 || (!CYTHON_COMPILING_IN_LIMITED_API && PY_VERSION_HEX >= 0x03090000)))
+static PyObject* __Pyx__PyObject_CallMethod1(PyObject* method, PyObject* arg) {
+    PyObject *result = __Pyx_PyObject_CallOneArg(method, arg);
+    Py_DECREF(method);
+    return result;
+}
+#endif
+static PyObject* __Pyx_PyObject_CallMethod1(PyObject* obj, PyObject* method_name, PyObject* arg) {
+#if CYTHON_VECTORCALL && (__PYX_LIMITED_VERSION_HEX >= 0x030C0000 || (!CYTHON_COMPILING_IN_LIMITED_API && PY_VERSION_HEX >= 0x03090000))
+    PyObject *args[2] = {obj, arg};
+    (void) __Pyx_PyObject_CallOneArg;
+    (void) __Pyx_PyObject_Call2Args;
+    return PyObject_VectorcallMethod(method_name, args, 2 | PY_VECTORCALL_ARGUMENTS_OFFSET, NULL);
+#else
+    PyObject *method = NULL, *result;
+    int is_method = __Pyx_PyObject_GetMethod(obj, method_name, &method);
+    if (likely(is_method)) {
+        result = __Pyx_PyObject_Call2Args(method, obj, arg);
+        Py_DECREF(method);
+        return result;
+    }
+    if (unlikely(!method)) return NULL;
+    return __Pyx__PyObject_CallMethod1(method, arg);
+#endif
+}
+
+/* append */
+static CYTHON_INLINE int __Pyx_PyObject_Append(PyObject* L, PyObject* x) {
+    if (likely(PyList_CheckExact(L))) {
+        if (unlikely(__Pyx_PyList_Append(L, x) < 0)) return -1;
+    } else {
+        PyObject* retval = __Pyx_PyObject_CallMethod1(L, __pyx_mstate_global->__pyx_n_u_append, x);
+        if (unlikely(!retval))
+            return -1;
+        Py_DECREF(retval);
+    }
+    return 0;
+}
+
+/* AllocateExtensionType */
+static PyObject *__Pyx_AllocateExtensionType(PyTypeObject *t, int is_final) {
+    if (is_final || likely(!__Pyx_PyType_HasFeature(t, Py_TPFLAGS_IS_ABSTRACT))) {
+        allocfunc alloc_func = __Pyx_PyType_GetSlot(t, tp_alloc, allocfunc);
+        return alloc_func(t, 0);
+    } else {
+        newfunc tp_new = __Pyx_PyType_TryGetSlot(&PyBaseObject_Type, tp_new, newfunc);
+    #if CYTHON_COMPILING_IN_LIMITED_API && __PYX_LIMITED_VERSION_HEX < 0x030A0000
+        if (!tp_new) {
+            PyObject *new_str = PyUnicode_FromString("__new__");
+            if (likely(new_str)) {
+                PyObject *o = PyObject_CallMethodObjArgs((PyObject *)&PyBaseObject_Type, new_str, t, NULL);
+                Py_DECREF(new_str);
+                return o;
+            } else
+                return NULL;
+        } else
+    #endif
+        return tp_new(t, __pyx_mstate_global->__pyx_empty_tuple, 0);
+    }
+}
+
+/* CallTypeTraverse */
+#if !CYTHON_USE_TYPE_SPECS || (!CYTHON_COMPILING_IN_LIMITED_API && PY_VERSION_HEX < 0x03090000)
+#else
+static int __Pyx_call_type_traverse(PyObject *o, int always_call, visitproc visit, void *arg) {
+    #if CYTHON_COMPILING_IN_LIMITED_API && __PYX_LIMITED_VERSION_HEX < 0x03090000
+    if (__Pyx_get_runtime_version() < 0x03090000) return 0;
+    #endif
+    if (!always_call) {
+        PyTypeObject *base = __Pyx_PyObject_GetSlot(o, tp_base, PyTypeObject*);
+        unsigned long flags = PyType_GetFlags(base);
+        if (flags & Py_TPFLAGS_HEAPTYPE) {
+            return 0;
+        }
+    }
+    Py_VISIT((PyObject*)Py_TYPE(o));
+    return 0;
+}
+#endif
 
 /* LimitedApiGetTypeDict (used by SetItemOnTypeDict) */
 #if CYTHON_COMPILING_IN_LIMITED_API
@@ -10859,7 +20104,7 @@ static int __Pyx__SetItemOnTypeDict(PyTypeObject *tp, PyObject *k, PyObject *v) 
     return result;
 }
 
-/* FixUpExtensionType (used by FetchCommonType) */
+/* FixUpExtensionType */
 static int __Pyx_fix_up_extension_type_from_spec(PyType_Spec *spec, PyTypeObject *type) {
 #if __PYX_LIMITED_VERSION_HEX > 0x030900B1
     CYTHON_UNUSED_VAR(spec);
@@ -10958,6 +20203,306 @@ static int __Pyx_fix_up_extension_type_from_spec(PyType_Spec *spec, PyTypeObject
         PyType_Modified(type);
 #endif  // PY_VERSION_HEX > 0x030900B1
     return 0;
+}
+
+/* PyObjectCallNoArg (used by PyObjectCallMethod0) */
+static CYTHON_INLINE PyObject* __Pyx_PyObject_CallNoArg(PyObject *func) {
+    PyObject *arg[2] = {NULL, NULL};
+    return __Pyx_PyObject_FastCall(func, arg + 1, 0 | __Pyx_PY_VECTORCALL_ARGUMENTS_OFFSET);
+}
+
+/* PyObjectCallMethod0 (used by PyType_Ready) */
+static PyObject* __Pyx_PyObject_CallMethod0(PyObject* obj, PyObject* method_name) {
+#if CYTHON_VECTORCALL && (__PYX_LIMITED_VERSION_HEX >= 0x030C0000 || (!CYTHON_COMPILING_IN_LIMITED_API && PY_VERSION_HEX >= 0x03090000))
+    PyObject *args[1] = {obj};
+    (void) __Pyx_PyObject_CallOneArg;
+    (void) __Pyx_PyObject_CallNoArg;
+    return PyObject_VectorcallMethod(method_name, args, 1 | PY_VECTORCALL_ARGUMENTS_OFFSET, NULL);
+#else
+    PyObject *method = NULL, *result = NULL;
+    int is_method = __Pyx_PyObject_GetMethod(obj, method_name, &method);
+    if (likely(is_method)) {
+        result = __Pyx_PyObject_CallOneArg(method, obj);
+        Py_DECREF(method);
+        return result;
+    }
+    if (unlikely(!method)) goto bad;
+    result = __Pyx_PyObject_CallNoArg(method);
+    Py_DECREF(method);
+bad:
+    return result;
+#endif
+}
+
+/* ValidateBasesTuple (used by PyType_Ready) */
+#if CYTHON_COMPILING_IN_CPYTHON || CYTHON_COMPILING_IN_LIMITED_API || CYTHON_USE_TYPE_SPECS
+static int __Pyx_validate_bases_tuple(const char *type_name, Py_ssize_t dictoffset, PyObject *bases) {
+    Py_ssize_t i, n;
+#if CYTHON_ASSUME_SAFE_SIZE
+    n = PyTuple_GET_SIZE(bases);
+#else
+    n = PyTuple_Size(bases);
+    if (unlikely(n < 0)) return -1;
+#endif
+    for (i = 1; i < n; i++)
+    {
+        PyTypeObject *b;
+#if CYTHON_AVOID_BORROWED_REFS
+        PyObject *b0 = PySequence_GetItem(bases, i);
+        if (!b0) return -1;
+#elif CYTHON_ASSUME_SAFE_MACROS
+        PyObject *b0 = PyTuple_GET_ITEM(bases, i);
+#else
+        PyObject *b0 = PyTuple_GetItem(bases, i);
+        if (!b0) return -1;
+#endif
+        b = (PyTypeObject*) b0;
+        if (!__Pyx_PyType_HasFeature(b, Py_TPFLAGS_HEAPTYPE))
+        {
+            __Pyx_TypeName b_name = __Pyx_PyType_GetFullyQualifiedName(b);
+            PyErr_Format(PyExc_TypeError,
+                "base class '" __Pyx_FMT_TYPENAME "' is not a heap type", b_name);
+            __Pyx_DECREF_TypeName(b_name);
+#if CYTHON_AVOID_BORROWED_REFS
+            Py_DECREF(b0);
+#endif
+            return -1;
+        }
+        if (dictoffset == 0)
+        {
+            Py_ssize_t b_dictoffset = 0;
+#if CYTHON_USE_TYPE_SLOTS
+            b_dictoffset = b->tp_dictoffset;
+#else
+            PyObject *py_b_dictoffset = PyObject_GetAttrString((PyObject*)b, "__dictoffset__");
+            if (!py_b_dictoffset) goto dictoffset_return;
+            b_dictoffset = PyLong_AsSsize_t(py_b_dictoffset);
+            Py_DECREF(py_b_dictoffset);
+            if (b_dictoffset == -1 && PyErr_Occurred()) goto dictoffset_return;
+#endif
+            if (b_dictoffset) {
+                {
+                    __Pyx_TypeName b_name = __Pyx_PyType_GetFullyQualifiedName(b);
+                    PyErr_Format(PyExc_TypeError,
+                        "extension type '%.200s' has no __dict__ slot, "
+                        "but base type '" __Pyx_FMT_TYPENAME "' has: "
+                        "either add 'cdef dict __dict__' to the extension type "
+                        "or add '__slots__ = [...]' to the base type",
+                        type_name, b_name);
+                    __Pyx_DECREF_TypeName(b_name);
+                }
+#if !CYTHON_USE_TYPE_SLOTS
+              dictoffset_return:
+#endif
+#if CYTHON_AVOID_BORROWED_REFS
+                Py_DECREF(b0);
+#endif
+                return -1;
+            }
+        }
+#if CYTHON_AVOID_BORROWED_REFS
+        Py_DECREF(b0);
+#endif
+    }
+    return 0;
+}
+#endif
+
+/* PyType_Ready */
+CYTHON_UNUSED static int __Pyx_PyType_HasMultipleInheritance(PyTypeObject *t) {
+    while (t) {
+        PyObject *bases = __Pyx_PyType_GetSlot(t, tp_bases, PyObject*);
+        if (bases) {
+            return 1;
+        }
+        t = __Pyx_PyType_GetSlot(t, tp_base, PyTypeObject*);
+    }
+    return 0;
+}
+static int __Pyx_PyType_Ready(PyTypeObject *t) {
+#if CYTHON_USE_TYPE_SPECS || !CYTHON_COMPILING_IN_CPYTHON || defined(PYSTON_MAJOR_VERSION)
+    (void)__Pyx_PyObject_CallMethod0;
+#if CYTHON_USE_TYPE_SPECS
+    (void)__Pyx_validate_bases_tuple;
+#endif
+    return PyType_Ready(t);
+#else
+    int r;
+    if (!__Pyx_PyType_HasMultipleInheritance(t)) {
+        return PyType_Ready(t);
+    }
+    PyObject *bases = __Pyx_PyType_GetSlot(t, tp_bases, PyObject*);
+    if (bases && unlikely(__Pyx_validate_bases_tuple(t->tp_name, t->tp_dictoffset, bases) == -1))
+        return -1;
+#if !defined(PYSTON_MAJOR_VERSION)
+    {
+        int gc_was_enabled;
+    #if PY_VERSION_HEX >= 0x030A00b1
+        gc_was_enabled = PyGC_Disable();
+        (void)__Pyx_PyObject_CallMethod0;
+    #else
+        PyObject *ret, *py_status;
+        PyObject *gc = NULL;
+        #if (!CYTHON_COMPILING_IN_PYPY || PYPY_VERSION_NUM+0 >= 0x07030400) &&\
+                !CYTHON_COMPILING_IN_GRAAL
+        gc = PyImport_GetModule(__pyx_mstate_global->__pyx_kp_u_gc);
+        #endif
+        if (unlikely(!gc)) gc = PyImport_Import(__pyx_mstate_global->__pyx_kp_u_gc);
+        if (unlikely(!gc)) return -1;
+        py_status = __Pyx_PyObject_CallMethod0(gc, __pyx_mstate_global->__pyx_kp_u_isenabled);
+        if (unlikely(!py_status)) {
+            Py_DECREF(gc);
+            return -1;
+        }
+        gc_was_enabled = __Pyx_PyObject_IsTrue(py_status);
+        Py_DECREF(py_status);
+        if (gc_was_enabled > 0) {
+            ret = __Pyx_PyObject_CallMethod0(gc, __pyx_mstate_global->__pyx_kp_u_disable);
+            if (unlikely(!ret)) {
+                Py_DECREF(gc);
+                return -1;
+            }
+            Py_DECREF(ret);
+        } else if (unlikely(gc_was_enabled == -1)) {
+            Py_DECREF(gc);
+            return -1;
+        }
+    #endif
+        t->tp_flags |= Py_TPFLAGS_HEAPTYPE;
+#if PY_VERSION_HEX >= 0x030A0000
+        t->tp_flags |= Py_TPFLAGS_IMMUTABLETYPE;
+#endif
+#else
+        (void)__Pyx_PyObject_CallMethod0;
+#endif
+    r = PyType_Ready(t);
+#if !defined(PYSTON_MAJOR_VERSION)
+        t->tp_flags &= ~Py_TPFLAGS_HEAPTYPE;
+    #if PY_VERSION_HEX >= 0x030A00b1
+        if (gc_was_enabled)
+            PyGC_Enable();
+    #else
+        if (gc_was_enabled) {
+            PyObject *tp, *v, *tb;
+            PyErr_Fetch(&tp, &v, &tb);
+            ret = __Pyx_PyObject_CallMethod0(gc, __pyx_mstate_global->__pyx_kp_u_enable);
+            if (likely(ret || r == -1)) {
+                Py_XDECREF(ret);
+                PyErr_Restore(tp, v, tb);
+            } else {
+                Py_XDECREF(tp);
+                Py_XDECREF(v);
+                Py_XDECREF(tb);
+                r = -1;
+            }
+        }
+        Py_DECREF(gc);
+    #endif
+    }
+#endif
+    return r;
+#endif
+}
+
+/* TypeImport */
+#ifndef __PYX_HAVE_RT_ImportType_3_2_9
+#define __PYX_HAVE_RT_ImportType_3_2_9
+static PyTypeObject *__Pyx_ImportType_3_2_9(PyObject *module, const char *module_name, const char *class_name,
+    size_t size, size_t alignment, enum __Pyx_ImportType_CheckSize_3_2_9 check_size)
+{
+    PyObject *result = 0;
+    Py_ssize_t basicsize;
+    Py_ssize_t itemsize;
+#if defined(Py_LIMITED_API) || (defined(CYTHON_COMPILING_IN_LIMITED_API) && CYTHON_COMPILING_IN_LIMITED_API)
+    PyObject *py_basicsize;
+    PyObject *py_itemsize;
+#endif
+    result = PyObject_GetAttrString(module, class_name);
+    if (!result)
+        goto bad;
+    if (!PyType_Check(result)) {
+        PyErr_Format(PyExc_TypeError,
+            "%.200s.%.200s is not a type object",
+            module_name, class_name);
+        goto bad;
+    }
+#if !( defined(Py_LIMITED_API) || (defined(CYTHON_COMPILING_IN_LIMITED_API) && CYTHON_COMPILING_IN_LIMITED_API) )
+    basicsize = ((PyTypeObject *)result)->tp_basicsize;
+    itemsize = ((PyTypeObject *)result)->tp_itemsize;
+#else
+    if (size == 0) {
+        return (PyTypeObject *)result;
+    }
+    py_basicsize = PyObject_GetAttrString(result, "__basicsize__");
+    if (!py_basicsize)
+        goto bad;
+    basicsize = PyLong_AsSsize_t(py_basicsize);
+    Py_DECREF(py_basicsize);
+    py_basicsize = 0;
+    if (basicsize == (Py_ssize_t)-1 && PyErr_Occurred())
+        goto bad;
+    py_itemsize = PyObject_GetAttrString(result, "__itemsize__");
+    if (!py_itemsize)
+        goto bad;
+    itemsize = PyLong_AsSsize_t(py_itemsize);
+    Py_DECREF(py_itemsize);
+    py_itemsize = 0;
+    if (itemsize == (Py_ssize_t)-1 && PyErr_Occurred())
+        goto bad;
+#endif
+    if (itemsize) {
+        if (size % alignment) {
+            alignment = size % alignment;
+        }
+        if (itemsize < (Py_ssize_t)alignment)
+            itemsize = (Py_ssize_t)alignment;
+    }
+    if ((size_t)(basicsize + itemsize) < size) {
+        PyErr_Format(PyExc_ValueError,
+            "%.200s.%.200s size changed, may indicate binary incompatibility. "
+            "Expected %zd from C header, got %zd from PyObject",
+            module_name, class_name, size, basicsize+itemsize);
+        goto bad;
+    }
+    if (check_size == __Pyx_ImportType_CheckSize_Error_3_2_9 &&
+            ((size_t)basicsize > size || (size_t)(basicsize + itemsize) < size)) {
+        PyErr_Format(PyExc_ValueError,
+            "%.200s.%.200s size changed, may indicate binary incompatibility. "
+            "Expected %zd from C header, got %zd-%zd from PyObject",
+            module_name, class_name, size, basicsize, basicsize+itemsize);
+        goto bad;
+    }
+    else if (check_size == __Pyx_ImportType_CheckSize_Warn_3_2_9 && (size_t)basicsize > size) {
+        if (PyErr_WarnFormat(NULL, 0,
+                "%.200s.%.200s size changed, may indicate binary incompatibility. "
+                "Expected %zd from C header, got %zd from PyObject",
+                module_name, class_name, size, basicsize) < 0) {
+            goto bad;
+        }
+    }
+    return (PyTypeObject *)result;
+bad:
+    Py_XDECREF(result);
+    return NULL;
+}
+#endif
+
+/* dict_setdefault (used by FetchCommonType) */
+static CYTHON_INLINE PyObject *__Pyx_PyDict_SetDefault(PyObject *d, PyObject *key, PyObject *default_value) {
+    PyObject* value;
+#if __PYX_LIMITED_VERSION_HEX >= 0x030F0000 || (!CYTHON_COMPILING_IN_LIMITED_API && PY_VERSION_HEX >= 0x030d00A4)
+    PyDict_SetDefaultRef(d, key, default_value, &value);
+#elif CYTHON_COMPILING_IN_LIMITED_API && __PYX_LIMITED_VERSION_HEX >= 0x030C0000
+    PyObject *args[] = {d, key, default_value};
+    value = PyObject_VectorcallMethod(__pyx_mstate_global->__pyx_n_u_setdefault, args, 3 | PY_VECTORCALL_ARGUMENTS_OFFSET, NULL);
+#elif CYTHON_COMPILING_IN_LIMITED_API
+    value = PyObject_CallMethodObjArgs(d, __pyx_mstate_global->__pyx_n_u_setdefault, key, default_value, NULL);
+#else
+    value = PyDict_SetDefault(d, key, default_value);
+    if (unlikely(!value)) return NULL;
+    Py_INCREF(value);
+#endif
+    return value;
 }
 
 /* AddModuleRef (used by FetchSharedCythonModule) */
@@ -11164,25 +20709,6 @@ static int __pyx_CommonTypesMetaclass_init(PyObject *module) {
     }
     return 0;
 }
-
-/* CallTypeTraverse (used by CythonFunctionShared) */
-#if !CYTHON_USE_TYPE_SPECS || (!CYTHON_COMPILING_IN_LIMITED_API && PY_VERSION_HEX < 0x03090000)
-#else
-static int __Pyx_call_type_traverse(PyObject *o, int always_call, visitproc visit, void *arg) {
-    #if CYTHON_COMPILING_IN_LIMITED_API && __PYX_LIMITED_VERSION_HEX < 0x03090000
-    if (__Pyx_get_runtime_version() < 0x03090000) return 0;
-    #endif
-    if (!always_call) {
-        PyTypeObject *base = __Pyx_PyObject_GetSlot(o, tp_base, PyTypeObject*);
-        unsigned long flags = PyType_GetFlags(base);
-        if (flags & Py_TPFLAGS_HEAPTYPE) {
-            return 0;
-        }
-    }
-    Py_VISIT((PyObject*)Py_TYPE(o));
-    return 0;
-}
-#endif
 
 /* PyMethodNew (used by CythonFunctionShared) */
 #if CYTHON_COMPILING_IN_LIMITED_API
@@ -12440,32 +21966,6 @@ static PyObject *__Pyx_CyFunction_New(PyMethodDef *ml, int flags, PyObject* qual
     return op;
 }
 
-/* PyDictVersioning (used by CLineInTraceback) */
-#if CYTHON_USE_DICT_VERSIONS && CYTHON_USE_TYPE_SLOTS
-static CYTHON_INLINE PY_UINT64_T __Pyx_get_tp_dict_version(PyObject *obj) {
-    PyObject *dict = Py_TYPE(obj)->tp_dict;
-    return likely(dict) ? __PYX_GET_DICT_VERSION(dict) : 0;
-}
-static CYTHON_INLINE PY_UINT64_T __Pyx_get_object_dict_version(PyObject *obj) {
-    PyObject **dictptr = NULL;
-    Py_ssize_t offset = Py_TYPE(obj)->tp_dictoffset;
-    if (offset) {
-#if CYTHON_COMPILING_IN_CPYTHON
-        dictptr = (likely(offset > 0)) ? (PyObject **) ((char *)obj + offset) : _PyObject_GetDictPtr(obj);
-#else
-        dictptr = _PyObject_GetDictPtr(obj);
-#endif
-    }
-    return (dictptr && *dictptr) ? __PYX_GET_DICT_VERSION(*dictptr) : 0;
-}
-static CYTHON_INLINE int __Pyx_object_dict_version_matches(PyObject* obj, PY_UINT64_T tp_dict_version, PY_UINT64_T obj_dict_version) {
-    PyObject *dict = Py_TYPE(obj)->tp_dict;
-    if (unlikely(!dict) || unlikely(tp_dict_version != __PYX_GET_DICT_VERSION(dict)))
-        return 0;
-    return obj_dict_version == __Pyx_get_object_dict_version(obj);
-}
-#endif
-
 /* CLineInTraceback (used by AddTraceback) */
 #if CYTHON_CLINE_IN_TRACEBACK && CYTHON_CLINE_IN_TRACEBACK_RUNTIME
 #if CYTHON_COMPILING_IN_LIMITED_API && __PYX_LIMITED_VERSION_HEX < 0x030A0000
@@ -13494,38 +22994,6 @@ raise_neg_overflow:
     return (int) -1;
 }
 
-/* PyObjectVectorCallKwBuilder (used by CIntToPy) */
-#if CYTHON_VECTORCALL
-static int __Pyx_VectorcallBuilder_AddArg(PyObject *key, PyObject *value, PyObject *builder, PyObject **args, int n) {
-    (void)__Pyx_PyObject_FastCallDict;
-    Py_INCREF(key);
-    if (__Pyx_PyTuple_SET_ITEM(builder, n, key) != (0)) return -1;
-    args[n] = value;
-    return 0;
-}
-CYTHON_UNUSED static int __Pyx_VectorcallBuilder_AddArg_Check(PyObject *key, PyObject *value, PyObject *builder, PyObject **args, int n) {
-    (void)__Pyx_VectorcallBuilder_AddArgStr;
-    if (unlikely(!PyUnicode_Check(key))) {
-        PyErr_SetString(PyExc_TypeError, "keywords must be strings");
-        return -1;
-    }
-    return __Pyx_VectorcallBuilder_AddArg(key, value, builder, args, n);
-}
-static int __Pyx_VectorcallBuilder_AddArgStr(const char *key, PyObject *value, PyObject *builder, PyObject **args, int n) {
-    PyObject *pyKey = PyUnicode_FromString(key);
-    if (!pyKey) return -1;
-    return __Pyx_VectorcallBuilder_AddArg(pyKey, value, builder, args, n);
-}
-#else // CYTHON_VECTORCALL
-CYTHON_UNUSED static int __Pyx_VectorcallBuilder_AddArg_Check(PyObject *key, PyObject *value, PyObject *builder, CYTHON_UNUSED PyObject **args, CYTHON_UNUSED int n) {
-    if (unlikely(!PyUnicode_Check(key))) {
-        PyErr_SetString(PyExc_TypeError, "keywords must be strings");
-        return -1;
-    }
-    return PyDict_SetItem(builder, key, value);
-}
-#endif
-
 /* CIntToPy */
 static CYTHON_INLINE PyObject* __Pyx_PyLong_From_long(long value) {
 #ifdef __Pyx_HAS_GCC_DIAGNOSTIC
@@ -13573,6 +23041,75 @@ static CYTHON_INLINE PyObject* __Pyx_PyLong_From_long(long value) {
         from_bytes = PyObject_GetAttrString((PyObject*)&PyLong_Type, "from_bytes");
         if (!from_bytes) return NULL;
         py_bytes = PyBytes_FromStringAndSize((char*)bytes, sizeof(long));
+        if (!py_bytes) goto limited_bad;
+        order_str = PyUnicode_FromString(little ? "little" : "big");
+        if (!order_str) goto limited_bad;
+        {
+            PyObject *args[3+(CYTHON_VECTORCALL ? 1 : 0)] = { NULL, py_bytes, order_str };
+            if (!is_unsigned) {
+                kwds = __Pyx_MakeVectorcallBuilderKwds(1);
+                if (!kwds) goto limited_bad;
+                if (__Pyx_VectorcallBuilder_AddArgStr("signed", __Pyx_NewRef(Py_True), kwds, args+3, 0) < 0) goto limited_bad;
+            }
+            result = __Pyx_Object_Vectorcall_CallFromBuilder(from_bytes, args+1, 2 | __Pyx_PY_VECTORCALL_ARGUMENTS_OFFSET, kwds);
+        }
+        limited_bad:
+        Py_XDECREF(kwds);
+        Py_XDECREF(order_str);
+        Py_XDECREF(py_bytes);
+        Py_XDECREF(from_bytes);
+        return result;
+#endif
+    }
+}
+
+/* CIntToPy */
+static CYTHON_INLINE PyObject* __Pyx_PyLong_From_int(int value) {
+#ifdef __Pyx_HAS_GCC_DIAGNOSTIC
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wconversion"
+#endif
+    const int neg_one = (int) -1, const_zero = (int) 0;
+#ifdef __Pyx_HAS_GCC_DIAGNOSTIC
+#pragma GCC diagnostic pop
+#endif
+    const int is_unsigned = neg_one > const_zero;
+    if (is_unsigned) {
+        if (sizeof(int) < sizeof(long)) {
+            return PyLong_FromLong((long) value);
+        } else if (sizeof(int) <= sizeof(unsigned long)) {
+            return PyLong_FromUnsignedLong((unsigned long) value);
+#if !CYTHON_COMPILING_IN_PYPY
+        } else if (sizeof(int) <= sizeof(unsigned PY_LONG_LONG)) {
+            return PyLong_FromUnsignedLongLong((unsigned PY_LONG_LONG) value);
+#endif
+        }
+    } else {
+        if (sizeof(int) <= sizeof(long)) {
+            return PyLong_FromLong((long) value);
+        } else if (sizeof(int) <= sizeof(PY_LONG_LONG)) {
+            return PyLong_FromLongLong((PY_LONG_LONG) value);
+        }
+    }
+    {
+        unsigned char *bytes = (unsigned char *)&value;
+#if !CYTHON_COMPILING_IN_LIMITED_API && PY_VERSION_HEX >= 0x030d00A4
+        if (is_unsigned) {
+            return PyLong_FromUnsignedNativeBytes(bytes, sizeof(value), -1);
+        } else {
+            return PyLong_FromNativeBytes(bytes, sizeof(value), -1);
+        }
+#elif !CYTHON_COMPILING_IN_LIMITED_API && PY_VERSION_HEX < 0x030d0000
+        int one = 1; int little = (int)*(unsigned char *)&one;
+        return _PyLong_FromByteArray(bytes, sizeof(int),
+                                     little, !is_unsigned);
+#else
+        int one = 1; int little = (int)*(unsigned char *)&one;
+        PyObject *from_bytes, *result = NULL, *kwds = NULL;
+        PyObject *py_bytes = NULL, *order_str = NULL;
+        from_bytes = PyObject_GetAttrString((PyObject*)&PyLong_Type, "from_bytes");
+        if (!from_bytes) return NULL;
+        py_bytes = PyBytes_FromStringAndSize((char*)bytes, sizeof(int));
         if (!py_bytes) goto limited_bad;
         order_str = PyUnicode_FromString(little ? "little" : "big");
         if (!order_str) goto limited_bad;
@@ -13884,93 +23421,6 @@ raise_neg_overflow:
     return (long) -1;
 }
 
-/* FastTypeChecks */
-#if CYTHON_COMPILING_IN_CPYTHON
-static int __Pyx_InBases(PyTypeObject *a, PyTypeObject *b) {
-    while (a) {
-        a = __Pyx_PyType_GetSlot(a, tp_base, PyTypeObject*);
-        if (a == b)
-            return 1;
-    }
-    return b == &PyBaseObject_Type;
-}
-static CYTHON_INLINE int __Pyx_IsSubtype(PyTypeObject *a, PyTypeObject *b) {
-    PyObject *mro;
-    if (a == b) return 1;
-    mro = a->tp_mro;
-    if (likely(mro)) {
-        Py_ssize_t i, n;
-        n = PyTuple_GET_SIZE(mro);
-        for (i = 0; i < n; i++) {
-            if (PyTuple_GET_ITEM(mro, i) == (PyObject *)b)
-                return 1;
-        }
-        return 0;
-    }
-    return __Pyx_InBases(a, b);
-}
-static CYTHON_INLINE int __Pyx_IsAnySubtype2(PyTypeObject *cls, PyTypeObject *a, PyTypeObject *b) {
-    PyObject *mro;
-    if (cls == a || cls == b) return 1;
-    mro = cls->tp_mro;
-    if (likely(mro)) {
-        Py_ssize_t i, n;
-        n = PyTuple_GET_SIZE(mro);
-        for (i = 0; i < n; i++) {
-            PyObject *base = PyTuple_GET_ITEM(mro, i);
-            if (base == (PyObject *)a || base == (PyObject *)b)
-                return 1;
-        }
-        return 0;
-    }
-    return __Pyx_InBases(cls, a) || __Pyx_InBases(cls, b);
-}
-static CYTHON_INLINE int __Pyx_inner_PyErr_GivenExceptionMatches2(PyObject *err, PyObject* exc_type1, PyObject *exc_type2) {
-    if (exc_type1) {
-        return __Pyx_IsAnySubtype2((PyTypeObject*)err, (PyTypeObject*)exc_type1, (PyTypeObject*)exc_type2);
-    } else {
-        return __Pyx_IsSubtype((PyTypeObject*)err, (PyTypeObject*)exc_type2);
-    }
-}
-static int __Pyx_PyErr_GivenExceptionMatchesTuple(PyObject *exc_type, PyObject *tuple) {
-    Py_ssize_t i, n;
-    assert(PyExceptionClass_Check(exc_type));
-    n = PyTuple_GET_SIZE(tuple);
-    for (i=0; i<n; i++) {
-        if (exc_type == PyTuple_GET_ITEM(tuple, i)) return 1;
-    }
-    for (i=0; i<n; i++) {
-        PyObject *t = PyTuple_GET_ITEM(tuple, i);
-        if (likely(PyExceptionClass_Check(t))) {
-            if (__Pyx_inner_PyErr_GivenExceptionMatches2(exc_type, NULL, t)) return 1;
-        } else {
-        }
-    }
-    return 0;
-}
-static CYTHON_INLINE int __Pyx_PyErr_GivenExceptionMatches(PyObject *err, PyObject* exc_type) {
-    if (likely(err == exc_type)) return 1;
-    if (likely(PyExceptionClass_Check(err))) {
-        if (likely(PyExceptionClass_Check(exc_type))) {
-            return __Pyx_inner_PyErr_GivenExceptionMatches2(err, NULL, exc_type);
-        } else if (likely(PyTuple_Check(exc_type))) {
-            return __Pyx_PyErr_GivenExceptionMatchesTuple(err, exc_type);
-        } else {
-        }
-    }
-    return PyErr_GivenExceptionMatches(err, exc_type);
-}
-static CYTHON_INLINE int __Pyx_PyErr_GivenExceptionMatches2(PyObject *err, PyObject *exc_type1, PyObject *exc_type2) {
-    assert(PyExceptionClass_Check(exc_type1));
-    assert(PyExceptionClass_Check(exc_type2));
-    if (likely(err == exc_type1 || err == exc_type2)) return 1;
-    if (likely(PyExceptionClass_Check(err))) {
-        return __Pyx_inner_PyErr_GivenExceptionMatches2(err, exc_type1, exc_type2);
-    }
-    return (PyErr_GivenExceptionMatches(err, exc_type1) || PyErr_GivenExceptionMatches(err, exc_type2));
-}
-#endif
-
 /* GetRuntimeVersion */
 #if __PYX_LIMITED_VERSION_HEX < 0x030b0000
 void __Pyx_init_runtime_version(void) {
@@ -14002,6 +23452,1183 @@ static unsigned long __Pyx_get_runtime_version(void) {
 #else
     return __Pyx_cached_runtime_version;
 #endif
+}
+
+/* SwapException (used by CoroutineBase) */
+#if CYTHON_FAST_THREAD_STATE
+static CYTHON_INLINE void __Pyx__ExceptionSwap(PyThreadState *tstate, PyObject **type, PyObject **value, PyObject **tb) {
+    PyObject *tmp_type, *tmp_value, *tmp_tb;
+  #if CYTHON_USE_EXC_INFO_STACK && PY_VERSION_HEX >= 0x030B00a4
+    _PyErr_StackItem *exc_info = tstate->exc_info;
+    tmp_value = exc_info->exc_value;
+    exc_info->exc_value = *value;
+    if (tmp_value == NULL || tmp_value == Py_None) {
+        Py_XDECREF(tmp_value);
+        tmp_value = NULL;
+        tmp_type = NULL;
+        tmp_tb = NULL;
+    } else {
+        tmp_type = (PyObject*) Py_TYPE(tmp_value);
+        Py_INCREF(tmp_type);
+        #if CYTHON_COMPILING_IN_CPYTHON
+        tmp_tb = ((PyBaseExceptionObject*) tmp_value)->traceback;
+        Py_XINCREF(tmp_tb);
+        #else
+        tmp_tb = PyException_GetTraceback(tmp_value);
+        #endif
+    }
+  #elif CYTHON_USE_EXC_INFO_STACK
+    _PyErr_StackItem *exc_info = tstate->exc_info;
+    tmp_type = exc_info->exc_type;
+    tmp_value = exc_info->exc_value;
+    tmp_tb = exc_info->exc_traceback;
+    exc_info->exc_type = *type;
+    exc_info->exc_value = *value;
+    exc_info->exc_traceback = *tb;
+  #else
+    tmp_type = tstate->exc_type;
+    tmp_value = tstate->exc_value;
+    tmp_tb = tstate->exc_traceback;
+    tstate->exc_type = *type;
+    tstate->exc_value = *value;
+    tstate->exc_traceback = *tb;
+  #endif
+    *type = tmp_type;
+    *value = tmp_value;
+    *tb = tmp_tb;
+}
+#else
+static CYTHON_INLINE void __Pyx_ExceptionSwap(PyObject **type, PyObject **value, PyObject **tb) {
+    PyObject *tmp_type, *tmp_value, *tmp_tb;
+    PyErr_GetExcInfo(&tmp_type, &tmp_value, &tmp_tb);
+    PyErr_SetExcInfo(*type, *value, *tb);
+    *type = tmp_type;
+    *value = tmp_value;
+    *tb = tmp_tb;
+}
+#endif
+
+/* IterNextPlain (used by CoroutineBase) */
+#if CYTHON_COMPILING_IN_LIMITED_API && __PYX_LIMITED_VERSION_HEX < 0x030A0000
+static PyObject *__Pyx_GetBuiltinNext_LimitedAPI(void) {
+    if (unlikely(!__pyx_mstate_global->__Pyx_GetBuiltinNext_LimitedAPI_cache))
+        __pyx_mstate_global->__Pyx_GetBuiltinNext_LimitedAPI_cache = __Pyx_GetBuiltinName(__pyx_mstate_global->__pyx_n_u_next);
+    return __pyx_mstate_global->__Pyx_GetBuiltinNext_LimitedAPI_cache;
+}
+#endif
+static CYTHON_INLINE PyObject *__Pyx_PyIter_Next_Plain(PyObject *iterator) {
+#if CYTHON_COMPILING_IN_LIMITED_API && __PYX_LIMITED_VERSION_HEX < 0x030A0000
+    PyObject *result;
+    PyObject *next = __Pyx_GetBuiltinNext_LimitedAPI();
+    if (unlikely(!next)) return NULL;
+    result = PyObject_CallFunctionObjArgs(next, iterator, NULL);
+    return result;
+#else
+    (void)__Pyx_GetBuiltinName; // only for early limited API
+    iternextfunc iternext = __Pyx_PyObject_GetIterNextFunc(iterator);
+    assert(iternext);
+    return iternext(iterator);
+#endif
+}
+
+/* ReturnWithStopIteration (used by CoroutineBase) */
+static void __Pyx__ReturnWithStopIteration(PyObject* value, int async);
+static CYTHON_INLINE void __Pyx_ReturnWithStopIteration(PyObject* value, int async, int iternext) {
+    if (value == Py_None) {
+        if (async || !iternext)
+            PyErr_SetNone(async ? PyExc_StopAsyncIteration : PyExc_StopIteration);
+        return;
+    }
+    __Pyx__ReturnWithStopIteration(value, async);
+}
+static void __Pyx__ReturnWithStopIteration(PyObject* value, int async) {
+#if CYTHON_COMPILING_IN_CPYTHON
+    __Pyx_PyThreadState_declare
+#endif
+    PyObject *exc;
+    PyObject *exc_type = async ? PyExc_StopAsyncIteration : PyExc_StopIteration;
+#if CYTHON_COMPILING_IN_CPYTHON
+    if ((PY_VERSION_HEX >= (0x030C00A6)) || unlikely(PyTuple_Check(value) || PyExceptionInstance_Check(value))) {
+        if (PY_VERSION_HEX >= (0x030e00A1)) {
+            exc = __Pyx_PyObject_CallOneArg(exc_type, value);
+        } else {
+            PyObject *args_tuple = PyTuple_New(1);
+            if (unlikely(!args_tuple)) return;
+            Py_INCREF(value);
+            PyTuple_SET_ITEM(args_tuple, 0, value);
+            exc = PyObject_Call(exc_type, args_tuple, NULL);
+            Py_DECREF(args_tuple);
+        }
+        if (unlikely(!exc)) return;
+    } else {
+        Py_INCREF(value);
+        exc = value;
+    }
+    #if CYTHON_FAST_THREAD_STATE
+    __Pyx_PyThreadState_assign
+    #if CYTHON_USE_EXC_INFO_STACK
+    if (!__pyx_tstate->exc_info->exc_value)
+    #else
+    if (!__pyx_tstate->exc_type)
+    #endif
+    {
+        Py_INCREF(exc_type);
+        __Pyx_ErrRestore(exc_type, exc, NULL);
+        return;
+    }
+    #endif
+#else
+    exc = __Pyx_PyObject_CallOneArg(exc_type, value);
+    if (unlikely(!exc)) return;
+#endif
+    PyErr_SetObject(exc_type, exc);
+    Py_DECREF(exc);
+}
+
+/* CoroutineBase (used by Generator) */
+#if !CYTHON_COMPILING_IN_LIMITED_API
+#include <frameobject.h>
+#if PY_VERSION_HEX >= 0x030b00a6 && !defined(PYPY_VERSION)
+  #ifndef Py_BUILD_CORE
+    #define Py_BUILD_CORE 1
+  #endif
+  #include "internal/pycore_frame.h"
+#endif
+#endif // CYTHON_COMPILING_IN_LIMITED_API
+static CYTHON_INLINE void
+__Pyx_Coroutine_Undelegate(__pyx_CoroutineObject *gen) {
+#if CYTHON_USE_AM_SEND
+    gen->yieldfrom_am_send = NULL;
+#endif
+    Py_CLEAR(gen->yieldfrom);
+}
+static int __Pyx_PyGen__FetchStopIterationValue(PyThreadState *__pyx_tstate, PyObject **pvalue) {
+    PyObject *et, *ev, *tb;
+    PyObject *value = NULL;
+    CYTHON_UNUSED_VAR(__pyx_tstate);
+    __Pyx_ErrFetch(&et, &ev, &tb);
+    if (!et) {
+        Py_XDECREF(tb);
+        Py_XDECREF(ev);
+        Py_INCREF(Py_None);
+        *pvalue = Py_None;
+        return 0;
+    }
+    if (likely(et == PyExc_StopIteration)) {
+        if (!ev) {
+            Py_INCREF(Py_None);
+            value = Py_None;
+        }
+        else if (likely(__Pyx_IS_TYPE(ev, (PyTypeObject*)PyExc_StopIteration))) {
+            #if CYTHON_COMPILING_IN_LIMITED_API || CYTHON_COMPILING_IN_GRAAL
+            value = PyObject_GetAttr(ev, __pyx_mstate_global->__pyx_n_u_value);
+            if (unlikely(!value)) goto limited_api_failure;
+            #else
+            value = ((PyStopIterationObject *)ev)->value;
+            Py_INCREF(value);
+            #endif
+            Py_DECREF(ev);
+        }
+        else if (unlikely(PyTuple_Check(ev))) {
+            Py_ssize_t tuple_size = __Pyx_PyTuple_GET_SIZE(ev);
+            #if !CYTHON_ASSUME_SAFE_SIZE
+            if (unlikely(tuple_size < 0)) {
+                Py_XDECREF(tb);
+                Py_DECREF(ev);
+                Py_DECREF(et);
+                return -1;
+            }
+            #endif
+            if (tuple_size >= 1) {
+#if CYTHON_ASSUME_SAFE_MACROS && !CYTHON_AVOID_BORROWED_REFS
+                value = PyTuple_GET_ITEM(ev, 0);
+                Py_INCREF(value);
+#elif CYTHON_ASSUME_SAFE_MACROS
+                value = PySequence_ITEM(ev, 0);
+#else
+                value = PySequence_GetItem(ev, 0);
+                if (!value) goto limited_api_failure;
+#endif
+            } else {
+                Py_INCREF(Py_None);
+                value = Py_None;
+            }
+            Py_DECREF(ev);
+        }
+        else if (!__Pyx_TypeCheck(ev, (PyTypeObject*)PyExc_StopIteration)) {
+            value = ev;
+        }
+        if (likely(value)) {
+            Py_XDECREF(tb);
+            Py_DECREF(et);
+            *pvalue = value;
+            return 0;
+        }
+    } else if (!__Pyx_PyErr_GivenExceptionMatches(et, PyExc_StopIteration)) {
+        __Pyx_ErrRestore(et, ev, tb);
+        return -1;
+    }
+    PyErr_NormalizeException(&et, &ev, &tb);
+    if (unlikely(!PyObject_TypeCheck(ev, (PyTypeObject*)PyExc_StopIteration))) {
+        __Pyx_ErrRestore(et, ev, tb);
+        return -1;
+    }
+    Py_XDECREF(tb);
+    Py_DECREF(et);
+#if CYTHON_COMPILING_IN_LIMITED_API
+    value = PyObject_GetAttr(ev, __pyx_mstate_global->__pyx_n_u_value);
+#else
+    value = ((PyStopIterationObject *)ev)->value;
+    Py_INCREF(value);
+#endif
+    Py_DECREF(ev);
+#if CYTHON_COMPILING_IN_LIMITED_API
+    if (unlikely(!value)) return -1;
+#endif
+    *pvalue = value;
+    return 0;
+#if CYTHON_COMPILING_IN_LIMITED_API || CYTHON_COMPILING_IN_GRAAL || !CYTHON_ASSUME_SAFE_MACROS
+  limited_api_failure:
+    Py_XDECREF(et);
+    Py_XDECREF(tb);
+    Py_XDECREF(ev);
+    return -1;
+#endif
+}
+static CYTHON_INLINE
+__Pyx_PySendResult __Pyx_Coroutine_status_from_result(PyObject **retval) {
+    if (*retval) {
+        return PYGEN_NEXT;
+    } else if (likely(__Pyx_PyGen__FetchStopIterationValue(__Pyx_PyThreadState_Current, retval) == 0)) {
+        return PYGEN_RETURN;
+    } else {
+        return PYGEN_ERROR;
+    }
+}
+static CYTHON_INLINE
+void __Pyx_Coroutine_ExceptionClear(__Pyx_ExcInfoStruct *exc_state) {
+#if PY_VERSION_HEX >= 0x030B00a4
+    Py_CLEAR(exc_state->exc_value);
+#else
+    PyObject *t, *v, *tb;
+    t = exc_state->exc_type;
+    v = exc_state->exc_value;
+    tb = exc_state->exc_traceback;
+    exc_state->exc_type = NULL;
+    exc_state->exc_value = NULL;
+    exc_state->exc_traceback = NULL;
+    Py_XDECREF(t);
+    Py_XDECREF(v);
+    Py_XDECREF(tb);
+#endif
+}
+#define __Pyx_Coroutine_AlreadyRunningError(gen)  (__Pyx__Coroutine_AlreadyRunningError(gen), (PyObject*)NULL)
+static void __Pyx__Coroutine_AlreadyRunningError(__pyx_CoroutineObject *gen) {
+    const char *msg;
+    CYTHON_MAYBE_UNUSED_VAR(gen);
+    if ((0)) {
+    #ifdef __Pyx_Coroutine_USED
+    } else if (__Pyx_Coroutine_Check((PyObject*)gen)) {
+        msg = "coroutine already executing";
+    #endif
+    #ifdef __Pyx_AsyncGen_USED
+    } else if (__Pyx_AsyncGen_CheckExact((PyObject*)gen)) {
+        msg = "async generator already executing";
+    #endif
+    } else {
+        msg = "generator already executing";
+    }
+    PyErr_SetString(PyExc_ValueError, msg);
+}
+static void __Pyx_Coroutine_AlreadyTerminatedError(PyObject *gen, PyObject *value, int closing) {
+    CYTHON_MAYBE_UNUSED_VAR(gen);
+    CYTHON_MAYBE_UNUSED_VAR(closing);
+    #ifdef __Pyx_Coroutine_USED
+    if (!closing && __Pyx_Coroutine_Check(gen)) {
+        PyErr_SetString(PyExc_RuntimeError, "cannot reuse already awaited coroutine");
+    } else
+    #endif
+    if (value) {
+        #ifdef __Pyx_AsyncGen_USED
+        if (__Pyx_AsyncGen_CheckExact(gen))
+            PyErr_SetNone(PyExc_StopAsyncIteration);
+        else
+        #endif
+        PyErr_SetNone(PyExc_StopIteration);
+    }
+}
+static
+__Pyx_PySendResult __Pyx_Coroutine_SendEx(__pyx_CoroutineObject *self, PyObject *value, PyObject **result, int closing) {
+    __Pyx_PyThreadState_declare
+    PyThreadState *tstate;
+    __Pyx_ExcInfoStruct *exc_state;
+    PyObject *retval;
+    assert(__Pyx_Coroutine_get_is_running(self));  // Callers should ensure is_running
+    if (unlikely(self->resume_label == -1)) {
+        __Pyx_Coroutine_AlreadyTerminatedError((PyObject*)self, value, closing);
+        return PYGEN_ERROR;
+    }
+#if CYTHON_FAST_THREAD_STATE
+    __Pyx_PyThreadState_assign
+    tstate = __pyx_tstate;
+#else
+    tstate = __Pyx_PyThreadState_Current;
+#endif
+    exc_state = &self->gi_exc_state;
+    if (exc_state->exc_value) {
+        #if CYTHON_COMPILING_IN_LIMITED_API || CYTHON_COMPILING_IN_PYPY
+        #else
+        PyObject *exc_tb;
+        #if PY_VERSION_HEX >= 0x030B00a4 && !CYTHON_COMPILING_IN_CPYTHON
+        exc_tb = PyException_GetTraceback(exc_state->exc_value);
+        #elif PY_VERSION_HEX >= 0x030B00a4
+        exc_tb = ((PyBaseExceptionObject*) exc_state->exc_value)->traceback;
+        #else
+        exc_tb = exc_state->exc_traceback;
+        #endif
+        if (exc_tb) {
+            PyTracebackObject *tb = (PyTracebackObject *) exc_tb;
+            PyFrameObject *f = tb->tb_frame;
+            assert(f->f_back == NULL);
+            #if PY_VERSION_HEX >= 0x030B00A1
+            f->f_back = PyThreadState_GetFrame(tstate);
+            #else
+            Py_XINCREF(tstate->frame);
+            f->f_back = tstate->frame;
+            #endif
+            #if PY_VERSION_HEX >= 0x030B00a4 && !CYTHON_COMPILING_IN_CPYTHON
+            Py_DECREF(exc_tb);
+            #endif
+        }
+        #endif
+    }
+#if CYTHON_USE_EXC_INFO_STACK
+    exc_state->previous_item = tstate->exc_info;
+    tstate->exc_info = exc_state;
+#else
+    if (exc_state->exc_type) {
+        __Pyx_ExceptionSwap(&exc_state->exc_type, &exc_state->exc_value, &exc_state->exc_traceback);
+    } else {
+        __Pyx_Coroutine_ExceptionClear(exc_state);
+        __Pyx_ExceptionSave(&exc_state->exc_type, &exc_state->exc_value, &exc_state->exc_traceback);
+    }
+#endif
+    retval = self->body(self, tstate, value);
+#if CYTHON_USE_EXC_INFO_STACK
+    exc_state = &self->gi_exc_state;
+    tstate->exc_info = exc_state->previous_item;
+    exc_state->previous_item = NULL;
+    __Pyx_Coroutine_ResetFrameBackpointer(exc_state);
+#endif
+    *result = retval;
+    if (self->resume_label == -1) {
+        return likely(retval) ? PYGEN_RETURN : PYGEN_ERROR;
+    }
+    return PYGEN_NEXT;
+}
+static CYTHON_INLINE void __Pyx_Coroutine_ResetFrameBackpointer(__Pyx_ExcInfoStruct *exc_state) {
+#if CYTHON_COMPILING_IN_PYPY || CYTHON_COMPILING_IN_LIMITED_API
+    CYTHON_UNUSED_VAR(exc_state);
+#else
+    PyObject *exc_tb;
+    #if PY_VERSION_HEX >= 0x030B00a4
+    if (!exc_state->exc_value) return;
+    exc_tb = PyException_GetTraceback(exc_state->exc_value);
+    #else
+    exc_tb = exc_state->exc_traceback;
+    #endif
+    if (likely(exc_tb)) {
+        PyTracebackObject *tb = (PyTracebackObject *) exc_tb;
+        PyFrameObject *f = tb->tb_frame;
+        Py_CLEAR(f->f_back);
+        #if PY_VERSION_HEX >= 0x030B00a4
+        Py_DECREF(exc_tb);
+        #endif
+    }
+#endif
+}
+#define __Pyx_Coroutine_MethodReturnFromResult(gen, result, retval, iternext)\
+    ((result) == PYGEN_NEXT ? (retval) : __Pyx__Coroutine_MethodReturnFromResult(gen, result, retval, iternext))
+static PyObject *
+__Pyx__Coroutine_MethodReturnFromResult(PyObject* gen, __Pyx_PySendResult result, PyObject *retval, int iternext) {
+    CYTHON_MAYBE_UNUSED_VAR(gen);
+    if (likely(result == PYGEN_RETURN)) {
+        int is_async = 0;
+        #ifdef __Pyx_AsyncGen_USED
+        is_async = __Pyx_AsyncGen_CheckExact(gen);
+        #endif
+        __Pyx_ReturnWithStopIteration(retval, is_async, iternext);
+        Py_XDECREF(retval);
+    }
+    return NULL;
+}
+#if CYTHON_COMPILING_IN_CPYTHON
+static CYTHON_INLINE
+PyObject *__Pyx_PyGen_Send(PyGenObject *gen, PyObject *arg) {
+#if PY_VERSION_HEX <= 0x030A00A1
+    return _PyGen_Send(gen, arg);
+#else
+    PyObject *result;
+    if (PyIter_Send((PyObject*)gen, arg ? arg : Py_None, &result) == PYGEN_RETURN) {
+        if (PyAsyncGen_CheckExact(gen)) {
+            assert(result == Py_None);
+            PyErr_SetNone(PyExc_StopAsyncIteration);
+        }
+        else if (result == Py_None) {
+            PyErr_SetNone(PyExc_StopIteration);
+        }
+        else {
+#if PY_VERSION_HEX < 0x030d00A1
+            _PyGen_SetStopIterationValue(result);
+#else
+            if (!PyTuple_Check(result) && !PyExceptionInstance_Check(result)) {
+                PyErr_SetObject(PyExc_StopIteration, result);
+            } else {
+                PyObject *exc = __Pyx_PyObject_CallOneArg(PyExc_StopIteration, result);
+                if (likely(exc != NULL)) {
+                    PyErr_SetObject(PyExc_StopIteration, exc);
+                    Py_DECREF(exc);
+                }
+            }
+#endif
+        }
+        Py_DECREF(result);
+        result = NULL;
+    }
+    return result;
+#endif
+}
+#endif
+static CYTHON_INLINE __Pyx_PySendResult
+__Pyx_Coroutine_FinishDelegation(__pyx_CoroutineObject *gen, PyObject** retval) {
+    __Pyx_PySendResult result;
+    PyObject *val = NULL;
+    assert(__Pyx_Coroutine_get_is_running(gen));
+    __Pyx_Coroutine_Undelegate(gen);
+    __Pyx_PyGen__FetchStopIterationValue(__Pyx_PyThreadState_Current, &val);
+    result = __Pyx_Coroutine_SendEx(gen, val, retval, 0);
+    Py_XDECREF(val);
+    return result;
+}
+#if CYTHON_USE_AM_SEND
+static __Pyx_PySendResult
+__Pyx_Coroutine_SendToDelegate(__pyx_CoroutineObject *gen, __Pyx_pyiter_sendfunc gen_am_send, PyObject *value, PyObject **retval) {
+    PyObject *ret = NULL;
+    __Pyx_PySendResult delegate_result, result;
+    assert(__Pyx_Coroutine_get_is_running(gen));
+    delegate_result = gen_am_send(gen->yieldfrom, value, &ret);
+    if (delegate_result == PYGEN_NEXT) {
+        assert (ret != NULL);
+        *retval = ret;
+        return PYGEN_NEXT;
+    }
+    assert (delegate_result != PYGEN_ERROR || ret == NULL);
+    __Pyx_Coroutine_Undelegate(gen);
+    result = __Pyx_Coroutine_SendEx(gen, ret, retval, 0);
+    Py_XDECREF(ret);
+    return result;
+}
+#endif
+static PyObject *__Pyx_Coroutine_Send(PyObject *self, PyObject *value) {
+    PyObject *retval = NULL;
+    __Pyx_PySendResult result = __Pyx_Coroutine_AmSend(self, value, &retval);
+    return __Pyx_Coroutine_MethodReturnFromResult(self, result, retval, 0);
+}
+static __Pyx_PySendResult
+__Pyx_Coroutine_AmSend(PyObject *self, PyObject *value, PyObject **retval) {
+    __Pyx_PySendResult result;
+    __pyx_CoroutineObject *gen = (__pyx_CoroutineObject*) self;
+    if (unlikely(__Pyx_Coroutine_test_and_set_is_running(gen))) {
+        *retval = __Pyx_Coroutine_AlreadyRunningError(gen);
+        return PYGEN_ERROR;
+    }
+    #if CYTHON_USE_AM_SEND
+    if (gen->yieldfrom_am_send) {
+        result = __Pyx_Coroutine_SendToDelegate(gen, gen->yieldfrom_am_send, value, retval);
+    } else
+    #endif
+    if (gen->yieldfrom) {
+        PyObject *yf = gen->yieldfrom;
+        PyObject *ret;
+      #if !CYTHON_USE_AM_SEND
+        #ifdef __Pyx_Generator_USED
+        if (__Pyx_Generator_CheckExact(yf)) {
+            ret = __Pyx_Coroutine_Send(yf, value);
+        } else
+        #endif
+        #ifdef __Pyx_Coroutine_USED
+        if (__Pyx_Coroutine_Check(yf)) {
+            ret = __Pyx_Coroutine_Send(yf, value);
+        } else
+        #endif
+        #ifdef __Pyx_AsyncGen_USED
+        if (__pyx_PyAsyncGenASend_CheckExact(yf)) {
+            ret = __Pyx_async_gen_asend_send(yf, value);
+        } else
+        #endif
+        #if CYTHON_COMPILING_IN_CPYTHON
+        if (PyGen_CheckExact(yf)) {
+            ret = __Pyx_PyGen_Send((PyGenObject*)yf, value == Py_None ? NULL : value);
+        } else
+        if (PyCoro_CheckExact(yf)) {
+            ret = __Pyx_PyGen_Send((PyGenObject*)yf, value == Py_None ? NULL : value);
+        } else
+        #endif
+      #endif
+        {
+            #if !CYTHON_COMPILING_IN_LIMITED_API || __PYX_LIMITED_VERSION_HEX >= 0x03080000
+            if (value == Py_None && PyIter_Check(yf))
+                ret = __Pyx_PyIter_Next_Plain(yf);
+            else
+            #endif
+                ret = __Pyx_PyObject_CallMethod1(yf, __pyx_mstate_global->__pyx_n_u_send, value);
+        }
+        if (likely(ret)) {
+            __Pyx_Coroutine_unset_is_running(gen);
+            *retval = ret;
+            return PYGEN_NEXT;
+        }
+        result = __Pyx_Coroutine_FinishDelegation(gen, retval);
+    } else {
+        result = __Pyx_Coroutine_SendEx(gen, value, retval, 0);
+    }
+    __Pyx_Coroutine_unset_is_running(gen);
+    return result;
+}
+static int __Pyx_Coroutine_CloseIter(__pyx_CoroutineObject *gen, PyObject *yf) {
+    __Pyx_PySendResult result;
+    PyObject *retval = NULL;
+    CYTHON_UNUSED_VAR(gen);
+    assert(__Pyx_Coroutine_get_is_running(gen));
+    #ifdef __Pyx_Generator_USED
+    if (__Pyx_Generator_CheckExact(yf)) {
+        result = __Pyx_Coroutine_Close(yf, &retval);
+    } else
+    #endif
+    #ifdef __Pyx_Coroutine_USED
+    if (__Pyx_Coroutine_Check(yf)) {
+        result = __Pyx_Coroutine_Close(yf, &retval);
+    } else
+    if (__Pyx_CoroutineAwait_CheckExact(yf)) {
+        result = __Pyx_CoroutineAwait_Close((__pyx_CoroutineAwaitObject*)yf);
+    } else
+    #endif
+    #ifdef __Pyx_AsyncGen_USED
+    if (__pyx_PyAsyncGenASend_CheckExact(yf)) {
+        retval = __Pyx_async_gen_asend_close(yf, NULL);
+        result = PYGEN_RETURN;
+    } else
+    if (__pyx_PyAsyncGenAThrow_CheckExact(yf)) {
+        retval = __Pyx_async_gen_athrow_close(yf, NULL);
+        result = PYGEN_RETURN;
+    } else
+    #endif
+    {
+        PyObject *meth;
+        result = PYGEN_RETURN;
+        meth = __Pyx_PyObject_GetAttrStrNoError(yf, __pyx_mstate_global->__pyx_n_u_close);
+        if (unlikely(!meth)) {
+            if (unlikely(PyErr_Occurred())) {
+                PyErr_WriteUnraisable(yf);
+            }
+        } else {
+            retval = __Pyx_PyObject_CallNoArg(meth);
+            Py_DECREF(meth);
+            if (unlikely(!retval)) {
+                result = PYGEN_ERROR;
+            }
+        }
+    }
+    Py_XDECREF(retval);
+    return result == PYGEN_ERROR ? -1 : 0;
+}
+static PyObject *__Pyx_Generator_Next(PyObject *self) {
+    __Pyx_PySendResult result;
+    PyObject *retval = NULL;
+    __pyx_CoroutineObject *gen = (__pyx_CoroutineObject*) self;
+    if (unlikely(__Pyx_Coroutine_test_and_set_is_running(gen))) {
+        return __Pyx_Coroutine_AlreadyRunningError(gen);
+    }
+    #if CYTHON_USE_AM_SEND
+    if (gen->yieldfrom_am_send) {
+        result = __Pyx_Coroutine_SendToDelegate(gen, gen->yieldfrom_am_send, Py_None, &retval);
+    } else
+    #endif
+    if (gen->yieldfrom) {
+        PyObject *yf = gen->yieldfrom;
+        PyObject *ret;
+        #ifdef __Pyx_Generator_USED
+        if (__Pyx_Generator_CheckExact(yf)) {
+            ret = __Pyx_Generator_Next(yf);
+        } else
+        #endif
+        #ifdef __Pyx_Coroutine_USED
+        if (__Pyx_Coroutine_CheckExact(yf)) {
+            ret = __Pyx_Coroutine_Send(yf, Py_None);
+        } else
+        #endif
+        #if CYTHON_COMPILING_IN_CPYTHON && (PY_VERSION_HEX < 0x030A00A3 || !CYTHON_USE_AM_SEND)
+        if (PyGen_CheckExact(yf)) {
+            ret = __Pyx_PyGen_Send((PyGenObject*)yf, NULL);
+        } else
+        #endif
+            ret = __Pyx_PyIter_Next_Plain(yf);
+        if (likely(ret)) {
+            __Pyx_Coroutine_unset_is_running(gen);
+            return ret;
+        }
+        result = __Pyx_Coroutine_FinishDelegation(gen, &retval);
+    } else {
+        result = __Pyx_Coroutine_SendEx(gen, Py_None, &retval, 0);
+    }
+    __Pyx_Coroutine_unset_is_running(gen);
+    return __Pyx_Coroutine_MethodReturnFromResult(self, result, retval, 1);
+}
+static PyObject *__Pyx_Coroutine_Close_Method(PyObject *self, PyObject *arg) {
+    PyObject *retval = NULL;
+    __Pyx_PySendResult result;
+    CYTHON_UNUSED_VAR(arg);
+    result = __Pyx_Coroutine_Close(self, &retval);
+    if (unlikely(result == PYGEN_ERROR))
+        return NULL;
+    Py_XDECREF(retval);
+    Py_RETURN_NONE;
+}
+static __Pyx_PySendResult
+__Pyx_Coroutine_Close(PyObject *self, PyObject **retval) {
+    __pyx_CoroutineObject *gen = (__pyx_CoroutineObject *) self;
+    __Pyx_PySendResult result;
+    PyObject *yf;
+    int err = 0;
+    if (unlikely(__Pyx_Coroutine_test_and_set_is_running(gen))) {
+        *retval = __Pyx_Coroutine_AlreadyRunningError(gen);
+        return PYGEN_ERROR;
+    }
+    yf = gen->yieldfrom;
+    if (yf) {
+        Py_INCREF(yf);
+        err = __Pyx_Coroutine_CloseIter(gen, yf);
+        __Pyx_Coroutine_Undelegate(gen);
+        Py_DECREF(yf);
+    }
+    if (err == 0)
+        PyErr_SetNone(PyExc_GeneratorExit);
+    result = __Pyx_Coroutine_SendEx(gen, NULL, retval, 1);
+    if (result == PYGEN_ERROR) {
+        __Pyx_PyThreadState_declare
+        __Pyx_PyThreadState_assign
+        __Pyx_Coroutine_unset_is_running(gen);
+        if (!__Pyx_PyErr_Occurred()) {
+            return PYGEN_RETURN;
+        } else if (likely(__Pyx_PyErr_ExceptionMatches2(PyExc_GeneratorExit, PyExc_StopIteration))) {
+            __Pyx_PyErr_Clear();
+            return PYGEN_RETURN;
+        }
+        return PYGEN_ERROR;
+    } else if (likely(result == PYGEN_RETURN && *retval == Py_None)) {
+        __Pyx_Coroutine_unset_is_running(gen);
+        return PYGEN_RETURN;
+    } else {
+        const char *msg;
+        Py_DECREF(*retval);
+        *retval = NULL;
+        if ((0)) {
+        #ifdef __Pyx_Coroutine_USED
+        } else if (__Pyx_Coroutine_Check(self)) {
+            msg = "coroutine ignored GeneratorExit";
+        #endif
+        #ifdef __Pyx_AsyncGen_USED
+        } else if (__Pyx_AsyncGen_CheckExact(self)) {
+            msg = "async generator ignored GeneratorExit";
+        #endif
+        } else {
+            msg = "generator ignored GeneratorExit";
+        }
+        PyErr_SetString(PyExc_RuntimeError, msg);
+        __Pyx_Coroutine_unset_is_running(gen);
+        return PYGEN_ERROR;
+    }
+}
+static PyObject *__Pyx__Coroutine_Throw(PyObject *self, PyObject *typ, PyObject *val, PyObject *tb,
+                                        PyObject *args, int close_on_genexit) {
+    __pyx_CoroutineObject *gen = (__pyx_CoroutineObject *) self;
+    PyObject *yf;
+    if (unlikely(__Pyx_Coroutine_test_and_set_is_running(gen)))
+        return __Pyx_Coroutine_AlreadyRunningError(gen);
+    yf = gen->yieldfrom;
+    if (yf) {
+        __Pyx_PySendResult result;
+        PyObject *ret;
+        Py_INCREF(yf);
+        if (__Pyx_PyErr_GivenExceptionMatches(typ, PyExc_GeneratorExit) && close_on_genexit) {
+            int err = __Pyx_Coroutine_CloseIter(gen, yf);
+            Py_DECREF(yf);
+            __Pyx_Coroutine_Undelegate(gen);
+            if (err < 0)
+                goto propagate_exception;
+            goto throw_here;
+        }
+        if (0
+        #ifdef __Pyx_Generator_USED
+            || __Pyx_Generator_CheckExact(yf)
+        #endif
+        #ifdef __Pyx_Coroutine_USED
+            || __Pyx_Coroutine_Check(yf)
+        #endif
+            ) {
+            ret = __Pyx__Coroutine_Throw(yf, typ, val, tb, args, close_on_genexit);
+        #ifdef __Pyx_Coroutine_USED
+        } else if (__Pyx_CoroutineAwait_CheckExact(yf)) {
+            ret = __Pyx__Coroutine_Throw(((__pyx_CoroutineAwaitObject*)yf)->coroutine, typ, val, tb, args, close_on_genexit);
+        #endif
+        } else {
+            PyObject *meth = __Pyx_PyObject_GetAttrStrNoError(yf, __pyx_mstate_global->__pyx_n_u_throw);
+            if (unlikely(!meth)) {
+                Py_DECREF(yf);
+                if (unlikely(PyErr_Occurred())) {
+                    __Pyx_Coroutine_unset_is_running(gen);
+                    return NULL;
+                }
+                __Pyx_Coroutine_Undelegate(gen);
+                goto throw_here;
+            }
+            if (likely(args)) {
+                ret = __Pyx_PyObject_Call(meth, args, NULL);
+            } else {
+                PyObject *cargs[4] = {NULL, typ, val, tb};
+                size_t nargs = 1U + (val != NULL) + (tb != NULL);
+                ret = __Pyx_PyObject_FastCall(meth, cargs+1, nargs | __Pyx_PY_VECTORCALL_ARGUMENTS_OFFSET);
+            }
+            Py_DECREF(meth);
+        }
+        Py_DECREF(yf);
+        if (ret) {
+            __Pyx_Coroutine_unset_is_running(gen);
+            return ret;
+        }
+        result = __Pyx_Coroutine_FinishDelegation(gen, &ret);
+        __Pyx_Coroutine_unset_is_running(gen);
+        return __Pyx_Coroutine_MethodReturnFromResult(self, result, ret, 0);
+    }
+throw_here:
+    __Pyx_Raise(typ, val, tb, NULL);
+propagate_exception:
+    {
+        PyObject *retval = NULL;
+        __Pyx_PySendResult result = __Pyx_Coroutine_SendEx(gen, NULL, &retval, 0);
+        __Pyx_Coroutine_unset_is_running(gen);
+        return __Pyx_Coroutine_MethodReturnFromResult(self, result, retval, 0);
+    }
+}
+static PyObject *__Pyx_Coroutine_Throw(PyObject *self, PyObject *args) {
+    PyObject *typ;
+    PyObject *val = NULL;
+    PyObject *tb = NULL;
+    if (unlikely(!PyArg_UnpackTuple(args, "throw", 1, 3, &typ, &val, &tb)))
+        return NULL;
+    return __Pyx__Coroutine_Throw(self, typ, val, tb, args, 1);
+}
+static CYTHON_INLINE int __Pyx_Coroutine_traverse_excstate(__Pyx_ExcInfoStruct *exc_state, visitproc visit, void *arg) {
+#if PY_VERSION_HEX >= 0x030B00a4
+    Py_VISIT(exc_state->exc_value);
+#else
+    Py_VISIT(exc_state->exc_type);
+    Py_VISIT(exc_state->exc_value);
+    Py_VISIT(exc_state->exc_traceback);
+#endif
+    return 0;
+}
+static int __Pyx_Coroutine_traverse(__pyx_CoroutineObject *gen, visitproc visit, void *arg) {
+    {
+        int e = __Pyx_call_type_traverse((PyObject*)gen, 1, visit, arg);
+        if (e) return e;
+    }
+    Py_VISIT(gen->closure);
+    Py_VISIT(gen->classobj);
+    Py_VISIT(gen->yieldfrom);
+    return __Pyx_Coroutine_traverse_excstate(&gen->gi_exc_state, visit, arg);
+}
+static int __Pyx_Coroutine_clear(PyObject *self) {
+    __pyx_CoroutineObject *gen = (__pyx_CoroutineObject *) self;
+    Py_CLEAR(gen->closure);
+    Py_CLEAR(gen->classobj);
+    __Pyx_Coroutine_Undelegate(gen);
+    __Pyx_Coroutine_ExceptionClear(&gen->gi_exc_state);
+#ifdef __Pyx_AsyncGen_USED
+    if (__Pyx_AsyncGen_CheckExact(self)) {
+        Py_CLEAR(((__pyx_PyAsyncGenObject*)gen)->ag_finalizer);
+    }
+#endif
+    Py_CLEAR(gen->gi_code);
+    Py_CLEAR(gen->gi_frame);
+    Py_CLEAR(gen->gi_name);
+    Py_CLEAR(gen->gi_qualname);
+    Py_CLEAR(gen->gi_modulename);
+    return 0;
+}
+static void __Pyx_Coroutine_dealloc(PyObject *self) {
+    __pyx_CoroutineObject *gen = (__pyx_CoroutineObject *) self;
+    PyObject_GC_UnTrack(gen);
+    #if PY_VERSION_HEX < 0x030C0000 || CYTHON_COMPILING_IN_LIMITED_API
+    if (gen->gi_weakreflist != NULL)
+    #endif
+        PyObject_ClearWeakRefs(self);
+    if (gen->resume_label >= 0) {
+        PyObject_GC_Track(self);
+#if CYTHON_USE_TP_FINALIZE
+        if (unlikely(PyObject_CallFinalizerFromDealloc(self)))
+#else
+        {
+            destructor del = __Pyx_PyObject_GetSlot(gen, tp_del, destructor);
+            if (del) del(self);
+        }
+        if (unlikely(Py_REFCNT(self) > 0))
+#endif
+        {
+            return;
+        }
+        PyObject_GC_UnTrack(self);
+    }
+#ifdef __Pyx_AsyncGen_USED
+    if (__Pyx_AsyncGen_CheckExact(self)) {
+        /* We have to handle this case for asynchronous generators
+           right here, because this code has to be between UNTRACK
+           and GC_Del. */
+        Py_CLEAR(((__pyx_PyAsyncGenObject*)self)->ag_finalizer);
+    }
+#endif
+    __Pyx_Coroutine_clear(self);
+    __Pyx_PyHeapTypeObject_GC_Del(gen);
+}
+#if CYTHON_USE_TP_FINALIZE
+static void __Pyx_Coroutine_del(PyObject *self) {
+    PyObject *error_type, *error_value, *error_traceback;
+    __pyx_CoroutineObject *gen = (__pyx_CoroutineObject *) self;
+    __Pyx_PyThreadState_declare
+    if (gen->resume_label < 0) {
+        return;
+    }
+    __Pyx_PyThreadState_assign
+    __Pyx_ErrFetch(&error_type, &error_value, &error_traceback);
+#ifdef __Pyx_AsyncGen_USED
+    if (__Pyx_AsyncGen_CheckExact(self)) {
+        __pyx_PyAsyncGenObject *agen = (__pyx_PyAsyncGenObject*)self;
+        PyObject *finalizer = agen->ag_finalizer;
+        if (finalizer && !agen->ag_closed) {
+            PyObject *res = __Pyx_PyObject_CallOneArg(finalizer, self);
+            if (unlikely(!res)) {
+                PyErr_WriteUnraisable(self);
+            } else {
+                Py_DECREF(res);
+            }
+            __Pyx_ErrRestore(error_type, error_value, error_traceback);
+            return;
+        }
+    }
+#endif
+    if (unlikely(gen->resume_label == 0 && !error_value)) {
+#ifdef __Pyx_Coroutine_USED
+#ifdef __Pyx_Generator_USED
+    if (!__Pyx_Generator_CheckExact(self))
+#endif
+        {
+        PyObject_GC_UnTrack(self);
+        if (unlikely(PyErr_WarnFormat(PyExc_RuntimeWarning, 1, "coroutine '%.50S' was never awaited", gen->gi_qualname) < 0))
+            PyErr_WriteUnraisable(self);
+        PyObject_GC_Track(self);
+        }
+#endif
+    } else {
+        PyObject *retval = NULL;
+        __Pyx_PySendResult result = __Pyx_Coroutine_Close(self, &retval);
+        if (result == PYGEN_ERROR) {
+            PyErr_WriteUnraisable(self);
+        } else {
+            Py_XDECREF(retval);
+        }
+    }
+    __Pyx_ErrRestore(error_type, error_value, error_traceback);
+}
+#endif
+static PyObject *
+__Pyx_Coroutine_get_name(__pyx_CoroutineObject *self, void *context)
+{
+    PyObject *name = self->gi_name;
+    CYTHON_UNUSED_VAR(context);
+    if (unlikely(!name)) name = Py_None;
+    Py_INCREF(name);
+    return name;
+}
+static int
+__Pyx_Coroutine_set_name(__pyx_CoroutineObject *self, PyObject *value, void *context)
+{
+    CYTHON_UNUSED_VAR(context);
+    if (unlikely(value == NULL || !PyUnicode_Check(value))) {
+        PyErr_SetString(PyExc_TypeError,
+                        "__name__ must be set to a string object");
+        return -1;
+    }
+    Py_INCREF(value);
+    __Pyx_Py_XDECREF_SET(self->gi_name, value);
+    return 0;
+}
+static PyObject *
+__Pyx_Coroutine_get_qualname(__pyx_CoroutineObject *self, void *context)
+{
+    PyObject *name = self->gi_qualname;
+    CYTHON_UNUSED_VAR(context);
+    if (unlikely(!name)) name = Py_None;
+    Py_INCREF(name);
+    return name;
+}
+static int
+__Pyx_Coroutine_set_qualname(__pyx_CoroutineObject *self, PyObject *value, void *context)
+{
+    CYTHON_UNUSED_VAR(context);
+    if (unlikely(value == NULL || !PyUnicode_Check(value))) {
+        PyErr_SetString(PyExc_TypeError,
+                        "__qualname__ must be set to a string object");
+        return -1;
+    }
+    Py_INCREF(value);
+    __Pyx_Py_XDECREF_SET(self->gi_qualname, value);
+    return 0;
+}
+#if !CYTHON_COMPILING_IN_LIMITED_API
+static PyObject *
+__Pyx__Coroutine_get_frame_locked(__pyx_CoroutineObject *self) {
+    PyObject *frame;
+    frame = self->gi_frame;
+    if (!frame) {
+        if (unlikely(!self->gi_code)) {
+            Py_RETURN_NONE;
+        }
+        PyObject *globals = PyDict_New();
+        if (unlikely(!globals)) return NULL;
+        frame = (PyObject *) PyFrame_New(
+            PyThreadState_Get(),            /*PyThreadState *tstate,*/
+            (PyCodeObject*) self->gi_code,  /*PyCodeObject *code,*/
+            globals,                        /*PyObject *globals,*/
+            0                               /*PyObject *locals*/
+        );
+        Py_DECREF(globals);
+        if (unlikely(!frame))
+            return NULL;
+        if (unlikely(self->gi_frame)) {
+            Py_DECREF(frame);
+            frame = self->gi_frame;
+        } else {
+            self->gi_frame = frame;
+        }
+    }
+    Py_INCREF(frame);
+    return frame;
+}
+#endif
+static PyObject *
+__Pyx__Coroutine_get_frame(__pyx_CoroutineObject *self)
+{
+#if !CYTHON_COMPILING_IN_LIMITED_API
+    PyObject *frame;
+    __Pyx_BEGIN_CRITICAL_SECTION((PyObject*)self);
+    frame = __Pyx__Coroutine_get_frame_locked(self);
+    __Pyx_END_CRITICAL_SECTION();
+    return frame;
+#else
+    CYTHON_UNUSED_VAR(self);
+    Py_RETURN_NONE;
+#endif
+}
+static PyObject *
+__Pyx_Coroutine_get_frame(__pyx_CoroutineObject *self, void *context) {
+    CYTHON_UNUSED_VAR(context);
+    PyObject *frame = self->gi_frame;
+    if (frame)
+        return __Pyx_NewRef(frame);
+    return __Pyx__Coroutine_get_frame(self);
+}
+static __pyx_CoroutineObject *__Pyx__Coroutine_New(
+            PyTypeObject* type, __pyx_coroutine_body_t body, PyObject *code, PyObject *closure,
+            PyObject *name, PyObject *qualname, PyObject *module_name) {
+    __pyx_CoroutineObject *gen = PyObject_GC_New(__pyx_CoroutineObject, type);
+    if (unlikely(!gen))
+        return NULL;
+    return __Pyx__Coroutine_NewInit(gen, body, code, closure, name, qualname, module_name);
+}
+static __pyx_CoroutineObject *__Pyx__Coroutine_NewInit(
+            __pyx_CoroutineObject *gen, __pyx_coroutine_body_t body, PyObject *code, PyObject *closure,
+            PyObject *name, PyObject *qualname, PyObject *module_name) {
+    gen->body = body;
+    gen->closure = closure;
+    Py_XINCREF(closure);
+    gen->is_running = 0;
+    gen->resume_label = 0;
+    gen->classobj = NULL;
+    gen->yieldfrom = NULL;
+    gen->yieldfrom_am_send = NULL;
+    #if PY_VERSION_HEX >= 0x030B00a4 && !CYTHON_COMPILING_IN_LIMITED_API
+    gen->gi_exc_state.exc_value = NULL;
+    #else
+    gen->gi_exc_state.exc_type = NULL;
+    gen->gi_exc_state.exc_value = NULL;
+    gen->gi_exc_state.exc_traceback = NULL;
+    #endif
+#if CYTHON_USE_EXC_INFO_STACK
+    gen->gi_exc_state.previous_item = NULL;
+#endif
+#if PY_VERSION_HEX < 0x030C0000 || CYTHON_COMPILING_IN_LIMITED_API
+    gen->gi_weakreflist = NULL;
+#endif
+    Py_XINCREF(qualname);
+    gen->gi_qualname = qualname;
+    Py_XINCREF(name);
+    gen->gi_name = name;
+    Py_XINCREF(module_name);
+    gen->gi_modulename = module_name;
+    Py_XINCREF(code);
+    gen->gi_code = code;
+    gen->gi_frame = NULL;
+#if CYTHON_USE_SYS_MONITORING && (CYTHON_PROFILE || CYTHON_TRACE)
+    memset(gen->__pyx_pymonitoring_state, 0, sizeof(gen->__pyx_pymonitoring_state));
+    gen->__pyx_pymonitoring_version = 0;
+#endif
+    PyObject_GC_Track(gen);
+    return gen;
+}
+static char __Pyx_Coroutine_test_and_set_is_running(__pyx_CoroutineObject *gen) {
+    char result;
+    __Pyx_BEGIN_CRITICAL_SECTION((PyObject*)gen);
+    result = gen->is_running;
+    gen->is_running = 1;
+    __Pyx_END_CRITICAL_SECTION();
+    return result;
+}
+static void __Pyx_Coroutine_unset_is_running(__pyx_CoroutineObject *gen) {
+    __Pyx_BEGIN_CRITICAL_SECTION((PyObject*)gen);
+    assert(gen->is_running);
+    gen->is_running = 0;
+    __Pyx_END_CRITICAL_SECTION();
+}
+static char __Pyx_Coroutine_get_is_running(__pyx_CoroutineObject *gen) {
+    char result;
+    __Pyx_BEGIN_CRITICAL_SECTION((PyObject*)gen);
+    result = gen->is_running;
+    __Pyx_END_CRITICAL_SECTION();
+    return result;
+}
+static PyObject *__Pyx_Coroutine_get_is_running_getter(PyObject *gen, void *closure) {
+    CYTHON_UNUSED_VAR(closure);
+    char result = __Pyx_Coroutine_get_is_running((__pyx_CoroutineObject*)gen);
+    if (result) Py_RETURN_TRUE;
+    else Py_RETURN_FALSE;
+}
+#if __PYX_HAS_PY_AM_SEND == 2
+static void __Pyx_SetBackportTypeAmSend(PyTypeObject *type, __Pyx_PyAsyncMethodsStruct *static_amsend_methods, __Pyx_pyiter_sendfunc am_send) {
+    Py_ssize_t ptr_offset = (char*)(type->tp_as_async) - (char*)type;
+    if (ptr_offset < 0 || ptr_offset > type->tp_basicsize) {
+        return;
+    }
+    memcpy((void*)static_amsend_methods, (void*)(type->tp_as_async), sizeof(*type->tp_as_async));
+    static_amsend_methods->am_send = am_send;
+    type->tp_as_async = __Pyx_SlotTpAsAsync(static_amsend_methods);
+}
+#endif
+static PyObject *__Pyx_Coroutine_fail_reduce_ex(PyObject *self, PyObject *arg) {
+    CYTHON_UNUSED_VAR(arg);
+    __Pyx_TypeName self_type_name = __Pyx_PyType_GetFullyQualifiedName(Py_TYPE((PyObject*)self));
+    PyErr_Format(PyExc_TypeError, "cannot pickle '" __Pyx_FMT_TYPENAME "' object",
+                         self_type_name);
+    __Pyx_DECREF_TypeName(self_type_name);
+    return NULL;
+}
+
+/* Generator */
+static PyMethodDef __pyx_Generator_methods[] = {
+    {"send", (PyCFunction) __Pyx_Coroutine_Send, METH_O,
+     PyDoc_STR("send(arg) -> send 'arg' into generator,\nreturn next yielded value or raise StopIteration.")},
+    {"throw", (PyCFunction) __Pyx_Coroutine_Throw, METH_VARARGS,
+     PyDoc_STR("throw(typ[,val[,tb]]) -> raise exception in generator,\nreturn next yielded value or raise StopIteration.")},
+    {"close", (PyCFunction) __Pyx_Coroutine_Close_Method, METH_NOARGS,
+     PyDoc_STR("close() -> raise GeneratorExit inside generator.")},
+    {"__reduce_ex__", (PyCFunction) __Pyx_Coroutine_fail_reduce_ex, METH_O, 0},
+    {"__reduce__", (PyCFunction) __Pyx_Coroutine_fail_reduce_ex, METH_NOARGS, 0},
+    {0, 0, 0, 0}
+};
+static PyMemberDef __pyx_Generator_memberlist[] = {
+    {"gi_yieldfrom", T_OBJECT, offsetof(__pyx_CoroutineObject, yieldfrom), READONLY,
+     PyDoc_STR("object being iterated by 'yield from', or None")},
+    {"gi_code", T_OBJECT, offsetof(__pyx_CoroutineObject, gi_code), READONLY, NULL},
+    {"__module__", T_OBJECT, offsetof(__pyx_CoroutineObject, gi_modulename), 0, 0},
+#if PY_VERSION_HEX < 0x030C0000 || CYTHON_COMPILING_IN_LIMITED_API
+    {"__weaklistoffset__", T_PYSSIZET, offsetof(__pyx_CoroutineObject, gi_weakreflist), READONLY, 0},
+#endif
+    {0, 0, 0, 0, 0}
+};
+static PyGetSetDef __pyx_Generator_getsets[] = {
+    {"__name__", (getter)__Pyx_Coroutine_get_name, (setter)__Pyx_Coroutine_set_name,
+     PyDoc_STR("name of the generator"), 0},
+    {"__qualname__", (getter)__Pyx_Coroutine_get_qualname, (setter)__Pyx_Coroutine_set_qualname,
+     PyDoc_STR("qualified name of the generator"), 0},
+    {"gi_frame", (getter)__Pyx_Coroutine_get_frame, NULL,
+     PyDoc_STR("Frame of the generator"), 0},
+    {"gi_running", __Pyx_Coroutine_get_is_running_getter, NULL, NULL, NULL},
+    {0, 0, 0, 0, 0}
+};
+static PyType_Slot __pyx_GeneratorType_slots[] = {
+    {Py_tp_dealloc, (void *)__Pyx_Coroutine_dealloc},
+    {Py_tp_traverse, (void *)__Pyx_Coroutine_traverse},
+    {Py_tp_iter, (void *)PyObject_SelfIter},
+    {Py_tp_iternext, (void *)__Pyx_Generator_Next},
+    {Py_tp_methods, (void *)__pyx_Generator_methods},
+    {Py_tp_members, (void *)__pyx_Generator_memberlist},
+    {Py_tp_getset, (void *)__pyx_Generator_getsets},
+    {Py_tp_getattro, (void *) PyObject_GenericGetAttr},
+#if CYTHON_USE_TP_FINALIZE
+    {Py_tp_finalize, (void *)__Pyx_Coroutine_del},
+#endif
+#if __PYX_HAS_PY_AM_SEND == 1
+    {Py_am_send, (void *)__Pyx_Coroutine_AmSend},
+#endif
+    {0, 0},
+};
+static PyType_Spec __pyx_GeneratorType_spec = {
+    __PYX_TYPE_MODULE_PREFIX "generator",
+    sizeof(__pyx_CoroutineObject),
+    0,
+#if PY_VERSION_HEX >= 0x030C0000 && !CYTHON_COMPILING_IN_LIMITED_API
+    Py_TPFLAGS_MANAGED_WEAKREF |
+#endif
+    Py_TPFLAGS_IMMUTABLETYPE | Py_TPFLAGS_DISALLOW_INSTANTIATION |
+    Py_TPFLAGS_DEFAULT | Py_TPFLAGS_HAVE_GC | __Pyx_TPFLAGS_HAVE_AM_SEND,
+    __pyx_GeneratorType_slots
+};
+#if __PYX_HAS_PY_AM_SEND == 2
+static __Pyx_PyAsyncMethodsStruct __pyx_Generator_as_async;
+#endif
+static int __pyx_Generator_init(PyObject *module) {
+    __pyx_mstatetype *mstate = __Pyx_PyModule_GetState(module);
+    mstate->__pyx_GeneratorType = __Pyx_FetchCommonTypeFromSpec(
+        mstate->__pyx_CommonTypesMetaclassType, module, &__pyx_GeneratorType_spec, NULL);
+    if (unlikely(!mstate->__pyx_GeneratorType)) {
+        return -1;
+    }
+#if __PYX_HAS_PY_AM_SEND == 2
+    __Pyx_SetBackportTypeAmSend(mstate->__pyx_GeneratorType, &__pyx_Generator_as_async, &__Pyx_Coroutine_AmSend);
+#endif
+    return 0;
+}
+static PyObject *__Pyx_Generator_GetInlinedResult(PyObject *self) {
+    __pyx_CoroutineObject *gen = (__pyx_CoroutineObject*) self;
+    PyObject *retval = NULL;
+    if (unlikely(__Pyx_Coroutine_test_and_set_is_running(gen))) {
+        return __Pyx_Coroutine_AlreadyRunningError(gen);
+    }
+    __Pyx_PySendResult result = __Pyx_Coroutine_SendEx(gen, Py_None, &retval, 0);
+    __Pyx_Coroutine_unset_is_running(gen);
+    (void) result;
+    assert (result == PYGEN_RETURN || result == PYGEN_ERROR);
+    assert ((result == PYGEN_RETURN && retval != NULL) || (result == PYGEN_ERROR && retval == NULL));
+    return retval;
 }
 
 /* CheckBinaryVersion */

@@ -209,6 +209,8 @@ RUN --mount=type=bind,source=docker/main/install_hailort.sh,target=/deps/install
     /deps/install_hailort.sh
 
 # Build Cython extensions (separate stage to avoid bloating deps image)
+# Requires: cython (compiler), numpy (include dirs), build-essential (C compiler)
+# New Cython modules (cython.md): distance_cython, state_cython, velocity_cython
 FROM wheels AS cython-build
 COPY frigate frigate/
 COPY setup_cython.py setup_cython.py

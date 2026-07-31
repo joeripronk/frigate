@@ -29,6 +29,7 @@ from frigate.util.image import (
     intersection_over_union,
 )
 from frigate.util.object_cython import cython_average_boxes, cython_median_of_boxes
+from frigate.track.distance_cython import frigate_distance_wrapper as cython_frigate_distance
 from frigate.track.tracking_cython import (
     cython_build_detections_from_raw,
     cython_norfair_deregister,
@@ -90,7 +91,7 @@ def distance(detection: np.ndarray, estimate: np.ndarray) -> float:
 
 
 def frigate_distance(detection: Detection, tracked_object: TrackedObject) -> float:
-    return distance(detection.points, tracked_object.estimate)
+    return cython_frigate_distance(detection.points, tracked_object.estimate)
 
 
 def histogram_distance(
