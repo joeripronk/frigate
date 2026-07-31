@@ -195,7 +195,10 @@ class DetectorRunner(FrigateProcess):
                     continue
 
                 if camera_name not in self.batch_outputs:
-                    self.create_batch_output_shm(camera_name)
+                    try:
+                        self.create_batch_output_shm(camera_name)
+                    except FileExistsError:
+                        pass
 
                 batch_start = time.monotonic()
                 offset = 0
