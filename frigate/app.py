@@ -390,17 +390,8 @@ class FrigateApp:
             except FileExistsError:
                 shm_out = UntrackedSharedMemory(name=f"out-{name}")
 
-            batch_out_size = DETECTOR_BATCH_SIZE * 20 * 6 * 4
-            try:
-                shm_batch_out = UntrackedSharedMemory(
-                    name=f"batch-out-{name}", create=True, size=batch_out_size
-                )
-            except FileExistsError:
-                shm_batch_out = UntrackedSharedMemory(name=f"batch-out-{name}")
-
             self.detection_shms.append(shm_in)
             self.detection_shms.append(shm_out)
-            self.detection_shms.append(shm_batch_out)
 
         for name, detector_config in self.config.detectors.items():
             self.detectors[name] = ObjectDetectProcess(

@@ -162,7 +162,13 @@ class DetectorRunner(FrigateProcess):
 
     def create_batch_output_shm(self, name: str) -> None:
         batch_size = DETECTOR_BATCH_SIZE * 20
-        out_shm = UntrackedSharedMemory(name=f"batch-out-{name}", create=True)
+        shm_name = f"batch-out-{name}"
+        try:
+            out_shm = UntrackedSharedMemory(
+                name=shm_name, create=True, size=batch_size * 6 * 4
+            )
+        except FileExistsError:
+            out_shm = UntrackedSharedMemory(name=shm_name, create=False)
         out_np: np.ndarray = np.ndarray(
             (batch_size, 6), dtype=np.float32, buffer=out_shm.buf
         )
@@ -224,10 +230,13 @@ class DetectorRunner(FrigateProcess):
                     duration = time.monotonic() - mono_start
 
                     frame_manager.close(camera_name)
-                    self.batch_outputs[camera_name]["np"][
-                        offset : offset + len(detections)
-                    ] = detections
-                    offset += len(detections)
+                    # Pad to 20 slots per region for fixed-stride reading
+                    region_data = self.batch_outputs[camera_name]["np"][
+                        offset : offset + 20
+                    ]
+                    end = min(len(detections), 20)
+                    region_data[:end] = detections[:20]
+                    offset += 20
 
                 duration = time.monotonic() - batch_start
                 detector_publisher.publish(f"{camera_name}/batch")
@@ -494,9 +503,15 @@ class RemoteObjectDetector:
             (20, 6), dtype=np.float32, buffer=self.out_shm.buf
         )
         batch_out_size = DETECTOR_BATCH_SIZE * 20
-        self.batch_out_shm = UntrackedSharedMemory(
-            name=f"batch-out-{self.name}", create=False
-        )
+        batch_shm_name = f"batch-out-{self.name}"
+        try:
+            self.batch_out_shm = UntrackedSharedMemory(
+                name=batch_shm_name, create=True, size=batch_out_size * 6 * 4
+            )
+        except FileExistsError:
+            self.batch_out_shm = UntrackedSharedMemory(
+                name=batch_shm_name, create=False
+            )
         self.batch_out_np_shm: np.ndarray = np.ndarray(
             (batch_out_size, 6), dtype=np.float32, buffer=self.batch_out_shm.buf
         )
@@ -569,7 +584,7 @@ class RemoteObjectDetector:
             region_detections = self.batch_out_np_shm[offset : offset + 20]
             raw = _filter_raw_detections_keep_id(region_detections, self.labels, 0.4)
             results.append(raw)
-            offset += len(raw)
+            offset += 20
 
         self.fps.update()
         return results
