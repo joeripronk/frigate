@@ -132,8 +132,14 @@ class OpenVinoMotionModel:
 
         # Prepare input tensor
         if self.input_tensor is not None:
-            copyto_inplace(self.input_tensor.data, frame)
-            tensor = self.input_tensor
+            if frame.shape == self.input_tensor.shape:
+                copyto_inplace(self.input_tensor.data, frame)
+                tensor = self.input_tensor
+            else:
+                input_port = self.compiled_model.inputs[0]
+                input_element_type = input_port.get_element_type()
+                tensor = self._ov.Tensor(input_element_type, frame.shape)
+                copyto_inplace(tensor.data, frame)
         else:
             input_port = self.compiled_model.inputs[0]
             input_element_type = input_port.get_element_type()
