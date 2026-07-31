@@ -27,6 +27,8 @@ from frigate.detectors.detection_cython import convert_detection_boxes
 from frigate.motion import MotionDetector
 from frigate.motion.improved_motion import ImprovedMotionDetector
 from frigate.motion.motion_cython import cython_filter_motion_boxes
+from frigate.motion.openvino_motion import OpenVinoMotionDetector
+from frigate.detectors.detection_runners import is_openvino_gpu_npu_available
 from frigate.object_detection.base import RemoteObjectDetector
 from frigate.ptz.autotrack import ptz_moving_at_frame_time
 from frigate.track import ObjectTracker
@@ -57,6 +59,62 @@ from frigate.video.detect_cython import (
 )
 
 logger = logging.getLogger(__name__)
+
+
+def get_motion_detector(
+    frame_shape: tuple[int, int] | tuple[int, int, int],
+    config: Any,
+    fps: int = 1,
+    device: str = "CPU",
+    name: str = "",
+    ptz_metrics: Any = None,
+) -> MotionDetector:
+    """Factory function to select the motion detector based on config.
+
+    Args:
+        frame_shape: (height, width, channels) of the input frame
+        config: Camera motion configuration with detector_type and openvino_device
+        fps: Frames per second
+        device: Override device (if None, uses config.openvino_device)
+        name: Camera name for logging
+        ptz_metrics: Optional PTZ metrics for autotracking
+
+    Returns:
+        A MotionDetector instance (OpenVinoMotionDetector or ImprovedMotionDetector)
+    """
+    if device is None:
+        device = getattr(config, "openvino_device", "CPU") or "CPU"
+
+    detector_type = getattr(config, "detector_type", "auto") or "auto"
+
+    if detector_type == "openvino":
+        return OpenVinoMotionDetector(
+            frame_shape=frame_shape,
+            config=config,
+            fps=fps,
+            device=device,
+            name=name if name is not None else "openvino",
+        )
+
+    if detector_type == "auto" and is_openvino_gpu_npu_available():
+        try:
+            return OpenVinoMotionDetector(
+                frame_shape=frame_shape,
+                config=config,
+                fps=fps,
+                device=device,
+                name=name if name is not None else "openvino",
+            )
+        except Exception:
+            pass
+
+    return ImprovedMotionDetector(
+        frame_shape=frame_shape,
+        config=config,
+        fps=fps,
+        name=name if name is not None else "improved",
+        ptz_metrics=ptz_metrics,
+    )
 
 
 class CameraTracker(FrigateProcess):
@@ -94,11 +152,12 @@ class CameraTracker(FrigateProcess):
         frame_queue = self.camera_metrics.frame_queue
         frame_shape = self.config.frame_shape
 
-        motion_detector = ImprovedMotionDetector(
-            frame_shape,
-            self.config.motion,
-            self.config.detect.fps,
-            name=self.config.name,
+        motion_detector = get_motion_detector(
+            frame_shape=frame_shape,
+            config=self.config.motion,
+            fps=self.config.detect.fps,
+            device=getattr(self.config.motion, "openvino_device", "CPU") or "CPU",
+            name=self.config.name or "",
             ptz_metrics=self.ptz_metrics,
         )
         object_detector = RemoteObjectDetector(
