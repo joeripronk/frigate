@@ -363,16 +363,18 @@ class FrigateApp:
             )
 
     def start_detectors(self) -> None:
+        from frigate.object_detection.base import DETECTOR_BATCH_SIZE
+
         for name in self.config.cameras.keys():
+            largest_frame = max(
+                [
+                    DETECTOR_BATCH_SIZE * det.model.height * det.model.width * 3
+                    if det.model is not None
+                    else DETECTOR_BATCH_SIZE * 320
+                    for det in self.config.detectors.values()
+                ]
+            )
             try:
-                largest_frame = max(
-                    [
-                        det.model.height * det.model.width * 3
-                        if det.model is not None
-                        else 320
-                        for det in self.config.detectors.values()
-                    ]
-                )
                 shm_in = UntrackedSharedMemory(
                     name=name,
                     create=True,

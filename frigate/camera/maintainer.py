@@ -126,15 +126,17 @@ class CameraMaintainer(threading.Thread):
                 max(self.config.model.width, self.config.model.height),
             )
 
+            from frigate.object_detection.base import DETECTOR_BATCH_SIZE
+
+            largest_frame = max(
+                [
+                    DETECTOR_BATCH_SIZE * det.model.height * det.model.width * 3
+                    if det.model is not None
+                    else DETECTOR_BATCH_SIZE * 320
+                    for det in self.config.detectors.values()
+                ]
+            )
             try:
-                largest_frame = max(
-                    [
-                        det.model.height * det.model.width * 3
-                        if det.model is not None
-                        else 320
-                        for det in self.config.detectors.values()
-                    ]
-                )
                 UntrackedSharedMemory(name=f"out-{name}", create=True, size=20 * 6 * 4)
                 UntrackedSharedMemory(
                     name=name,
