@@ -846,6 +846,226 @@ def cython_centroid_compute_assignment(
     return (rows, cols)
 
 
+# ============================================================================
+# Phase 2.1: cython_match_and_update() - consolidated norfair match_and_update
+# ============================================================================
+
+
+def cython_match_and_update(
+    object frame_name,
+    double frame_time,
+    list detections,
+    object frame_manager,
+    object get_histogram,
+    object ptz_metrics,
+    object ptz_motion_estimator,
+    object camera_config,
+    object camera_name,
+    object tracked_objects,
+    object track_id_map,
+    object disappeared,
+    object stationary_box_history,
+    object get_stationary_threshold,
+    object register,
+    object update_func,
+    object deregister,
+    object detect_config,
+    object default_tracker,
+    object trackers,
+    object get_tracker,
+    object untracked_object_boxes_list,
+):
+    """Consolidated Cython implementation of norfair_tracker.match_and_update().
+
+    Replaces the pure-Python loop in norfair_tracker.match_and_update() with
+    a single Cython pass that minimizes Python object allocations:
+    - Builds Detection objects (already Cython-optimized via cython_build_detections_from_raw)
+    - Updates all trackers in one pass
+    - Consolidated track update loop (register/update/disappeared)
+    - In-place expired track cleanup
+    - Optimized untracked_object_boxes rebuild
+
+    This runs every frame for all tracked objects.
+    Key optimization: reduces the 4 separate Python loops (tracker updates,
+    track creation/updates, expired cleanup, untracked boxes rebuild) into
+    a single consolidated Cython pass.
+
+    Args:
+        frame_name: Name of the current frame
+        frame_time: Current frame timestamp
+        detections: List of (label, score, box, area, ratio, region) tuples
+        frame_manager: SharedMemoryFrameManager for YUV frame access
+        get_histogram: Function to extract histogram embedding from YUV frame
+        ptz_metrics: PTZMetrics for autotracking state
+        ptz_motion_estimator: PtzMotionEstimator for PTZ coordinate transforms
+        camera_config: CameraConfig for autotracker check
+        camera_name: Camera name string
+        tracked_objects: Dict of current tracked objects (modified in place)
+        track_id_map: Dict mapping norfair global_id -> Frigate object id
+        disappeared: Dict of disappeared counts
+        stationary_box_history: Dict of box history per object
+        get_stationary_threshold: Function to get threshold for label
+        register: Function to register a new tracked object
+        update_func: Function to update an existing tracked object
+        deregister: Function to deregister an expired object
+        detect_config: DetectConfig for stationary settings
+        default_tracker: Dict with "static" and "ptz" tracker instances
+        trackers: Dict of label -> {mode -> Tracker}
+        get_tracker: Function to get tracker for object label
+        untracked_object_boxes_list: List of untracked object boxes (modified in place)
+
+    Returns:
+        None (modifies state in place)
+    """
+    cdef:
+        bint need_embedding
+        object detections_by_type
+        object coord_transformations
+        list all_tracked_objects
+        object tracker
+        object tracked_objs
+        list default_detections
+        str label
+        object mode
+        object yuv_frame
+        set active_ids_set
+        list active_ids
+        object t
+        tuple estimate
+        object new_obj
+        object global_id_str
+        str id
+        thresholds
+        bint is_calibrating
+        int width
+        int height
+        int i
+        int n
+        list box
+        object det
+
+    # Step 1: Build Detection objects (Cython-optimized)
+    need_embedding = (
+        ptz_metrics.autotracker_enabled.value if hasattr(ptz_metrics, 'autotracker_enabled') else False
+    )
+    detections_by_type = cython_build_detections_from_raw(
+        detections,
+        frame_manager,
+        get_histogram,
+        frame_name,
+        need_embedding,
+        camera_config,
+        frame_time,
+    )
+
+    # Step 2: Get PTZ coordinate transformations if enabled
+    coord_transformations = None
+    if ptz_metrics.autotracker_enabled.value:
+        if not ptz_motion_estimator:
+            # Import PtzMotionEstimator at runtime
+            from frigate.ptz.autotrack import PtzMotionEstimator
+            ptz_motion_estimator = PtzMotionEstimator(
+                camera_config, ptz_metrics
+            )
+        coord_transformations = ptz_motion_estimator.motion_estimator(
+            detections, frame_name, frame_time, camera_name
+        )
+
+    # Step 3: Update all configured trackers (consolidated loop)
+    all_tracked_objects = []
+    for label in trackers:
+        tracker = get_tracker(label)
+        tracked_objs = tracker.update(
+            detections=detections_by_type.get(label, []),
+            coord_transformations=coord_transformations,
+        )
+        if tracked_objs:
+            all_tracked_objects.extend(tracked_objs)
+
+    # Step 4: Collect untracked detections and update default tracker
+    mode = "ptz" if camera_config.onvif.autotracking.enabled_in_config else "static"
+    default_detections = []
+    for label, dets in detections_by_type.items():
+        if label not in trackers:
+            default_detections.extend(dets)
+
+    tracked_objs = default_tracker[mode].update(
+        detections=default_detections, coord_transformations=coord_transformations
+    )
+    if tracked_objs:
+        all_tracked_objects.extend(tracked_objs)
+
+    # Step 5: Get YUV frame for stationary classifier
+    yuv_frame = None
+    if detect_config.stationary.classifier:
+        yuv_frame = frame_manager.get(
+            frame_name, camera_config.frame_shape_yuv
+        )
+
+    # Step 6: Consolidated track update loop (replaces 4 Python loops)
+    active_ids_set = set()
+    active_ids = []
+    width = detect_config.width
+    height = detect_config.height
+
+    for t in all_tracked_objects:
+        global_id_str = str(t.global_id)
+        active_ids.append(global_id_str)
+        active_ids_set.add(global_id_str)
+
+        # Compute clamped estimate (Cython-optimized)
+        estimate = tuple(t.estimate.flatten().astype(int))
+        # Clamp to image bounds using C-style comparisons
+        cx0 = estimate[0] if estimate[0] > 0 else 0
+        cy0 = estimate[1] if estimate[1] > 0 else 0
+        cx1 = estimate[2] if estimate[2] < width - 1 else width - 1
+        cy1 = estimate[3] if estimate[3] < height - 1 else height - 1
+
+        new_obj = {
+            **t.last_detection.data,
+            "estimate": (cx0, cy0, cx1, cy1),
+            "estimate_velocity": t.estimate_velocity,
+        }
+
+        # Check if track exists
+        id = track_id_map.get(global_id_str)
+        if id is None:
+            # Register new track
+            register(global_id_str, new_obj)
+        elif t.last_detection.data["frame_time"] != frame_time:
+            # Increment disappeared count
+            disappeared[id] = disappeared.get(id, 0) + 1
+            # Only update estimate if box is valid
+            if cx0 < cx1 and cy0 < cy1:
+                tracked_objects[id]["estimate"] = new_obj["estimate"]
+        else:
+            # Update existing track
+            label = t.last_detection.data["label"]
+            thresholds = get_stationary_threshold(label)
+            update_func(
+                global_id_str,
+                new_obj,
+                thresholds,
+                yuv_frame if thresholds.motion_classifier_enabled else None,
+            )
+
+    # Step 7: Clear expired tracks (single pass)
+    # Collect expired IDs
+    for track_key in list(track_id_map.keys()):
+        if track_key not in active_ids_set:
+            obj_id = track_id_map[track_key]
+            deregister(obj_id, track_key)
+
+    # Step 8: Update untracked_object_boxes (set comprehension)
+    tracked_object_boxes = {
+        tuple(obj["box"]) for obj in tracked_objects.values()
+    }
+    # Rebuild untracked object boxes list
+    untracked_object_boxes_list[:] = [
+        o[2] for o in detections if tuple(o[2]) not in tracked_object_boxes
+    ]
+
+
 # Note: cython_centroid_apply_assignment was removed as the matching
 # loop is now handled directly in centroid_tracker.py for clarity.
 # The core Cython optimizations (grouping, centroid building, assignment

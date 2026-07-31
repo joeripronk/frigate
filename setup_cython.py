@@ -20,6 +20,7 @@ setup(
         "frigate.record",
         "frigate.data_processing.common.face",
         "frigate.data_processing.common.license_plate",
+        "frigate.camera",
     ],
     ext_modules=cythonize(
         [
@@ -37,6 +38,7 @@ setup(
             "frigate/track/distance_cython.pyx",
             "frigate/data_processing/common/face/model_cython.pyx",
             "frigate/data_processing/common/license_plate/license_plate_cython.pyx",
+            "frigate/camera/state_cython.pyx",
         ],
         language_level=3,
         compiler_directives={
