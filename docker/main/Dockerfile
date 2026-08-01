@@ -297,6 +297,8 @@ EXPOSE 8555/tcp 8555/udp
 ENV S6_LOGGING_SCRIPT="T 1 n0 s10000000 T"
 # Do not fail on long-running download scripts
 ENV S6_CMD_WAIT_FOR_SERVICES_MAXTIME=0
+# When set, Python WebSocket server (port 5002) is skipped — Rust frgated handles it
+ENV FRIGATE_RUST_WS=1
 
 ENTRYPOINT ["/init"]
 CMD []

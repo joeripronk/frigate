@@ -338,7 +338,9 @@ class FrigateApp:
         if notification_cameras:
             comms.append(WebPushClient(self.config, self.stop_event))
 
-        comms.append(WebSocketClient(self.config))
+        # Skip Python WebSocket server if Rust frgated is handling port 5002.
+        if not os.environ.get("FRIGATE_RUST_WS"):
+            comms.append(WebSocketClient(self.config))
         comms.append(self.inter_process_communicator)
 
         self.dispatcher = Dispatcher(
