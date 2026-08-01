@@ -157,7 +157,7 @@ async fn main() -> anyhow::Result<()> {
     let stop_ws = stop.clone();
     let ws_handle = tokio::spawn(async move {
         let ws_router = Router::new()
-            .route("/ws", any(ws_handler))
+            .route("/", any(ws_handler))
             .with_state(ws_cfg)
             .layer(TraceLayer::new_for_http());
         axum::serve(
