@@ -27,6 +27,8 @@ memmap2 = "0.9"
 crossbeam = "0.8"
 zmq = "0.10"
 nix = { version = "0.29", features = ["process", "signal"] }
+sqlx = { version = "0.8", features = ["runtime-tokio", "sqlite", "chrono", "regexp", "sqlx-macros"] }
+chrono = { version = "0.4", features = ["serde"] }
 
 frgated-core = { path = "crates/frgated-core" }
 frgated-ipc = { path = "crates/frgated-ipc" }
