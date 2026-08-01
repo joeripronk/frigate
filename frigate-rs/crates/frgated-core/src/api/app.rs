@@ -333,7 +333,7 @@ pub async fn get_audio_labels() -> impl IntoResponse {
     responses((status = 200, description = "Plus models"))
 )]
 pub async fn plus_models() -> impl IntoResponse {
-    axum::response::IntoResponse::into_response(Json(Vec::<serde_json::Value>::new())
+    axum::response::IntoResponse::into_response(Json(Vec::<serde_json::Value>::new()))
 }
 
 /// Timeline — mirrors `GET /timeline` (require authenticated).
