@@ -360,7 +360,7 @@ COPY --from=web-build /work/dist/ web/
 
 # Build the Rust orchestrator (frgated)
 FROM --platform=$BUILDPLATFORM rust:1.85-slim AS frigate-build
-RUN apt-get update && apt-get install -y --no-install-recommends libzmq3-dev pkg-config && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get install -y --no-install-recommends build-essential libzmq3-dev pkg-config && rm -rf /var/lib/apt/lists/*
 COPY frigate-rs /frigate-rs
 WORKDIR /frigate-rs
 RUN --mount=type=cache,target=/frigate-rs/target cargo install --path crates/frgated --root /
