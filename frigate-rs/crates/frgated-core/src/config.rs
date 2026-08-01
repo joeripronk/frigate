@@ -22,6 +22,14 @@ pub struct FrigateConfig {
     pub detectors: HashMap<String, DetectorConfig>,
     pub model: ModelConfig,
     pub database: DatabaseConfig,
+    pub auth: AuthConfig,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct AuthConfig {
+    pub enabled: bool,
+    #[serde(default)]
+    pub roles: HashMap<String, Vec<String>>,
 }
 
 impl FrigateConfig {

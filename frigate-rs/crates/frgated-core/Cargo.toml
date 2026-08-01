@@ -7,11 +7,13 @@ edition.workspace = true
 path = "src/lib.rs"
 
 [dependencies]
-clap.workspace = true
-serde.workspace = true
+axum.workspace = true
+axum-extra.workspace = true
+serde = { workspace = true, features = ["derive"] }
 serde_json.workspace = true
 serde_yaml.workspace = true
 tokio.workspace = true
 tracing.workspace = true
 thiserror.workspace = true
 anyhow.workspace = true
+utoipa.workspace = true
