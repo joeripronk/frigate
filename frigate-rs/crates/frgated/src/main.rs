@@ -137,7 +137,7 @@ async fn main() -> anyhow::Result<()> {
     let stop_api = stop.clone();
     let api_handle = tokio::spawn(async move {
         axum::serve(
-            tokio::net::TcpListener::bind("0.0.0.0:5000").await.unwrap(),
+            tokio::net::TcpListener::bind("127.0.0.1:5001").await.unwrap(),
             api_clone,
         )
         .with_graceful_shutdown(async move {
