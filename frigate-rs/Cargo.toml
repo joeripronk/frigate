@@ -1,5 +1,5 @@
 [workspace]
-members = ["crates/frgated", "crates/frgated-core"]
+members = ["crates/frgated", "crates/frgated-core", "crates/frgated-ipc"]
 resolver = "3"
 
 [workspace.package]
@@ -17,5 +17,10 @@ tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 thiserror = "2"
 anyhow = "1"
 dirs = "6"
+memmap2 = "0.9"
+crossbeam = "0.8"
+zmq = "0.10"
+nix = { version = "0.29", features = ["process", "signal"] }
 
 frgated-core = { path = "crates/frgated-core" }
+frgated-ipc = { path = "crates/frgated-ipc" }

@@ -15,4 +15,5 @@ tracing.workspace = true
 tracing-subscriber.workspace = true
 anyhow.workspace = true
 frgated-core.workspace = true
+frgated-ipc.workspace = true
 dirs.workspace = true
