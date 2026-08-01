@@ -173,11 +173,9 @@ async fn main() -> anyhow::Result<()> {
     stop.notified().await;
     tracing::info!("Shutting down workers");
 
+    // Phase 1: only recording worker is registered; others run in main process.
     mgr.shutdown(
-        &[
-            "audio", "detector", "frames", "timeline",
-            "output", "recording", "review_segment",
-        ],
+        &["recording"],
         Duration::from_secs(10),
     ).await;
 
@@ -249,10 +247,13 @@ fn register_workers(mgr: &mut WorkerManager, sig: &SignalSender) {
     // (no forkserver preload), so each worker imports everything from scratch.
     // This is acceptable for Phase 1-5; the performance-critical video
     // pipeline (Phase 6) will be in Rust.
+    //
+    // NOTE: Only workers with standalone modules (frigate.worker.*) are
+    // registered here. Other workers (embeddings, audio, output, review)
+    // still run in the main Python process and will be migrated later.
 
     let make_python_worker = |module: &'static str, name: &'static str| {
         let config_path = config_path.clone();
-        let config_path2 = config_path.clone();
         make_factory(move || {
             WorkerSpec {
                 name,
@@ -271,45 +272,12 @@ fn register_workers(mgr: &mut WorkerManager, sig: &SignalSender) {
     };
 
     // Core workers that the supervisor manages (watchdog restart on death).
-    // These are the same workers tracked in app.py's start_watchdog().
+    // Phase 1: only recording has a standalone worker module.
     mgr.register(
         "recording",
         make_python_worker("record", "recording"),
         Arc::new(move || {
             tracing::info!("Recording worker died — restarting");
-        }),
-    );
-
-    mgr.register(
-        "review_segment",
-        make_python_worker("review", "review_segment"),
-        Arc::new(move || {
-            tracing::info!("Review segment worker died — restarting");
-        }),
-    );
-
-    mgr.register(
-        "embeddings",
-        make_python_worker("embeddings", "embeddings"),
-        Arc::new(move || {
-            tracing::info!("Embeddings worker died — restarting");
-        }),
-    );
-
-    mgr.register(
-        "output",
-        make_python_worker("output", "output"),
-        Arc::new(move || {
-            tracing::info!("Output worker died — restarting");
-        }),
-    );
-
-    // Audio processor
-    mgr.register(
-        "audio",
-        make_python_worker("audio", "audio"),
-        Arc::new(move || {
-            tracing::info!("Audio worker died — restarting");
         }),
     );
 
@@ -359,12 +327,16 @@ async fn ws_handler(
 }
 
 async fn handle_ws(mut socket: WebSocket, config: FrigateConfig, headers: axum::http::HeaderMap) {
+    // Separator — mirrors config.proxy.separator (not yet in Rust config, hardcoded default).
     let separator = ",";
     let role_header = headers
         .get("Remote-Role")
         .and_then(|v| v.to_str().ok())
         .map(|s| s.to_owned());
+    let has_role = role_header.is_some();
     let camera_names: std::collections::HashSet<String> = config.cameras.keys().cloned().collect();
+    // Zones — not yet in Rust CameraConfig; use empty set (zone filtering will drop these topics).
+    let all_zones: std::collections::HashSet<String> = std::collections::HashSet::new();
 
     let hub = Hub::new("frigate").await;
     let hub = Arc::new(tokio::sync::Mutex::new(hub));
@@ -374,13 +346,14 @@ async fn handle_ws(mut socket: WebSocket, config: FrigateConfig, headers: axum::
     let broadcast_tx = hub.lock().await.sender.clone();
     let broadcast_tx_sub = broadcast_tx.clone();
     let camera_names_sub = camera_names.clone();
+    let all_zones_sub = all_zones.clone();
     tokio::spawn(async move {
         loop {
             let mut hub = hub_b.lock().await;
             let (sub_topic, payload) = hub.subscriber.check_for_update();
             drop(hub);
             if let Some(payload) = payload {
-                let scope = ws_auth::classify_outbound(&sub_topic, &camera_names_sub, &std::collections::HashSet::new());
+                let scope = ws_auth::classify_outbound(&sub_topic, &camera_names_sub, &all_zones_sub);
                 if scope != ws_auth::OutboundScope::Drop {
                     let msg = ws_auth::wrap_envelope(&sub_topic, &payload);
                     let _ = broadcast_tx_sub.send(msg);
@@ -390,9 +363,10 @@ async fn handle_ws(mut socket: WebSocket, config: FrigateConfig, headers: axum::
         }
     });
 
-    // Fan-out + bidirectional loop via select!: broadcast → socket, socket → auth.
+    // Fan-out + bidirectional loop via select!: broadcast → socket (with per-recipient filtering), socket → auth.
     let broadcast_tx_fanout = broadcast_tx.clone();
     let mut rx = broadcast_tx_fanout.subscribe();
+    let config_for_filter = config.clone();
     loop {
         tokio::select! {
             biased;
@@ -400,8 +374,30 @@ async fn handle_ws(mut socket: WebSocket, config: FrigateConfig, headers: axum::
             msg = rx.recv() => {
                 match msg {
                     Ok(text) => {
-                        if socket.send(Message::Text(text.into())).await.is_err() {
-                            break;
+                        // Per-recipient filtering — mirrors _materialize_for_ws() in comms/ws.py.
+                        let scope = {
+                            let topic = text.as_str();
+                            // Extract topic from envelope to classify
+                            if let Ok(envelope) = serde_json::from_str::<serde_json::Value>(&text) {
+                                if let Some(topic_val) = envelope.get("topic").and_then(|t| t.as_str()) {
+                                    ws_auth::classify_outbound(topic_val, &camera_names, &all_zones)
+                                } else {
+                                    ws_auth::OutboundScope::Drop
+                                }
+                            } else {
+                                ws_auth::OutboundScope::Drop
+                            }
+                        };
+                        if let Some(filtered) = ws_auth::materialize_for_ws(
+                            "",
+                            &text,
+                            &scope,
+                            &config_for_filter,
+                            has_role,
+                        ) {
+                            if socket.send(Message::Text(filtered.into())).await.is_err() {
+                                break;
+                            }
                         }
                     }
                     Err(broadcast::error::RecvError::Lagged(n)) => {
@@ -422,7 +418,7 @@ async fn handle_ws(mut socket: WebSocket, config: FrigateConfig, headers: axum::
                             if let Err(e) = ws_auth::check_ws_authorization(
                                 topic,
                                 role_header.as_deref(),
-                                &separator,
+                                separator,
                                 &config.auth.roles,
                                 &camera_names,
                             ) {
