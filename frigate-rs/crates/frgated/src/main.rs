@@ -2,8 +2,9 @@ use std::sync::Arc;
 use std::time::Duration;
 
 use axum::Router;
-use axum::routing::{get, post, put, delete};
-use axum::extract::{ws::{Message, WebSocket, WebSocketUpgrade}, ConnectInfo, State};
+use axum::routing::{any, get, post, put, delete};
+use axum::extract::{ws::{Message, WebSocket, WebSocketUpgrade}, State};
+use axum::response::Response;
 use futures::{SinkExt, StreamExt};
 use tower_http::trace::TraceLayer;
 use utoipa::OpenApi;
@@ -156,7 +157,7 @@ async fn main() -> anyhow::Result<()> {
     let stop_ws = stop.clone();
     let ws_handle = tokio::spawn(async move {
         let ws_router = Router::new()
-            .route("/ws", get(ws_handler))
+            .route("/ws", any(ws_handler))
             .with_state(ws_cfg)
             .layer(TraceLayer::new_for_http());
         axum::serve(
@@ -321,8 +322,7 @@ async fn ws_handler(
     ws: WebSocketUpgrade,
     State(config): State<FrigateConfig>,
     headers: axum::http::HeaderMap,
-    ConnectInfo(_addr): ConnectInfo<std::net::SocketAddr>,
-) -> impl axum::response::IntoResponse {
+) -> Response {
     ws.on_upgrade(move |socket| handle_ws(socket, config, headers))
 }
 
