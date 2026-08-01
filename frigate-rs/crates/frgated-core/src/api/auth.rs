@@ -18,8 +18,7 @@ pub struct User {
 }
 
 /// Read user info from request headers.
-pub fn user_from_request(req: &axum::http::Request<axum::body::Body>) -> User {
-    let headers = req.headers();
+pub fn user_from_request(headers: &axum::http::HeaderMap) -> User {
     let username = headers
         .get("remote-user")
         .and_then(|v| v.to_str().ok())

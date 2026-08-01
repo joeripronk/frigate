@@ -52,9 +52,9 @@ pub async fn version() -> impl IntoResponse {
     responses((status = 200, description = "Stats snapshot"))
 )]
 pub async fn stats(
-    cfg: State<FrigateConfig>, req: axum::extract::Request,
+    cfg: State<FrigateConfig>, headers: axum::http::HeaderMap,
 ) -> impl IntoResponse {
-    let user = user_from_request(&req);
+    let user = user_from_request(&headers);
     let full = user.role.0 == "admin";
     axum::response::IntoResponse::into_response(Json(serde_json::json!({"full": full})))
 }
@@ -66,9 +66,9 @@ pub async fn stats(
     responses((status = 200, description = "Stats history"))
 )]
 pub async fn stats_history(
-    cfg: State<FrigateConfig>, req: axum::extract::Request,
+    cfg: State<FrigateConfig>, headers: axum::http::HeaderMap,
 ) -> impl IntoResponse {
-    if let Err(e) = auth::require_admin(user_from_request(&req)).await { return axum::response::IntoResponse::into_response(e); }
+    if let Err(e) = auth::require_admin(user_from_request(&headers)).await { return axum::response::IntoResponse::into_response(e); }
     axum::response::IntoResponse::into_response(Json(serde_json::json!([])))
 }
 
@@ -102,10 +102,10 @@ pub async fn genai_models(State(_state): State<FrigateConfig>) -> impl IntoRespo
     responses((status = 200, description = "Probed models"))
 )]
 pub async fn genai_probe(
-    cfg: State<FrigateConfig>, req: axum::extract::Request,
+    cfg: State<FrigateConfig>, headers: axum::http::HeaderMap,
     Json(body): Json<GenAIProbeBody>,
 ) -> impl IntoResponse {
-    if let Err(e) = auth::require_admin(user_from_request(&req)).await { return axum::response::IntoResponse::into_response(e); }
+    if let Err(e) = auth::require_admin(user_from_request(&headers)).await { return axum::response::IntoResponse::into_response(e); }
     axum::response::IntoResponse::into_response(Json(serde_json::json!({"success": true, "models": serde_json::json!(Vec::<serde_json::Value>::new())})))
 }
 
@@ -159,8 +159,8 @@ pub async fn ffmpeg_presets() -> impl IntoResponse {
     tag = "App",
     responses((status = 200, description = "Raw paths"))
 )]
-pub async fn config_raw_paths(cfg: State<FrigateConfig>, req: axum::extract::Request) -> impl IntoResponse {
-    if let Err(e) = auth::require_admin(user_from_request(&req)).await { return axum::response::IntoResponse::into_response(e); }
+pub async fn config_raw_paths(cfg: State<FrigateConfig>, headers: axum::http::HeaderMap) -> impl IntoResponse {
+    if let Err(e) = auth::require_admin(user_from_request(&headers)).await { return axum::response::IntoResponse::into_response(e); }
     axum::response::IntoResponse::into_response(Json(serde_json::json!({"cameras": {}, "go2rtc": {"streams": {}}})))
 }
 
@@ -170,8 +170,8 @@ pub async fn config_raw_paths(cfg: State<FrigateConfig>, req: axum::extract::Req
     tag = "App",
     responses((status = 200, description = "Raw YAML"))
 )]
-pub async fn config_raw(cfg: State<FrigateConfig>, req: axum::extract::Request) -> impl IntoResponse {
-    if let Err(e) = auth::require_admin(user_from_request(&req)).await { return axum::response::IntoResponse::into_response(e); }
+pub async fn config_raw(cfg: State<FrigateConfig>, headers: axum::http::HeaderMap) -> impl IntoResponse {
+    if let Err(e) = auth::require_admin(user_from_request(&headers)).await { return axum::response::IntoResponse::into_response(e); }
     axum::response::IntoResponse::into_response(Json(serde_json::json!({"raw": ""})))
 }
 
@@ -183,11 +183,11 @@ pub async fn config_raw(cfg: State<FrigateConfig>, req: axum::extract::Request) 
     responses((status = 200, description = "Saved"))
 )]
 pub async fn config_save(
-    cfg: State<FrigateConfig>, req: axum::extract::Request,
+    cfg: State<FrigateConfig>, headers: axum::http::HeaderMap,
     Query(params): Query<ConfigSaveParams>,
     Json(body): Json<AppConfigSetBody>,
 ) -> impl IntoResponse {
-    if let Err(e) = auth::require_admin(user_from_request(&req)).await { return axum::response::IntoResponse::into_response(e); }
+    if let Err(e) = auth::require_admin(user_from_request(&headers)).await { return axum::response::IntoResponse::into_response(e); }
     let restart = params.save_option == Some("restart".to_owned());
     axum::response::IntoResponse::into_response(Json(serde_json::json!({
         "success": true,
@@ -203,11 +203,11 @@ pub async fn config_save(
     responses((status = 200, description = "Updated"))
 )]
 pub async fn config_set(
-    cfg: State<FrigateConfig>, req: axum::extract::Request,
+    cfg: State<FrigateConfig>, headers: axum::http::HeaderMap,
     Query(params): Query<ConfigSetParams>,
     Json(body): Json<AppConfigSetBody>,
 ) -> impl IntoResponse {
-    if let Err(e) = auth::require_admin(user_from_request(&req)).await { return axum::response::IntoResponse::into_response(e); }
+    if let Err(e) = auth::require_admin(user_from_request(&headers)).await { return axum::response::IntoResponse::into_response(e); }
     axum::response::IntoResponse::into_response(Json(serde_json::json!({"success": true, "message": "Config successfully updated"})))
 }
 
@@ -238,10 +238,10 @@ pub async fn nvinfo() -> impl IntoResponse {
     responses((status = 200, description = "Log lines"))
 )]
 pub async fn logs(
-    cfg: State<FrigateConfig>, req: axum::extract::Request,
+    cfg: State<FrigateConfig>, headers: axum::http::HeaderMap,
     axum::extract::Path(service): axum::extract::Path<String>,
 ) -> impl IntoResponse {
-    if let Err(e) = auth::require_admin(user_from_request(&req)).await { return axum::response::IntoResponse::into_response(e); }
+    if let Err(e) = auth::require_admin(user_from_request(&headers)).await { return axum::response::IntoResponse::into_response(e); }
     axum::response::IntoResponse::into_response(Json(serde_json::json!({"totalLines": 0, "lines": []})))
 }
 
@@ -251,8 +251,8 @@ pub async fn logs(
     tag = "App",
     responses((status = 200, description = "Restarting"))
 )]
-pub async fn restart(cfg: State<FrigateConfig>, req: axum::extract::Request) -> impl IntoResponse {
-    if let Err(e) = auth::require_admin(user_from_request(&req)).await { return axum::response::IntoResponse::into_response(e); }
+pub async fn restart(cfg: State<FrigateConfig>, headers: axum::http::HeaderMap) -> impl IntoResponse {
+    if let Err(e) = auth::require_admin(user_from_request(&headers)).await { return axum::response::IntoResponse::into_response(e); }
     axum::response::IntoResponse::into_response(Json(serde_json::json!({"success": true, "message": "Restarting..."})))
 }
 
@@ -264,10 +264,10 @@ pub async fn restart(cfg: State<FrigateConfig>, req: axum::extract::Request) -> 
     responses((status = 202, description = "Job queued"))
 )]
 pub async fn sync_media(
-    cfg: State<FrigateConfig>, req: axum::extract::Request,
+    cfg: State<FrigateConfig>, headers: axum::http::HeaderMap,
     Json(body): Json<MediaSyncBody>,
 ) -> (axum::http::StatusCode, axum::response::Response) {
-    if let Err(e) = auth::require_admin(user_from_request(&req)).await { return (axum::http::StatusCode::INTERNAL_SERVER_ERROR, axum::response::IntoResponse::into_response(e)); }
+    if let Err(e) = auth::require_admin(user_from_request(&headers)).await { return (axum::http::StatusCode::INTERNAL_SERVER_ERROR, axum::response::IntoResponse::into_response(e)); }
     (axum::http::StatusCode::ACCEPTED, axum::response::IntoResponse::into_response(Json(serde_json::json!({"job": {"job_type": "media_sync", "status": "queued", "id": ""}}))))
 }
 
@@ -277,8 +277,8 @@ pub async fn sync_media(
     tag = "App",
     responses((status = 200, description = "Current job"))
 )]
-pub async fn get_media_sync_current(cfg: State<FrigateConfig>, req: axum::extract::Request) -> impl IntoResponse {
-    if let Err(e) = auth::require_admin(user_from_request(&req)).await { return axum::response::IntoResponse::into_response(e); }
+pub async fn get_media_sync_current(cfg: State<FrigateConfig>, headers: axum::http::HeaderMap) -> impl IntoResponse {
+    if let Err(e) = auth::require_admin(user_from_request(&headers)).await { return axum::response::IntoResponse::into_response(e); }
     axum::response::IntoResponse::into_response(Json(serde_json::json!({"job": null})))
 }
 
@@ -289,10 +289,10 @@ pub async fn get_media_sync_current(cfg: State<FrigateConfig>, req: axum::extrac
     responses((status = 200, description = "Job status"))
 )]
 pub async fn get_media_sync_status(
-    cfg: State<FrigateConfig>, req: axum::extract::Request,
+    cfg: State<FrigateConfig>, headers: axum::http::HeaderMap,
     axum::extract::Path(job_id): axum::extract::Path<String>,
 ) -> impl IntoResponse {
-    if let Err(e) = auth::require_admin(user_from_request(&req)).await { return axum::response::IntoResponse::into_response(e); }
+    if let Err(e) = auth::require_admin(user_from_request(&headers)).await { return axum::response::IntoResponse::into_response(e); }
     axum::response::IntoResponse::into_response(Json(serde_json::json!({"job": {"id": job_id}})))
 }
 
