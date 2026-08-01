@@ -10,6 +10,7 @@ use utoipa::OpenApi;
 use utoipa_swagger_ui::SwaggerUi;
 
 use clap::Parser;
+use tokio::process::Command;
 use tokio::sync::{broadcast, Notify};
 use tracing_subscriber::{
     fmt::Layer,
@@ -18,7 +19,7 @@ use tracing_subscriber::{
 };
 
 use frgated_core::config::FrigateConfig;
-use frgated_core::supervisor::{SignalSender, WorkerManager};
+use frgated_core::supervisor::{SignalSender, WorkerManager, make_factory, WorkerSpec};
 use frgated_core::api::app;
 use frgated_core::api::auth_routes;
 use frgated_core::api::ws as ws_auth;
@@ -150,6 +151,24 @@ async fn main() -> anyhow::Result<()> {
         .await
     });
 
+    // WebSocket — also serve /ws on port 5002 (mirrors Python comms/ws.py).
+    let ws_cfg = cfg.clone();
+    let stop_ws = stop.clone();
+    let ws_handle = tokio::spawn(async move {
+        let ws_router = Router::new()
+            .route("/ws", get(ws_handler))
+            .with_state(ws_cfg)
+            .layer(TraceLayer::new_for_http());
+        axum::serve(
+            tokio::net::TcpListener::bind("127.0.0.1:5002").await.unwrap(),
+            ws_router,
+        )
+        .with_graceful_shutdown(async move {
+            stop_ws.notified().await;
+        })
+        .await
+    });
+
     // Block on shutdown signal, then join-order shutdown.
     stop.notified().await;
     tracing::info!("Shutting down workers");
@@ -164,6 +183,7 @@ async fn main() -> anyhow::Result<()> {
 
     mgr.join_all().await;
     let _ = api_handle.await;
+    let _ = ws_handle.await;
     tracing::info!("Shutdown complete");
 
     Ok(())
@@ -202,8 +222,6 @@ fn build_api(cfg: FrigateConfig) -> Router {
         .route("/audio_labels", get(app::get_audio_labels))
         .route("/plus/models", get(app::plus_models))
         .route("/timeline", get(app::timeline))
-        // WebSocket — mirrors comms/ws.py port 5002, proxied by nginx /ws.
-        .route("/ws", get(ws_handler))
         // Auth endpoints
         .route("/auth/first_time_login", get(auth_routes::first_time_login))
         .route("/auth", get(auth_routes::auth))
@@ -223,9 +241,83 @@ fn build_api(cfg: FrigateConfig) -> Router {
         .layer(TraceLayer::new_for_http())
 }
 
-fn register_workers(mgr: &mut WorkerManager, _sig: &SignalSender) {
-    let _ = mgr;
-    let _ = _sig;
+fn register_workers(mgr: &mut WorkerManager, sig: &SignalSender) {
+    let config_path = frgated_core::config::config_path();
+
+    // Worker factories — each spawns a Python subprocess.
+    // Per rust.md section 10b: Command::spawn starts a fresh Python process
+    // (no forkserver preload), so each worker imports everything from scratch.
+    // This is acceptable for Phase 1-5; the performance-critical video
+    // pipeline (Phase 6) will be in Rust.
+
+    let make_python_worker = |module: &'static str, name: &'static str| {
+        let config_path = config_path.clone();
+        let config_path2 = config_path.clone();
+        make_factory(move || {
+            WorkerSpec {
+                name,
+                cmd: {
+                    let mut cmd = Command::new("python3");
+                    cmd.arg("-m")
+                       .arg(format!("frigate.worker.{}", module))
+                       .arg("--config")
+                       .arg(&config_path)
+                       .env("FRIGATE_WORKER", module);
+                    cmd
+                },
+                restart: true,
+            }
+        })
+    };
+
+    // Core workers that the supervisor manages (watchdog restart on death).
+    // These are the same workers tracked in app.py's start_watchdog().
+    mgr.register(
+        "recording",
+        make_python_worker("record", "recording"),
+        Arc::new(move || {
+            tracing::info!("Recording worker died — restarting");
+        }),
+    );
+
+    mgr.register(
+        "review_segment",
+        make_python_worker("review", "review_segment"),
+        Arc::new(move || {
+            tracing::info!("Review segment worker died — restarting");
+        }),
+    );
+
+    mgr.register(
+        "embeddings",
+        make_python_worker("embeddings", "embeddings"),
+        Arc::new(move || {
+            tracing::info!("Embeddings worker died — restarting");
+        }),
+    );
+
+    mgr.register(
+        "output",
+        make_python_worker("output", "output"),
+        Arc::new(move || {
+            tracing::info!("Output worker died — restarting");
+        }),
+    );
+
+    // Audio processor
+    mgr.register(
+        "audio",
+        make_python_worker("audio", "audio"),
+        Arc::new(move || {
+            tracing::info!("Audio worker died — restarting");
+        }),
+    );
+
+    // Camera maintainers — one per enabled camera.
+    // These are registered dynamically based on config.
+    // For now, register a placeholder that will be filled in once config
+    // is fully loaded and cameras are enumerated.
+    let _sig = sig;
 }
 
 fn validate_config_only() -> anyhow::Result<()> {
