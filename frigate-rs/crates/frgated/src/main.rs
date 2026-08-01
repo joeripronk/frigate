@@ -3,12 +3,14 @@ use std::time::Duration;
 
 use axum::Router;
 use axum::routing::{get, post, put, delete};
+use axum::extract::{ws::{Message, WebSocket, WebSocketUpgrade}, ConnectInfo, State};
+use futures::{SinkExt, StreamExt};
 use tower_http::trace::TraceLayer;
 use utoipa::OpenApi;
 use utoipa_swagger_ui::SwaggerUi;
 
 use clap::Parser;
-use tokio::sync::Notify;
+use tokio::sync::{broadcast, Notify};
 use tracing_subscriber::{
     fmt::Layer,
     prelude::*,
@@ -19,6 +21,8 @@ use frgated_core::config::FrigateConfig;
 use frgated_core::supervisor::{SignalSender, WorkerManager};
 use frgated_core::api::app;
 use frgated_core::api::auth_routes;
+use frgated_core::api::ws as ws_auth;
+use frgated_ipc::Subscriber;
 
 /// Frigate Rust orchestrator — drop-in for `python3 -m frigate`.
 #[derive(Parser)]
@@ -198,6 +202,8 @@ fn build_api(cfg: FrigateConfig) -> Router {
         .route("/audio_labels", get(app::get_audio_labels))
         .route("/plus/models", get(app::plus_models))
         .route("/timeline", get(app::timeline))
+        // WebSocket — mirrors comms/ws.py port 5002, proxied by nginx /ws.
+        .route("/ws", get(ws_handler))
         // Auth endpoints
         .route("/auth/first_time_login", get(auth_routes::first_time_login))
         .route("/auth", get(auth_routes::auth))
@@ -246,4 +252,111 @@ fn load_config() -> anyhow::Result<FrigateConfig> {
             cfg
         })
     })
+}
+
+// ── WebSocket handler ────────────────────────────────────────────────
+
+/// WebSocket upgrade handler — mirrors `comms/ws.py` (port 5002, proxied by nginx /ws).
+async fn ws_handler(
+    ws: WebSocketUpgrade,
+    State(config): State<FrigateConfig>,
+    headers: axum::http::HeaderMap,
+    ConnectInfo(_addr): ConnectInfo<std::net::SocketAddr>,
+) -> impl axum::response::IntoResponse {
+    ws.on_upgrade(move |socket| handle_ws(socket, config, headers))
+}
+
+async fn handle_ws(mut socket: WebSocket, config: FrigateConfig, headers: axum::http::HeaderMap) {
+    let separator = ",";
+    let role_header = headers
+        .get("Remote-Role")
+        .and_then(|v| v.to_str().ok())
+        .map(|s| s.to_owned());
+    let camera_names: std::collections::HashSet<String> = config.cameras.keys().cloned().collect();
+
+    let hub = Hub::new("frigate").await;
+    let hub = Arc::new(tokio::sync::Mutex::new(hub));
+
+    // Subscriber task: ZMQ pub-sub → broadcast channel.
+    let hub_b = hub.clone();
+    let broadcast_tx = hub.lock().await.sender.clone();
+    let broadcast_tx_sub = broadcast_tx.clone();
+    let camera_names_sub = camera_names.clone();
+    tokio::spawn(async move {
+        loop {
+            let mut hub = hub_b.lock().await;
+            let (sub_topic, payload) = hub.subscriber.check_for_update();
+            drop(hub);
+            if let Some(payload) = payload {
+                let scope = ws_auth::classify_outbound(&sub_topic, &camera_names_sub, &std::collections::HashSet::new());
+                if scope != ws_auth::OutboundScope::Drop {
+                    let msg = ws_auth::wrap_envelope(&sub_topic, &payload);
+                    let _ = broadcast_tx_sub.send(msg);
+                }
+            }
+            tokio::time::sleep(std::time::Duration::from_micros(10)).await;
+        }
+    });
+
+    // Fan-out + bidirectional loop via select!: broadcast → socket, socket → auth.
+    let broadcast_tx_fanout = broadcast_tx.clone();
+    let mut rx = broadcast_tx_fanout.subscribe();
+    loop {
+        tokio::select! {
+            biased;
+
+            msg = rx.recv() => {
+                match msg {
+                    Ok(text) => {
+                        if socket.send(Message::Text(text.into())).await.is_err() {
+                            break;
+                        }
+                    }
+                    Err(broadcast::error::RecvError::Lagged(n)) => {
+                        tracing::debug!("WebSocket client lagged by {n} messages");
+                    }
+                    Err(broadcast::error::RecvError::Closed) => break,
+                }
+            }
+
+            msg = socket.next() => {
+                let frame = match msg {
+                    Some(Ok(m)) => m,
+                    _ => break,
+                };
+                if let Message::Text(text) = frame.clone() {
+                    if let Ok(envelope) = serde_json::from_str::<serde_json::Value>(&text) {
+                        if let Some(topic) = envelope.get("topic").and_then(|t| t.as_str()) {
+                            if let Err(e) = ws_auth::check_ws_authorization(
+                                topic,
+                                role_header.as_deref(),
+                                &separator,
+                                &config.auth.roles,
+                                &camera_names,
+                            ) {
+                                tracing::warn!(
+                                    "Blocked unauthorized WebSocket message: topic={topic}, role={role_header:?}, reason={e}"
+                                );
+                                continue;
+                            }
+                        }
+                    }
+                    let _ = socket.send(frame);
+                }
+            }
+        }
+    }
+}
+
+struct Hub {
+    subscriber: Subscriber,
+    sender: broadcast::Sender<String>,
+}
+
+impl Hub {
+    async fn new(topic: &str) -> Self {
+        let subscriber = Subscriber::new(topic);
+        let (sender, _) = broadcast::channel::<String>(4096);
+        Self { subscriber, sender }
+    }
 }
