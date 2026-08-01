@@ -358,8 +358,16 @@ COPY frigate frigate/
 COPY migrations migrations/
 COPY --from=web-build /work/dist/ web/
 
+# Build the Rust orchestrator (frgated)
+FROM --platform=$BUILDPLATFORM rust:1.75-slim AS frigate-build
+RUN apt-get update && apt-get install -y --no-install-recommends libzmq3-dev pkg-config && rm -rf /var/lib/apt/lists/*
+COPY frigate-rs /frigate-rs
+WORKDIR /frigate-rs
+RUN --mount=type=cache,target=/frigate-rs/target cargo install --path crates/frgated --root /
+
 # Frigate final container
 FROM deps AS frigate
 
 WORKDIR /opt/frigate/
 COPY --from=rootfs / /
+COPY --from=frigate-build /bin/frgated /usr/local/bin/frgated
