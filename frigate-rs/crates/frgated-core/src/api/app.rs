@@ -56,7 +56,7 @@ pub async fn stats(
 ) -> impl IntoResponse {
     let user = user_from_request(&req);
     let full = user.role.0 == "admin";
-    axum::response::IntoResponse::into_response(Json(serde_json::json!({"full": full}))
+    axum::response::IntoResponse::into_response(Json(serde_json::json!({"full": full})))
 }
 
 /// Stats history — mirrors `GET /stats/history` (require admin).
@@ -69,7 +69,7 @@ pub async fn stats_history(
     cfg: State<FrigateConfig>, req: axum::extract::Request,
 ) -> impl IntoResponse {
     if let Err(e) = auth::require_admin(user_from_request(&req)).await { return axum::response::IntoResponse::into_response(e); }
-    axum::response::IntoResponse::into_response(Json(serde_json::json!([]))
+    axum::response::IntoResponse::into_response(Json(serde_json::json!([])))
 }
 
 /// Prometheus metrics — mirrors `GET /metrics` (require authenticated).
@@ -90,7 +90,7 @@ pub async fn metrics(State(_state): State<FrigateConfig>) -> impl IntoResponse {
     responses((status = 200, description = "Model list"))
 )]
 pub async fn genai_models(State(_state): State<FrigateConfig>) -> impl IntoResponse {
-    axum::response::IntoResponse::into_response(Json(serde_json::json!([]))
+    axum::response::IntoResponse::into_response(Json(serde_json::json!([])))
 }
 
 /// GenAI probe — mirrors `POST /genai/probe` (require admin).
@@ -106,7 +106,7 @@ pub async fn genai_probe(
     Json(body): Json<GenAIProbeBody>,
 ) -> impl IntoResponse {
     if let Err(e) = auth::require_admin(user_from_request(&req)).await { return axum::response::IntoResponse::into_response(e); }
-    axum::response::IntoResponse::into_response(Json(serde_json::json!({"success": true, "models": serde_json::json!(Vec::<serde_json::Value>::new())}))
+    axum::response::IntoResponse::into_response(Json(serde_json::json!({"success": true, "models": serde_json::json!(Vec::<serde_json::Value>::new())})))
 }
 
 /// Config — mirrors `GET /config` (require authenticated, admin-only redaction).
@@ -126,7 +126,7 @@ pub async fn config(State(cfg): State<FrigateConfig>) -> impl IntoResponse {
     responses((status = 200, description = "Profile list"))
 )]
 pub async fn get_profiles() -> impl IntoResponse {
-    axum::response::IntoResponse::into_response(Json(serde_json::json!([]))
+    axum::response::IntoResponse::into_response(Json(serde_json::json!([])))
 }
 
 /// Active profile — mirrors `GET /profile/active` (require authenticated).
@@ -136,7 +136,7 @@ pub async fn get_profiles() -> impl IntoResponse {
     responses((status = 200, description = "Active profile"))
 )]
 pub async fn get_active_profile() -> impl IntoResponse {
-    axum::response::IntoResponse::into_response(Json(serde_json::json!({"active_profile": null}))
+    axum::response::IntoResponse::into_response(Json(serde_json::json!({"active_profile": null})))
 }
 
 /// FFmpeg presets — mirrors `GET /ffmpeg/presets` (require authenticated).
@@ -150,7 +150,7 @@ pub async fn ffmpeg_presets() -> impl IntoResponse {
         "hwaccel_args": ["preset-vaapi", "preset-nvidia"],
         "input_args": ["preset-rtsp-generic"],
         "output_args": {"record": ["preset-record-generic"], "detect": []}
-    }))
+    })))
 }
 
 /// Config raw paths — mirrors `GET /config/raw_paths` (require admin).
@@ -161,7 +161,7 @@ pub async fn ffmpeg_presets() -> impl IntoResponse {
 )]
 pub async fn config_raw_paths(cfg: State<FrigateConfig>, req: axum::extract::Request) -> impl IntoResponse {
     if let Err(e) = auth::require_admin(user_from_request(&req)).await { return axum::response::IntoResponse::into_response(e); }
-    axum::response::IntoResponse::into_response(Json(serde_json::json!({"cameras": {}, "go2rtc": {"streams": {}}}))
+    axum::response::IntoResponse::into_response(Json(serde_json::json!({"cameras": {}, "go2rtc": {"streams": {}}})))
 }
 
 /// Config raw — mirrors `GET /config/raw` (require admin).
@@ -172,7 +172,7 @@ pub async fn config_raw_paths(cfg: State<FrigateConfig>, req: axum::extract::Req
 )]
 pub async fn config_raw(cfg: State<FrigateConfig>, req: axum::extract::Request) -> impl IntoResponse {
     if let Err(e) = auth::require_admin(user_from_request(&req)).await { return axum::response::IntoResponse::into_response(e); }
-    axum::response::IntoResponse::into_response(Json(serde_json::json!({"raw": ""}))
+    axum::response::IntoResponse::into_response(Json(serde_json::json!({"raw": ""})))
 }
 
 /// Config save — mirrors `POST /config/save` (require admin).
@@ -192,7 +192,7 @@ pub async fn config_save(
     axum::response::IntoResponse::into_response(Json(serde_json::json!({
         "success": true,
         "message": if restart { "Config successfully saved, restarting..." } else { "Config successfully saved." }
-    }))
+    })))
 }
 
 /// Config set (PUT) — mirrors `PUT /config/set` (require admin).
@@ -208,7 +208,7 @@ pub async fn config_set(
     Json(body): Json<AppConfigSetBody>,
 ) -> impl IntoResponse {
     if let Err(e) = auth::require_admin(user_from_request(&req)).await { return axum::response::IntoResponse::into_response(e); }
-    axum::response::IntoResponse::into_response(Json(serde_json::json!({"success": true, "message": "Config successfully updated"}))
+    axum::response::IntoResponse::into_response(Json(serde_json::json!({"success": true, "message": "Config successfully updated"})))
 }
 
 /// Vainfo — mirrors `GET /vainfo` (require authenticated).
@@ -218,7 +218,7 @@ pub async fn config_set(
     responses((status = 200, description = "vainfo output"))
 )]
 pub async fn vainfo() -> impl IntoResponse {
-    axum::response::IntoResponse::into_response(Json(serde_json::json!({"return_code": 0, "stdout": "", "stderr": ""}))
+    axum::response::IntoResponse::into_response(Json(serde_json::json!({"return_code": 0, "stdout": "", "stderr": ""})))
 }
 
 /// Nvinfo — mirrors `GET /nvinfo` (require authenticated).
@@ -228,7 +228,7 @@ pub async fn vainfo() -> impl IntoResponse {
     responses((status = 200, description = "NV driver info"))
 )]
 pub async fn nvinfo() -> impl IntoResponse {
-    axum::response::IntoResponse::into_response(Json(serde_json::json!([]))
+    axum::response::IntoResponse::into_response(Json(serde_json::json!([])))
 }
 
 /// Logs — mirrors `GET /logs/{service}` (require admin).
@@ -242,7 +242,7 @@ pub async fn logs(
     axum::extract::Path(service): axum::extract::Path<String>,
 ) -> impl IntoResponse {
     if let Err(e) = auth::require_admin(user_from_request(&req)).await { return axum::response::IntoResponse::into_response(e); }
-    axum::response::IntoResponse::into_response(Json(serde_json::json!({"totalLines": 0, "lines": []}))
+    axum::response::IntoResponse::into_response(Json(serde_json::json!({"totalLines": 0, "lines": []})))
 }
 
 /// Restart — mirrors `POST /restart` (require admin).
@@ -253,7 +253,7 @@ pub async fn logs(
 )]
 pub async fn restart(cfg: State<FrigateConfig>, req: axum::extract::Request) -> impl IntoResponse {
     if let Err(e) = auth::require_admin(user_from_request(&req)).await { return axum::response::IntoResponse::into_response(e); }
-    axum::response::IntoResponse::into_response(Json(serde_json::json!({"success": true, "message": "Restarting..."}))
+    axum::response::IntoResponse::into_response(Json(serde_json::json!({"success": true, "message": "Restarting..."})))
 }
 
 /// Media sync start — mirrors `POST /media/sync` (require admin).
@@ -268,7 +268,7 @@ pub async fn sync_media(
     Json(body): Json<MediaSyncBody>,
 ) -> impl IntoResponse {
     if let Err(e) = auth::require_admin(user_from_request(&req)).await { return axum::response::IntoResponse::into_response(e); }
-    (axum::http::StatusCode::ACCEPTED, axum::response::IntoResponse::into_response(Json(serde_json::json!({"job": {"job_type": "media_sync", "status": "queued", "id": ""}})))
+    (axum::http::StatusCode::ACCEPTED, axum::response::IntoResponse::into_response(Json(serde_json::json!({"job": {"job_type": "media_sync", "status": "queued", "id": ""}}))))
 }
 
 /// Media sync current — mirrors `GET /media/sync/current` (require admin).
@@ -279,7 +279,7 @@ pub async fn sync_media(
 )]
 pub async fn get_media_sync_current(cfg: State<FrigateConfig>, req: axum::extract::Request) -> impl IntoResponse {
     if let Err(e) = auth::require_admin(user_from_request(&req)).await { return axum::response::IntoResponse::into_response(e); }
-    axum::response::IntoResponse::into_response(Json(serde_json::json!({"job": null}))
+    axum::response::IntoResponse::into_response(Json(serde_json::json!({"job": null})))
 }
 
 /// Media sync status — mirrors `GET /media/sync/status/{job_id}` (require admin).
@@ -293,7 +293,7 @@ pub async fn get_media_sync_status(
     axum::extract::Path(job_id): axum::extract::Path<String>,
 ) -> impl IntoResponse {
     if let Err(e) = auth::require_admin(user_from_request(&req)).await { return axum::response::IntoResponse::into_response(e); }
-    axum::response::IntoResponse::into_response(Json(serde_json::json!({"job": {"id": job_id}}))
+    axum::response::IntoResponse::into_response(Json(serde_json::json!({"job": {"id": job_id}})))
 }
 
 /// Labels — mirrors `GET /labels` (require authenticated).
@@ -343,7 +343,7 @@ pub async fn plus_models() -> impl IntoResponse {
     responses((status = 200, description = "Timeline entries"))
 )]
 pub async fn timeline() -> impl IntoResponse {
-    axum::response::IntoResponse::into_response(Json(serde_json::json!({"entries": []}))
+    axum::response::IntoResponse::into_response(Json(serde_json::json!({"entries": []})))
 }
 
 // ── Request/response schemas ──────────────────────────────────────────
