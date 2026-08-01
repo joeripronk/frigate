@@ -266,8 +266,8 @@ pub async fn restart(cfg: State<FrigateConfig>, req: axum::extract::Request) -> 
 pub async fn sync_media(
     cfg: State<FrigateConfig>, req: axum::extract::Request,
     Json(body): Json<MediaSyncBody>,
-) -> impl IntoResponse {
-    if let Err(e) = auth::require_admin(user_from_request(&req)).await { return axum::response::IntoResponse::into_response(e); }
+) -> (axum::http::StatusCode, axum::response::Response) {
+    if let Err(e) = auth::require_admin(user_from_request(&req)).await { return (axum::http::StatusCode::INTERNAL_SERVER_ERROR, axum::response::IntoResponse::into_response(e)); }
     (axum::http::StatusCode::ACCEPTED, axum::response::IntoResponse::into_response(Json(serde_json::json!({"job": {"job_type": "media_sync", "status": "queued", "id": ""}}))))
 }
 

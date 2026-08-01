@@ -16,7 +16,7 @@ use super::auth::{self, user_from_request};
     responses((status = 200, description = "First login status"))
 )]
 pub async fn first_time_login() -> Result<impl IntoResponse, auth::AuthDeny> {
-    Json(serde_json::json!({"admin_first_time_login": false}))
+    Ok(Json(serde_json::json!({"admin_first_time_login": false})))
 }
 
 /// Auth request — mirrors `GET /auth` (public, sets remote-user/role headers).
@@ -26,7 +26,7 @@ pub async fn first_time_login() -> Result<impl IntoResponse, auth::AuthDeny> {
     responses((status = 202, description = "Authentication accepted"), (status = 401, description = "Failed"))
 )]
 pub async fn auth() -> Result<impl IntoResponse, auth::AuthDeny> {
-    (axum::http::StatusCode::ACCEPTED, "").into_response()
+    Ok((axum::http::StatusCode::ACCEPTED, "").into_response())
 }
 
 /// User profile — mirrors `GET /profile` (require authenticated).
@@ -37,11 +37,11 @@ pub async fn auth() -> Result<impl IntoResponse, auth::AuthDeny> {
 )]
 pub async fn profile(cfg: State<FrigateConfig>, req: axum::extract::Request) -> Result<impl IntoResponse, auth::AuthDeny> {
     let user = user_from_request(&req);
-    Json(serde_json::json!({
+    Ok(Json(serde_json::json!({
         "username": user.username,
         "role": user.role.0,
         "allowed_cameras": [],
-    }))
+    })))
 }
 
 /// Logout — mirrors `GET /logout` (public).
@@ -51,7 +51,7 @@ pub async fn profile(cfg: State<FrigateConfig>, req: axum::extract::Request) -> 
     responses((status = 303, description = "Redirected to login"))
 )]
 pub async fn logout() -> Result<impl IntoResponse, auth::AuthDeny> {
-    Redirect::to("/login")
+    Ok(Redirect::to("/login"))
 }
 
 /// Login — mirrors `POST /login` (public).
@@ -67,9 +67,9 @@ pub async fn login(
     // Password verification stub — wired to `verify_password()` in Phase 5.
     let valid = !body.user.is_empty() && body.password.len() >= 12;
     if valid {
-        (axum::http::StatusCode::OK, "").into_response()
+        Ok((axum::http::StatusCode::OK, "").into_response())
     } else {
-        (axum::http::StatusCode::UNAUTHORIZED, Json(serde_json::json!({"message": "Login failed"}))).into_response()
+        Ok((axum::http::StatusCode::UNAUTHORIZED, Json(serde_json::json!({"message": "Login failed"}))).into_response())
     }
 }
 
@@ -81,7 +81,7 @@ pub async fn login(
 )]
 pub async fn get_users(cfg: State<FrigateConfig>, req: axum::extract::Request) -> Result<impl IntoResponse, auth::AuthDeny> {
     if let Err(e) = auth::require_admin(user_from_request(&req)).await { return Err(e); }
-    Json(Vec::<serde_json::Value>::new())
+    Ok(Json(Vec::<serde_json::Value>::new()))
 }
 
 /// Create user — mirrors `POST /users` (require admin).
@@ -96,7 +96,7 @@ pub async fn create_user(
     Json(body): Json<AppPostUsersBody>,
 ) -> Result<impl IntoResponse, auth::AuthDeny> {
     if let Err(e) = auth::require_admin(user_from_request(&req)).await { return Err(e); }
-    Json(serde_json::json!({"username": body.username}))
+    Ok(Json(serde_json::json!({"username": body.username})))
 }
 
 /// Delete user — mirrors `DELETE /users/{username}` (require admin).
@@ -111,9 +111,9 @@ pub async fn delete_user(
 ) -> Result<impl IntoResponse, auth::AuthDeny> {
     if let Err(e) = auth::require_admin(user_from_request(&req)).await { return Err(e); }
     if target == "admin" {
-        return auth::AuthDeny::Forbidden("Cannot delete admin user".to_owned()).into_response();
+        return Err(auth::AuthDeny::Forbidden("Cannot delete admin user".to_owned()));
     }
-    Json(serde_json::json!({"success": true}))
+    Ok(Json(serde_json::json!({"success": true})))
 }
 
 /// Update password — mirrors `PUT /users/{username}/password` (require authenticated).
@@ -130,9 +130,9 @@ pub async fn update_password(
 ) -> Result<impl IntoResponse, auth::AuthDeny> {
     let user = user_from_request(&req);
     if user.role.0 == "viewer" && user.username != target {
-        return auth::AuthDeny::Forbidden("Viewers can only update their own password".to_owned()).into_response();
+        return Err(auth::AuthDeny::Forbidden("Viewers can only update their own password".to_owned()));
     }
-    Json(serde_json::json!({"success": true}))
+    Ok(Json(serde_json::json!({"success": true})))
 }
 
 /// Update role — mirrors `PUT /users/{username}/role` (require admin).
@@ -151,7 +151,7 @@ pub async fn update_role(
     if target == "admin" {
         return Err(auth::AuthDeny::Forbidden("Cannot modify admin user's role".to_owned()));
     }
-    Json(serde_json::json!({"success": true}))
+    Ok(Json(serde_json::json!({"success": true})))
 }
 
 // ── Request schemas ─────────────────────────────────────────────────
